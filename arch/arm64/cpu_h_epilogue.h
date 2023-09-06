@@ -250,7 +250,7 @@ static inline uint64_t arm_hcr_el2_eff(CPUARMState *env)
     uint64_t hcr = env->cp15.hcr_el2;
     uint64_t effective_hcr = hcr;
 
-    bool feat_vhe = isar_feature_aa64_vh(&env->arm_core_config->isar);
+    bool feat_vhe = isar_feature_aa64_vh(&env->arm_core_config.isar);
     bool el2_enabled = arm_is_el2_enabled(env);
 
     bool tge = hcr & HCR_TGE;
@@ -402,7 +402,7 @@ static inline bool el2_and_hcr_el2_e2h_set(CPUState *env)
 
 static inline ARMCoreConfig *env_archcpu(CPUState *env)
 {
-    return env->arm_core_config;
+    return &env->arm_core_config;
 }
 
 static inline bool excp_is_internal(uint32_t excp)

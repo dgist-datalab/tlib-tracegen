@@ -393,8 +393,6 @@ typedef struct ARMCoreConfig {
 
     /* Generic timer counter frequency, in Hz */
     uint64_t gt_cntfrq_hz;
-
-    TTable *cp_regs;
 } ARMCoreConfig;
 
 /* PMSAv8 MPU */
@@ -946,10 +944,12 @@ typedef struct CPUState {
         uint32_t ctrl;
     } sau;
 
-    ARMCoreConfig *arm_core_config;
+    ARMCoreConfig arm_core_config;
 
     // All the above fields will be reset along with the 'CPU_COMMON' fields up to 'breakpoints'.
     CPU_COMMON
+
+    TTable *cp_regs;
 } CPUState;
 
 static inline void set_feature(CPUARMState *env, int feature)

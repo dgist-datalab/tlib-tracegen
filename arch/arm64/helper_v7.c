@@ -415,18 +415,18 @@ void set_mmu_fault_registers(int access_type, target_ulong address, int fault_ty
 
 inline uint32_t pmsav8_number_of_el1_regions(CPUState *env)
 {
-    return extract32(env->arm_core_config->mpuir, 8, 8);
+    return extract32(env->arm_core_config.mpuir, 8, 8);
 }
 
 inline uint32_t pmsav8_number_of_el2_regions(CPUState *env)
 {
-    return extract32(env->arm_core_config->hmpuir, 0, 8);
+    return extract32(env->arm_core_config.hmpuir, 0, 8);
 }
 
 void set_pmsav8_regions_count(CPUState *env, uint32_t el1_regionscount, uint32_t el2_regions_count)
 {
-    env->arm_core_config->mpuir = deposit32(env->arm_core_config->mpuir, 8, 8, el1_regionscount);
-    env->arm_core_config->hmpuir = deposit32(env->arm_core_config->hmpuir, 0, 8, el2_regions_count);
+    env->arm_core_config.mpuir = deposit32(env->arm_core_config.mpuir, 8, 8, el1_regionscount);
+    env->arm_core_config.hmpuir = deposit32(env->arm_core_config.hmpuir, 0, 8, el2_regions_count);
 }
 
 static inline int get_default_memory_map_access(uint32_t current_el, target_ulong address)

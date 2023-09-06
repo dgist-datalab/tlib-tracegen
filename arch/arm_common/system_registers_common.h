@@ -318,14 +318,7 @@ const char *sysreg_patch_lookup_name(const char *name);
 static const ARMCPRegInfo *sysreg_find_by_name(CPUState *env, const char *name)
 {
     const char *lookup_name = sysreg_patch_lookup_name(name);
-
-#ifdef TARGET_ARM64
-    TTable *cp_regs = env->arm_core_config->cp_regs;
-#else
-    TTable *cp_regs = env->cp_regs;
-#endif
-
-    TTable_entry *entry = ttable_lookup_custom(cp_regs, ttable_compare_sysreg_name, lookup_name);
+    TTable_entry *entry = ttable_lookup_custom(env->cp_regs, ttable_compare_sysreg_name, lookup_name);
     if (entry != NULL) {
         return (ARMCPRegInfo *)entry->value;
     }

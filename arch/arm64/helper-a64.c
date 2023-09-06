@@ -1107,7 +1107,7 @@ void HELPER(dc_zva)(CPUARMState *env, uint64_t vaddr_in)
 // TODO: Move to a separate file with our license header.
 void HELPER(rebuild_hflags_a64)(CPUARMState *env, int el)
 {
-    const ARMISARegisters *isar = &env->arm_core_config->isar;
+    const ARMISARegisters *isar = &env->arm_core_config.isar;
     uint64_t sctlr = arm_sctlr(env, el);
     uint64_t tcr = arm_tcr(env, el);
 

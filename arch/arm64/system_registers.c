@@ -87,7 +87,7 @@ static inline uint64_t *mpidr_el1_register_pointer(CPUState *env)
     if (arm_current_el(env) == 1 && arm_is_el2_enabled(env)) {
         return &env->cp15.vmpidr_el2;
     }
-    return &env->arm_core_config->mpidr;
+    return &env->arm_core_config.mpidr;
 }
 
 static inline uint64_t *spsr_el1_register_pointer(CPUState *env)
@@ -100,7 +100,7 @@ static inline uint64_t *spsr_el1_register_pointer(CPUState *env)
 
 static inline uint64_t get_id_aa64pfr0_value(CPUState *env)
 {
-    uint64_t return_value = env->arm_core_config->isar.id_aa64pfr0;
+    uint64_t return_value = env->arm_core_config.isar.id_aa64pfr0;
 
     if (!arm_feature(env, ARM_FEATURE_EL3)) {
         return_value = FIELD_DP64(return_value, ID_AA64PFR0, EL3, 0);
@@ -267,7 +267,7 @@ static inline uint32_t encode_as_aarch64_register(CPUState *env, const ARMCPRegI
         // ARMv8-A manual's rule LLSLV: in secure state redirect to Secure EL2 Physical/Virtual Timer (CNTHPS_*/CNTHVS_*).
         // The Secure EL2 timers are added by ARMv8.4's Secure EL2 extension. It's unclear what to do in secure state
         // without the extension so let's just make sure the extension is disabled and state isn't secure.
-        tlib_assert(!isar_feature_aa64_sel2(&env->arm_core_config->isar));
+        tlib_assert(!isar_feature_aa64_sel2(&env->arm_core_config.isar));
         tlib_assert(!arm_is_secure_below_el3(env));
 
         // ARMv8-A manual's rule RZRWZ: in non-secure state redirect to Non-secure EL2 Physical/Virtual Timer (CNTHP_*/CNTHV_*).
@@ -397,7 +397,7 @@ RW_PSTATE_FUNCTIONS(uao,    PSTATE_UAO)
 /* 'arm_core_config'-reading functions */
 
 #define READ_CONFIG(name, config_field_name) \
-    READ_FUNCTION(64, name, env->arm_core_config->config_field_name)
+    READ_FUNCTION(64, name, env->arm_core_config.config_field_name)
 
 READ_CONFIG(ccsidr_el1,        ccsidr[env->cp15.csselr_el[1]])
 READ_CONFIG(ccsidr2_el1,       ccsidr[env->cp15.csselr_el[1]]   >>  32)
@@ -1859,7 +1859,7 @@ void cp_reg_add(CPUState *env, ARMCPRegInfo *reg_info)
         *key = ENCODE_CP_REG(reg_info->cp, is64, ns, reg_info->crn, reg_info->crm, reg_info->op1, reg_info->op2);
     }
 
-    cp_reg_add_with_key(env, env->arm_core_config->cp_regs, key, reg_info);
+    cp_reg_add_with_key(env, env->cp_regs, key, reg_info);
 }
 
 /* Implementation defined registers.
@@ -2190,7 +2190,7 @@ void system_instructions_and_registers_init(CPUState *env, uint32_t cpu_model_id
     if (arm_feature(env, ARM_FEATURE_PMSA)) {
         ttable_size += ARM_CP_ARRAY_COUNT(mpu_registers);
     }
-    env->arm_core_config->cp_regs = ttable_create(ttable_size, entry_remove_callback, ttable_compare_key_uint32);
+    env->cp_regs = ttable_create(ttable_size, entry_remove_callback, ttable_compare_key_uint32);
 
     cp_regs_add(env, instructions, instructions_count);
     cp_regs_add(env, registers, registers_count);
@@ -2200,12 +2200,12 @@ void system_instructions_and_registers_init(CPUState *env, uint32_t cpu_model_id
         cp_regs_add(env, mpu_registers, ARM_CP_ARRAY_COUNT(mpu_registers));
     }
 
-    ttable_sort_by_keys(env->arm_core_config->cp_regs);
+    ttable_sort_by_keys(env->cp_regs);
 }
 
 void system_instructions_and_registers_reset(CPUState *env)
 {
-    TTable *cp_regs = env->arm_core_config->cp_regs;
+    TTable *cp_regs = env->cp_regs;
 
     int i;
     for (i = 0; i < cp_regs->count; i++) {

@@ -9308,7 +9308,7 @@ void disas_thumb2_insn(DisasContext *s, uint32_t insn)
     if (disas_t32(s, insn) ||
         disas_vfp_uncond(s, insn) ||
         disas_neon_shared(s, insn) ||
-        (cpu_isar_feature(aa32_mve, cpu->arm_core_config) && disas_mve(s, insn)) ||
+        (cpu_isar_feature(aa32_mve, &cpu->arm_core_config) && disas_mve(s, insn)) ||
         ((insn >> 28) == 0xe && disas_vfp(s, insn))) {
         return;
     }
@@ -9341,11 +9341,10 @@ static bool insn_crosses_page(CPUARMState *env, DisasContext *s)
 void arm_tr_init_disas_context(DisasContextBase *dcbase, CPUState *env)
 {
     DisasContext *dc = container_of(dcbase, DisasContext, base);
-    ARMCPU *cpu = env_archcpu(env);
     CPUARMTBFlags tb_flags = arm_tbflags_from_tb(dc->base.tb);
     uint32_t condexec, core_mmu_idx;
 
-    dc->isar = &cpu->isar;
+    dc->isar = &env->arm_core_config.isar;
     dc->condjmp = 0;
 
     dc->aarch64 = false;
@@ -9409,7 +9408,7 @@ void arm_tr_init_disas_context(DisasContextBase *dcbase, CPUState *env)
         dc->sme_trap_nonstreaming =
             EX_TBFLAG_A32(tb_flags, SME_TRAP_NONSTREAMING);
     }
-    dc->cp_regs = cpu->cp_regs;
+    dc->cp_regs = env->cp_regs;
     dc->features = env->features;
 
     /* Single step state. The code-generation logic here is:

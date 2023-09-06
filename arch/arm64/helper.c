@@ -93,8 +93,7 @@ int process_interrupt(int interrupt_request, CPUState *env)
 
 void tlib_arch_dispose()
 {
-    ttable_remove(cpu->arm_core_config->cp_regs);
-    tlib_free(cpu->arm_core_config);
+    ttable_remove(cpu->cp_regs);
 }
 
 /* CPU initialization and reset. */
@@ -120,72 +119,72 @@ void cpu_init_v8_2(CPUState *env, uint32_t id)
     set_feature(env, ARM_FEATURE_EL3);
 
     // From B2.4 AArch64 registers
-    env->arm_core_config->clidr = 0x82000023;  // No L3 cache version.
-    env->arm_core_config->ctr = 0x8444C004;
-    env->arm_core_config->dcz_blocksize = 4;
-    env->arm_core_config->id_aa64afr0 = 0;
-    env->arm_core_config->id_aa64afr1 = 0;
-    env->arm_core_config->isar.id_aa64dfr0  = 0x0000000010305408ull;
-    env->arm_core_config->isar.id_aa64isar0 = 0x0000100010211120ull;  // Version with Cryptographic Extension.
-    env->arm_core_config->isar.id_aa64isar1 = 0x0000000000100001ull;
-    env->arm_core_config->isar.id_aa64mmfr0 = 0x0000000000101122ull;
-    env->arm_core_config->isar.id_aa64mmfr1 = 0x0000000010212122ull;
-    env->arm_core_config->isar.id_aa64mmfr2 = 0x0000000000001011ull;
-    env->arm_core_config->isar.id_aa64pfr0  =
+    env->arm_core_config.clidr = 0x82000023;  // No L3 cache version.
+    env->arm_core_config.ctr = 0x8444C004;
+    env->arm_core_config.dcz_blocksize = 4;
+    env->arm_core_config.id_aa64afr0 = 0;
+    env->arm_core_config.id_aa64afr1 = 0;
+    env->arm_core_config.isar.id_aa64dfr0  = 0x0000000010305408ull;
+    env->arm_core_config.isar.id_aa64isar0 = 0x0000100010211120ull;  // Version with Cryptographic Extension.
+    env->arm_core_config.isar.id_aa64isar1 = 0x0000000000100001ull;
+    env->arm_core_config.isar.id_aa64mmfr0 = 0x0000000000101122ull;
+    env->arm_core_config.isar.id_aa64mmfr1 = 0x0000000010212122ull;
+    env->arm_core_config.isar.id_aa64mmfr2 = 0x0000000000001011ull;
+    env->arm_core_config.isar.id_aa64pfr0  =
         id == ARM_CPUID_CORTEXA75 ? 0x1100000011112222ull
                                   : 0x1100000011111112ull;  // Version with GIC CPU interface enabled.
-    env->arm_core_config->isar.id_aa64pfr1  = 0x0000000000000010ull;
-    env->arm_core_config->id_afr0       = 0x00000000;
-    env->arm_core_config->isar.id_dfr0  = 0x04010088;
-    env->arm_core_config->isar.id_isar0 = 0x02101110;
-    env->arm_core_config->isar.id_isar1 = 0x13112111;
-    env->arm_core_config->isar.id_isar2 = 0x21232042;
-    env->arm_core_config->isar.id_isar3 = 0x01112131;
-    env->arm_core_config->isar.id_isar4 = 0x00010142;
-    env->arm_core_config->isar.id_isar5 = 0x01011121;  // Version with Cryptographic Extension.
-    env->arm_core_config->isar.id_isar6 = 0x00000010;
-    env->arm_core_config->isar.id_mmfr0 = 0x10201105;
-    env->arm_core_config->isar.id_mmfr1 = 0x40000000;
-    env->arm_core_config->isar.id_mmfr2 = 0x01260000;
-    env->arm_core_config->isar.id_mmfr3 = 0x02122211;
-    env->arm_core_config->isar.id_mmfr4 = 0x00021110;
-    env->arm_core_config->isar.id_pfr0  = 0x10010131;
-    env->arm_core_config->isar.id_pfr1  = 0x10010000;  // Version with GIC CPU interface enabled.
-    env->arm_core_config->isar.id_pfr2  = 0x00000011;
+    env->arm_core_config.isar.id_aa64pfr1  = 0x0000000000000010ull;
+    env->arm_core_config.id_afr0       = 0x00000000;
+    env->arm_core_config.isar.id_dfr0  = 0x04010088;
+    env->arm_core_config.isar.id_isar0 = 0x02101110;
+    env->arm_core_config.isar.id_isar1 = 0x13112111;
+    env->arm_core_config.isar.id_isar2 = 0x21232042;
+    env->arm_core_config.isar.id_isar3 = 0x01112131;
+    env->arm_core_config.isar.id_isar4 = 0x00010142;
+    env->arm_core_config.isar.id_isar5 = 0x01011121;  // Version with Cryptographic Extension.
+    env->arm_core_config.isar.id_isar6 = 0x00000010;
+    env->arm_core_config.isar.id_mmfr0 = 0x10201105;
+    env->arm_core_config.isar.id_mmfr1 = 0x40000000;
+    env->arm_core_config.isar.id_mmfr2 = 0x01260000;
+    env->arm_core_config.isar.id_mmfr3 = 0x02122211;
+    env->arm_core_config.isar.id_mmfr4 = 0x00021110;
+    env->arm_core_config.isar.id_pfr0  = 0x10010131;
+    env->arm_core_config.isar.id_pfr1  = 0x10010000;  // Version with GIC CPU interface enabled.
+    env->arm_core_config.isar.id_pfr2  = 0x00000011;
 
     // TODO: MPIDR should depend on CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
-    env->arm_core_config->mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (1u << 24) /* MT */;
-    env->arm_core_config->revidr = 0;
+    env->arm_core_config.mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (1u << 24) /* MT */;
+    env->arm_core_config.revidr = 0;
 
     // From A75's B5.4. It's only accessible from AArch32 EL1-3 which aren't supported in A76/A78.
-    env->arm_core_config->reset_fpsid = id == ARM_CPUID_CORTEXA75 ? 0x410340a3 : 0;
+    env->arm_core_config.reset_fpsid = id == ARM_CPUID_CORTEXA75 ? 0x410340a3 : 0;
 
     // From B2.23
-    env->arm_core_config->ccsidr[0] = 0x701fe01a;
-    env->arm_core_config->ccsidr[1] = 0x201fe01a;
-    env->arm_core_config->ccsidr[2] = 0x707fe03a;
+    env->arm_core_config.ccsidr[0] = 0x701fe01a;
+    env->arm_core_config.ccsidr[1] = 0x201fe01a;
+    env->arm_core_config.ccsidr[2] = 0x707fe03a;
 
     // From B2.97
-    env->arm_core_config->reset_sctlr = 0x30c50838;
+    env->arm_core_config.reset_sctlr = 0x30c50838;
 
     // From B4.23
-    env->arm_core_config->gic_num_lrs = 4;
-    env->arm_core_config->gic_vpribits = 5;
-    env->arm_core_config->gic_vprebits = 5;
+    env->arm_core_config.gic_num_lrs = 4;
+    env->arm_core_config.gic_vpribits = 5;
+    env->arm_core_config.gic_vprebits = 5;
     // From B4.7
-    env->arm_core_config->gic_pribits = 5;
+    env->arm_core_config.gic_pribits = 5;
 
     // From B5.1
-    env->arm_core_config->isar.mvfr0 = 0x10110222;
-    env->arm_core_config->isar.mvfr1 = 0x13211111;
-    env->arm_core_config->isar.mvfr2 = 0x00000043;
+    env->arm_core_config.isar.mvfr0 = 0x10110222;
+    env->arm_core_config.isar.mvfr1 = 0x13211111;
+    env->arm_core_config.isar.mvfr2 = 0x00000043;
 
     // From D5.1
-    env->arm_core_config->pmceid0 = 0x7FFF0F3F;
-    env->arm_core_config->pmceid1 = 0x00F2AE7F;
+    env->arm_core_config.pmceid0 = 0x7FFF0F3F;
+    env->arm_core_config.pmceid1 = 0x00F2AE7F;
 
     // From D5.4
-    env->arm_core_config->isar.reset_pmcr_el0 = 0x410b3000;
+    env->arm_core_config.isar.reset_pmcr_el0 = 0x410b3000;
 
     // TODO: Add missing ones? reset_cbar, reset_auxcr, reset_hivecs
     // reset_cbar should be based on GIC PERIPHBASE signal.
@@ -206,60 +205,60 @@ void cpu_init_a53(CPUState *env, uint32_t id)
     set_feature(env, ARM_FEATURE_EL2);
     set_feature(env, ARM_FEATURE_EL3);
 
-    env->arm_core_config->clidr = 0x0A200023;
-    env->arm_core_config->ctr = 0x84448004;
-    env->arm_core_config->dcz_blocksize = 4;
-    env->arm_core_config->id_aa64afr0 = 0;
-    env->arm_core_config->id_aa64afr1 = 0;
-    env->arm_core_config->isar.id_aa64dfr0  = 0x10305106ull;
-    env->arm_core_config->isar.id_aa64isar0 = 0x00011120ull;
-    env->arm_core_config->isar.id_aa64isar1 = 0x00000000ull;
-    env->arm_core_config->isar.id_aa64mmfr0 = 0x00001122ull;
-    env->arm_core_config->isar.id_aa64mmfr1 = 0x00000000ull;
-    env->arm_core_config->isar.id_aa64pfr0  = 0x01002222ull;  // Version with GIC CPU interface enabled.
-    env->arm_core_config->isar.id_aa64pfr1  = 0x00000000ull;
-    env->arm_core_config->id_afr0       = 0x00000000;
-    env->arm_core_config->isar.id_dfr0  = 0x03010066;
-    env->arm_core_config->isar.id_isar0 = 0x02101110;
-    env->arm_core_config->isar.id_isar1 = 0x13112111;
-    env->arm_core_config->isar.id_isar2 = 0x21232042;
-    env->arm_core_config->isar.id_isar3 = 0x01112131;
-    env->arm_core_config->isar.id_isar4 = 0x00011142;
-    env->arm_core_config->isar.id_isar5 = 0x00011121;
-    env->arm_core_config->isar.id_mmfr0 = 0x10201105;
-    env->arm_core_config->isar.id_mmfr1 = 0x40000000;
-    env->arm_core_config->isar.id_mmfr2 = 0x01260000;
-    env->arm_core_config->isar.id_mmfr3 = 0x02102211;
-    env->arm_core_config->isar.id_pfr0  = 0x00000131;
-    env->arm_core_config->isar.id_pfr1  = 0x10011011;  // Version with GIC CPU interface enabled.
+    env->arm_core_config.clidr = 0x0A200023;
+    env->arm_core_config.ctr = 0x84448004;
+    env->arm_core_config.dcz_blocksize = 4;
+    env->arm_core_config.id_aa64afr0 = 0;
+    env->arm_core_config.id_aa64afr1 = 0;
+    env->arm_core_config.isar.id_aa64dfr0  = 0x10305106ull;
+    env->arm_core_config.isar.id_aa64isar0 = 0x00011120ull;
+    env->arm_core_config.isar.id_aa64isar1 = 0x00000000ull;
+    env->arm_core_config.isar.id_aa64mmfr0 = 0x00001122ull;
+    env->arm_core_config.isar.id_aa64mmfr1 = 0x00000000ull;
+    env->arm_core_config.isar.id_aa64pfr0  = 0x01002222ull;  // Version with GIC CPU interface enabled.
+    env->arm_core_config.isar.id_aa64pfr1  = 0x00000000ull;
+    env->arm_core_config.id_afr0       = 0x00000000;
+    env->arm_core_config.isar.id_dfr0  = 0x03010066;
+    env->arm_core_config.isar.id_isar0 = 0x02101110;
+    env->arm_core_config.isar.id_isar1 = 0x13112111;
+    env->arm_core_config.isar.id_isar2 = 0x21232042;
+    env->arm_core_config.isar.id_isar3 = 0x01112131;
+    env->arm_core_config.isar.id_isar4 = 0x00011142;
+    env->arm_core_config.isar.id_isar5 = 0x00011121;
+    env->arm_core_config.isar.id_mmfr0 = 0x10201105;
+    env->arm_core_config.isar.id_mmfr1 = 0x40000000;
+    env->arm_core_config.isar.id_mmfr2 = 0x01260000;
+    env->arm_core_config.isar.id_mmfr3 = 0x02102211;
+    env->arm_core_config.isar.id_pfr0  = 0x00000131;
+    env->arm_core_config.isar.id_pfr1  = 0x10011011;  // Version with GIC CPU interface enabled.
 
     // TODO: MPIDR should depend on CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
-    env->arm_core_config->mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (0u << 24) /* MT */;
-    env->arm_core_config->revidr = 0;
+    env->arm_core_config.mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (0u << 24) /* MT */;
+    env->arm_core_config.revidr = 0;
 
-    env->arm_core_config->reset_fpsid = 0x41034034;
+    env->arm_core_config.reset_fpsid = 0x41034034;
 
-    env->arm_core_config->ccsidr[0] = 0x700fe01a;
-    env->arm_core_config->ccsidr[1] = 0x201fe01a;
-    env->arm_core_config->ccsidr[2] = 0x707fe07a;
+    env->arm_core_config.ccsidr[0] = 0x700fe01a;
+    env->arm_core_config.ccsidr[1] = 0x201fe01a;
+    env->arm_core_config.ccsidr[2] = 0x707fe07a;
 
-    env->arm_core_config->reset_sctlr = 0x00C50838;
+    env->arm_core_config.reset_sctlr = 0x00C50838;
 
-    env->arm_core_config->gic_num_lrs = 4;
-    env->arm_core_config->gic_vpribits = 5;
-    env->arm_core_config->gic_vprebits = 5;
-    env->arm_core_config->gic_pribits = 5;
+    env->arm_core_config.gic_num_lrs = 4;
+    env->arm_core_config.gic_vpribits = 5;
+    env->arm_core_config.gic_vprebits = 5;
+    env->arm_core_config.gic_pribits = 5;
 
-    env->arm_core_config->isar.mvfr0 = 0x10110222;
-    env->arm_core_config->isar.mvfr1 = 0x13211111;
-    env->arm_core_config->isar.mvfr2 = 0x00000043;
+    env->arm_core_config.isar.mvfr0 = 0x10110222;
+    env->arm_core_config.isar.mvfr1 = 0x13211111;
+    env->arm_core_config.isar.mvfr2 = 0x00000043;
 
-    env->arm_core_config->pmceid0 = 0x7FFF0F3F;
-    env->arm_core_config->pmceid1 = 0x00F2AE7F;
+    env->arm_core_config.pmceid0 = 0x7FFF0F3F;
+    env->arm_core_config.pmceid1 = 0x00F2AE7F;
 
-    env->arm_core_config->isar.reset_pmcr_el0 = 0x41033000;
+    env->arm_core_config.isar.reset_pmcr_el0 = 0x41033000;
 
-    env->arm_core_config->midr = 0x410FD034;
+    env->arm_core_config.midr = 0x410FD034;
 }
 
 void cpu_init_r52(CPUState *env, uint32_t id)
@@ -285,24 +284,24 @@ void cpu_init_r52(CPUState *env, uint32_t id)
 
     set_feature(env, ARM_FEATURE_EL2); // EL2 virtualization, from 1.2
 
-    env->arm_core_config->isar.id_isar0 = 0x02101110; // from 3.2.1
-    env->arm_core_config->isar.id_isar1 = 0x13112111; // from 3.2.1
-    env->arm_core_config->isar.id_isar2 = 0x21232142; // from 3.2.1
-    env->arm_core_config->isar.id_isar3 = 0x01112131; // from 3.2.1
-    env->arm_core_config->isar.id_isar4 = 0x00010142; // from 3.2.1
-    env->arm_core_config->isar.id_isar5 = 0x00010001; // from 3.2.1
-    env->arm_core_config->isar.id_mmfr0 = 0x00211040; // from 3.2.1
-    env->arm_core_config->isar.id_mmfr1 = 0x40000000; // from 3.2.1
-    env->arm_core_config->isar.id_mmfr2 = 0x01200000; // from 3.2.1
-    env->arm_core_config->isar.id_mmfr3 = 0xF0102211; // from 3.2.1
-    env->arm_core_config->isar.id_mmfr4 = 0x00000010; // from 3.2.1
-    env->arm_core_config->isar.id_pfr0 = 0x00000131; // from 3.2.1
-    env->arm_core_config->isar.id_pfr1 = 0x10111001; // from 3.2.1
-    env->arm_core_config->isar.mvfr0 = 0x10110222; // full advanced SIMD, 0x10110021 for SP-only, from 15.5
-    env->arm_core_config->isar.mvfr1 = 0x12111111; // full advanced SIMD, 0x11000011 for SP-only, from 15.5
-    env->arm_core_config->isar.mvfr2 = 0x00000043; // full advanced SIMD, 0x00000040 for SP-only, from 15.5
+    env->arm_core_config.isar.id_isar0 = 0x02101110; // from 3.2.1
+    env->arm_core_config.isar.id_isar1 = 0x13112111; // from 3.2.1
+    env->arm_core_config.isar.id_isar2 = 0x21232142; // from 3.2.1
+    env->arm_core_config.isar.id_isar3 = 0x01112131; // from 3.2.1
+    env->arm_core_config.isar.id_isar4 = 0x00010142; // from 3.2.1
+    env->arm_core_config.isar.id_isar5 = 0x00010001; // from 3.2.1
+    env->arm_core_config.isar.id_mmfr0 = 0x00211040; // from 3.2.1
+    env->arm_core_config.isar.id_mmfr1 = 0x40000000; // from 3.2.1
+    env->arm_core_config.isar.id_mmfr2 = 0x01200000; // from 3.2.1
+    env->arm_core_config.isar.id_mmfr3 = 0xF0102211; // from 3.2.1
+    env->arm_core_config.isar.id_mmfr4 = 0x00000010; // from 3.2.1
+    env->arm_core_config.isar.id_pfr0 = 0x00000131; // from 3.2.1
+    env->arm_core_config.isar.id_pfr1 = 0x10111001; // from 3.2.1
+    env->arm_core_config.isar.mvfr0 = 0x10110222; // full advanced SIMD, 0x10110021 for SP-only, from 15.5
+    env->arm_core_config.isar.mvfr1 = 0x12111111; // full advanced SIMD, 0x11000011 for SP-only, from 15.5
+    env->arm_core_config.isar.mvfr2 = 0x00000043; // full advanced SIMD, 0x00000040 for SP-only, from 15.5
 
-    env->arm_core_config->isar.id_dfr0 = // 32bit, from 3.3.24
+    env->arm_core_config.isar.id_dfr0 = // 32bit, from 3.3.24
         (0x0 << 28) | // RES0
         (0x3 << 24) | // PerfMon
         (0x0 << 20) | // MProfDbg
@@ -312,7 +311,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x0 << 4) | // CopSDbg, RES0
         (0x6 << 0); // CopDbg
 
-    env->arm_core_config->isar.dbgdidr = // 32bit, from 11.4.1
+    env->arm_core_config.isar.dbgdidr = // 32bit, from 11.4.1
         (0x7 << 28) | // WRPs
         (0x7 << 24) | // BRPs
         (0x1 << 23) | // CTX_CMPs
@@ -323,7 +322,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x0 << 12) | // SE_imp
         (0x0 << 0); // RES0
 
-    env->arm_core_config->isar.dbgdevid = // 32bit, from 11.4.2
+    env->arm_core_config.isar.dbgdevid = // 32bit, from 11.4.2
         (0x0 << 28) | // CIDMask
         (0x0 << 24) | // AuxRegs
         (0x1 << 20) | // DoubleLock
@@ -333,15 +332,15 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x1 << 4) | // WPAddrMask
         (0x3 << 0);  // PCsample
 
-    env->arm_core_config->isar.dbgdevid1 = // 32bit, from 11.4.3
+    env->arm_core_config.isar.dbgdevid1 = // 32bit, from 11.4.3
         (0x0 << 4) | // RES0
         (0x2 << 0); // PCSROffset
 
-    env->arm_core_config->revidr = 0x00000000; // from 3.2.1
-    env->arm_core_config->reset_fpsid = 0x41034023; // from 15.5
-    env->arm_core_config->ctr = 0x8144c004; // from 3.2.1
+    env->arm_core_config.revidr = 0x00000000; // from 3.2.1
+    env->arm_core_config.reset_fpsid = 0x41034023; // from 15.5
+    env->arm_core_config.ctr = 0x8144c004; // from 3.2.1
 
-    env->arm_core_config->reset_sctlr = // 32bit, from 3.3.92
+    env->arm_core_config.reset_sctlr = // 32bit, from 3.3.92
         (0x0 << 31) | // RES0
         (0x0 << 30) | // TE, here exceptions taken in A32 state
         (0x3 << 28) | // RES1
@@ -368,11 +367,11 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x0 << 1) | // A
         (0x0 << 0); // M
 
-    env->arm_core_config->pmceid0 = 0x6E1FFFDB; // 3.2.11
-    env->arm_core_config->pmceid1 = 0x0000001E; // 3.2.11
-    env->arm_core_config->id_afr0 = 0x00000000; // 3.2.19
+    env->arm_core_config.pmceid0 = 0x6E1FFFDB; // 3.2.11
+    env->arm_core_config.pmceid1 = 0x0000001E; // 3.2.11
+    env->arm_core_config.id_afr0 = 0x00000000; // 3.2.19
 
-    env->arm_core_config->clidr = // 32bit, from 3.3.13
+    env->arm_core_config.clidr = // 32bit, from 3.3.13
         (0x0 << 30) | // ICB
         (0x1 << 27) | // LoUU, set if either cache is implemented
         (0x1 << 24) | // LoC, set if either cache is implemented
@@ -386,7 +385,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x3 << 0); // Ctype1, separate instructions and data caches
 
     // TODO: Make affinity configurable from CPU class in C#
-    env->arm_core_config->mpidr = // 32bit, from 3.3.78
+    env->arm_core_config.mpidr = // 32bit, from 3.3.78
         (0x1 << 31) | // M, RES1
         (0x0 << 30) | // U, core is part of cluster (no single core)
         (0x0 << 25) | // RES0
@@ -395,7 +394,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x0 << 8) | // Aff1
         (0x0 << 0); // Aff0
 
-    env->arm_core_config->ccsidr[0] = // 32bit, 3.3.20
+    env->arm_core_config.ccsidr[0] = // 32bit, 3.3.20
         (0x0 << 31) | // WT, here no Write-Through
         (0x1 << 30) | // WB, here support Write-Back
         (0x1 << 29) | // RA, here support Read-Allocation
@@ -404,7 +403,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x3 << 3) | // Associativity
         (0x2 << 0); // LineSize
 
-    env->arm_core_config->ccsidr[1] = // 32bit, 3.3.20
+    env->arm_core_config.ccsidr[1] = // 32bit, 3.3.20
         (0x0 << 31) | // WT, here support Write-Through
         (0x0 << 30) | // WB, here no Write-Back
         (0x1 << 29) | // RA, here support Read-Allocation
@@ -413,29 +412,27 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x3 << 3) | // Associativity
         (0x2 << 0); // LineSize
 
-    env->arm_core_config->gic_num_lrs = 4; // from 3.2.14
-    env->arm_core_config->gic_vpribits = 5; // from 9.3.3
-    env->arm_core_config->gic_vprebits = 5; // from 9.3.3
-    env->arm_core_config->gic_pribits = 5; // from 9.3.4
+    env->arm_core_config.gic_num_lrs = 4; // from 3.2.14
+    env->arm_core_config.gic_vpribits = 5; // from 9.3.3
+    env->arm_core_config.gic_vprebits = 5; // from 9.3.3
+    env->arm_core_config.gic_pribits = 5; // from 9.3.4
 
-    env->arm_core_config->gt_cntfrq_hz = 0; // from 3.2.16
+    env->arm_core_config.gt_cntfrq_hz = 0; // from 3.2.16
 
-    env->arm_core_config->mpuir = // from 3.3.76
+    env->arm_core_config.mpuir = // from 3.3.76
         (16 << 8); // DREGION, here 16 EL1-controlled MPU regions
-    env->arm_core_config->hmpuir =
+    env->arm_core_config.hmpuir =
         (16 << 0); // REGION, here 16 EL2-controlled MPU regions
     // Main ID register from Arm Cortex-R52 Processor Technical Reference Manual rev. r1p3 (100026_0103_00_en)
-    env->arm_core_config->midr = 0x411FD132;
+    env->arm_core_config.midr = 0x411FD132;
 
     // TODO: Add missing ones: reset_cbar, reset_auxcr, reset_hivecs
 }
 
 static void cpu_init_core_config(CPUState *env, uint32_t id)
 {
-    env->arm_core_config = tlib_mallocz(sizeof(ARMCoreConfig));
-
     // Main ID Register.
-    env->arm_core_config->midr = id;
+    env->arm_core_config.midr = id;
 
     switch (id) {
     case ARM_CPUID_CORTEXA53:
@@ -456,7 +453,7 @@ static void cpu_init_core_config(CPUState *env, uint32_t id)
     }
 
     env->vfp.xregs[ARM_VFP_FPEXC] = 0x700;  // Bits 8-10 are RES1 for A53, A75 and R52 where it's accessible.
-    env->vfp.xregs[ARM_VFP_FPSID] = env->arm_core_config->reset_fpsid;
+    env->vfp.xregs[ARM_VFP_FPSID] = env->arm_core_config.reset_fpsid;
 }
 
 void cpu_init_v8(CPUState *env, uint32_t id)
@@ -468,7 +465,7 @@ void cpu_init_v8(CPUState *env, uint32_t id)
 void cpu_reset_state(CPUState *env)
 {
     // Let's preserve arm_core_config, features and CPU ID.
-    ARMCoreConfig *config = env->arm_core_config;
+    ARMCoreConfig config = env->arm_core_config;
     uint64_t features = env->features;
     uint32_t id = env->cp15.c0_cpuid;
 
@@ -492,12 +489,12 @@ void cpu_reset_v8_a64(CPUState *env)
     env->aarch64 = 1;
 
     // Reset values of some registers are defined per CPU model.
-    env->cp15.sctlr_el[1] = env->arm_core_config->reset_sctlr | (1u << 20);  // Bit20 is RES1 without FEAT_CSV2_2/_1p2.
-    env->cp15.sctlr_el[2] = env->arm_core_config->reset_sctlr;
-    env->cp15.sctlr_el[3] = env->arm_core_config->reset_sctlr;
-    env->cp15.vmpidr_el2 = env->arm_core_config->mpidr;
-    env->cp15.vpidr_el2 = env->arm_core_config->midr;
-    env->cp15.c9_pmcr = env->arm_core_config->isar.reset_pmcr_el0;
+    env->cp15.sctlr_el[1] = env->arm_core_config.reset_sctlr | (1u << 20);  // Bit20 is RES1 without FEAT_CSV2_2/_1p2.
+    env->cp15.sctlr_el[2] = env->arm_core_config.reset_sctlr;
+    env->cp15.sctlr_el[3] = env->arm_core_config.reset_sctlr;
+    env->cp15.vmpidr_el2 = env->arm_core_config.mpidr;
+    env->cp15.vpidr_el2 = env->arm_core_config.midr;
+    env->cp15.c9_pmcr = env->arm_core_config.isar.reset_pmcr_el0;
 
     // The default reset state for AArch64 is the highest available ELx (handler=true: use SP_ELx).
     pstate = aarch64_pstate_mode(arm_highest_el(env), true);
@@ -516,14 +513,14 @@ void cpu_reset_v8_a32(CPUState *env)
 {
     env->aarch64 = false;
 
-    env->cp15.sctlr_ns = env->arm_core_config->reset_sctlr;
-    env->cp15.hsctlr = env->arm_core_config->reset_sctlr;
-    env->cp15.sctlr_s = env->arm_core_config->reset_sctlr;
+    env->cp15.sctlr_ns = env->arm_core_config.reset_sctlr;
+    env->cp15.hsctlr = env->arm_core_config.reset_sctlr;
+    env->cp15.sctlr_s = env->arm_core_config.reset_sctlr;
 
-    env->cp15.vmpidr_el2 = env->arm_core_config->mpidr;
-    env->cp15.vpidr_el2 = env->arm_core_config->midr;
+    env->cp15.vmpidr_el2 = env->arm_core_config.mpidr;
+    env->cp15.vpidr_el2 = env->arm_core_config.midr;
 
-    env->cp15.rvbar = env->arm_core_config->rvbar_prop;
+    env->cp15.rvbar = env->arm_core_config.rvbar_prop;
 
     uint32_t cpsr = arm_get_highest_cpu_mode(env);
     cpsr |= CPSR_AIF | CPSR_Z;

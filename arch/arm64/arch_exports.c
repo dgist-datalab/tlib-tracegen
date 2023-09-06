@@ -117,4 +117,3 @@ void tlib_register_tcm_region(uint32_t address, uint64_t size, uint64_t region_i
 }
 
 EXC_VOID_3(tlib_register_tcm_region, uint32_t, address, uint64_t, size, uint64_t, index)
-

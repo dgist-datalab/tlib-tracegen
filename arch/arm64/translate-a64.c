@@ -14779,7 +14779,7 @@ static void aarch64_tr_init_disas_context(DisasContextBase *dcbase,
     dc->sme_trap_nonstreaming = EX_TBFLAG_A64(tb_flags, SME_TRAP_NONSTREAMING);
     dc->vec_len = 0;
     dc->vec_stride = 0;
-    dc->cp_regs = arm_cpu->cp_regs;
+    dc->cp_regs = env->cp_regs;
     dc->features = env->features;
     dc->dcz_blocksize = arm_cpu->dcz_blocksize;
 

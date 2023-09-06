@@ -37,15 +37,7 @@ EXC_INT_2(uint32_t, tlib_check_system_register_access, const char *, name, bool,
 
 uint32_t tlib_create_system_registers_array(char ***array)
 {
-    TTable *ttable =
-#if defined(TARGET_ARM64)
-        cpu->arm_core_config->cp_regs;
-#elif defined(TARGET_ARM)
-        cpu->cp_regs;
-#else
-  #error "This file can only be compiled for either TARGET_ARM or TARGET_ARM64."
-#endif
-    return ttable_create_values_array(ttable, (void ***)array, try_set_array_entry_to_system_register);
+    return ttable_create_values_array(cpu->cp_regs, (void ***)array, try_set_array_entry_to_system_register);
 }
 EXC_INT_1(uint32_t, tlib_create_system_registers_array, char ***, array)
 
