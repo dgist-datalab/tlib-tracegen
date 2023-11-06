@@ -637,26 +637,27 @@ static ARMCPRegInfo feature_v7_registers[] = {
     // The params are:  name              cp, op1, crn, crm, op2,  el, extra_type, ...
     ARM32_CP_REG_DEFINE(CSSELR,           15,   2,   0,   0,   0,   1, RW, RW_FNS(c0_csselr))              // Cache Size Selection Register
 
+    ARM32_CP_REG_DEFINE(CP15WFIprev7,     15,   0,   7,   0,   4,   1, WO | ARM_CP_NOP)                    // Wait For Interrupt pre-v7, now NOP
+
     // Performance Monitor Extensions
     ARM32_CP_REG_DEFINE(PMCR,             15,   0,   9,  12,   0,   0, RW, RW_FNS(c9_pmcr))                // Performance monitor control register
-    ARM32_CP_REG_DEFINE(PMCNTEN,          15,   0,   9,  12,   1,   0, RW, RW_FNS(c9_pmcnten))             // Performance monitor Count enable set register
-    ARM32_CP_REG_DEFINE(PMCNTCLR,         15,   0,   9,  12,   2,   0, RW, RW_FNS(c9_pmcntclr))            // Performance monitor Count enable clear
+    ARM32_CP_REG_DEFINE(PMCNTENSET,       15,   0,   9,  12,   1,   0, RW, RW_FNS(c9_pmcnten))             // Performance monitor Count enable set register
+    ARM32_CP_REG_DEFINE(PMCNTENCLR,       15,   0,   9,  12,   2,   0, RW, RW_FNS(c9_pmcntclr))            // Performance monitor Count enable clear
     ARM32_CP_REG_DEFINE(PMOVSR,           15,   0,   9,  12,   3,   0, RW, RW_FNS(c9_pmovsr))              // Performance monitor Overflow flag status
-    ARM32_CP_REG_DEFINE(PMOVSI,           15,   0,   9,  12,   4,   0, RW, RW_FNS(read_cp15_write_ignore)) // Performance monitor software increment /* RAZ/WI since we don't implement the software-count event */
+    ARM32_CP_REG_DEFINE(PMSWINC,          15,   0,   9,  12,   4,   0, WO, WRITEFN(write_cp15))            // Performance monitor software increment /* RAZ/WI since we don't implement the software-count event */
 
-    ARM32_CP_REG_DEFINE(CP15WFIprev7,     15,   0,   7,   0,   4,   1, WO | ARM_CP_NOP)                    // Wait For Interrupt pre-v7, now NOP
     /* Since we don't implement any events, writing to this register
      * is actually UNPREDICTABLE. So we choose to RAZ/WI.
      */
-    ARM32_CP_REG_DEFINE(PMOVCNSEL,        15,   0,   9,  12,   5,   0, RW, RW_FNS(read_cp15_write_ignore)) // Performance monitor event counter selection register
+    ARM32_CP_REG_DEFINE(PMSELR,           15,   0,   9,  12,   5,   0, RW, RW_FNS(read_cp15_write_ignore)) // Performance monitor event counter selection register
 
-    ARM32_CP_REG_DEFINE(PMCCN,            15,   0,   9,  13,   0,   0, RW, RW_FNS(read_write_cp15))        // Cycle count register
+    ARM32_CP_REG_DEFINE(PMCCNTR,          15,   0,   9,  13,   0,   0, RW, RW_FNS(read_write_cp15))        // Cycle count register
     ARM32_CP_REG_DEFINE(PMXEVTYPER,       15,   0,   9,  13,   1,   0, RW, RW_FNS(c9_pmxevtyper))          // Event type select
-    ARM32_CP_REG_DEFINE(PMECN,            15,   0,   9,  13,   2,   0, RW, RW_FNS(read_write_cp15))        // Event count register
+    ARM32_CP_REG_DEFINE(PMXEVCNTR,        15,   0,   9,  13,   2,   0, RW, RW_FNS(read_write_cp15))        // Event count register
 
     ARM32_CP_REG_DEFINE(PMUSERENR,        15,   0,   9,  14,   0,   0, RW, RW_FNS(c9_pmuserenr))           // Performance monitor control user enable
-    ARM32_CP_REG_DEFINE(PMINTEN,          15,   0,   9,  14,   1,   1, RW, RW_FNS(c9_pminten))             // Performance monitor control interrupt enable set
-    ARM32_CP_REG_DEFINE(PMINTCLR,         15,   0,   9,  14,   2,   1, RW, RW_FNS(c9_pmintclr))            // Performance monitor control interrupt enable clear
+    ARM32_CP_REG_DEFINE(PMINTENSET,       15,   0,   9,  14,   1,   1, RW, RW_FNS(c9_pminten))             // Performance monitor control interrupt enable set
+    ARM32_CP_REG_DEFINE(PMINTENCLR,       15,   0,   9,  14,   2,   1, RW, RW_FNS(c9_pmintclr))            // Performance monitor control interrupt enable clear
 };
 
 static ARMCPRegInfo feature_pre_v7_registers[] = {
