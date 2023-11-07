@@ -282,56 +282,19 @@ static inline void set_c7_ats1cuw(CPUState *env, uint64_t val)
 }
 WRITE_FUNCTION(64, c7_ats1cuw, set_c7_ats1cuw(env, value))
 
-static inline void set_c9_pmcr(CPUState *env, uint64_t val)
-{
-    /* only the DP, X, D and E bits are writable */
-    env->cp15.c9_pmcr &= ~0x39;
-    env->cp15.c9_pmcr |= (val & 0x39);
-}
+// Declarations of PMU (Performance Monitoring Unit)-related functions. Their impl. is in "pmu.c"
+RW_FUNCTIONS(64, c9_pmcntenset, env->cp15.c9_pmcnten, set_c9_pmcntenset(env, value))
+RW_FUNCTIONS(64, c9_pmcntenclr, env->cp15.c9_pmcnten, set_c9_pmcntenclr(env, value))
 RW_FUNCTIONS(64, c9_pmcr, env->cp15.c9_pmcr, set_c9_pmcr(env, value))
-
-static inline void set_c9_pmcnten(CPUState *env, uint64_t val)
-{
-    val &= (1 << 31);
-    env->cp15.c9_pmcnten |= val;
-}
-RW_FUNCTIONS(64, c9_pmcnten, env->cp15.c9_pmcnten, set_c9_pmcnten(env, value))
-
-static inline void set_c9_pmcntclr(CPUState *env, uint64_t val)
-{
-    val &= (1 << 31);
-    env->cp15.c9_pmcnten &= ~val;
-}
-RW_FUNCTIONS(64, c9_pmcntclr, env->cp15.c9_pmcnten, set_c9_pmcntclr(env, value))
-
-static inline void set_c9_pmovsr(CPUState *env, uint64_t val)
-{
-    env->cp15.c9_pmovsr &= ~val;
-}
 RW_FUNCTIONS(64, c9_pmovsr, env->cp15.c9_pmovsr, set_c9_pmovsr(env, value))
-
-static inline void set_c9_pmuserenr(CPUState *env, uint64_t val)
-{
-    env->cp15.c9_pmuserenr = val & 1;
-    /* changes access rights for cp registers, so flush tbs */
-    tb_flush(env);
-}
 RW_FUNCTIONS(64, c9_pmuserenr, env->cp15.c9_pmuserenr, set_c9_pmuserenr(env, value))
-
-static inline void set_c9_pminten(CPUState *env, uint64_t val)
-{
-    /* We have no event counters so only the C bit can be changed */
-    val &= (1 << 31);
-    env->cp15.c9_pminten |= val;
-}
-RW_FUNCTIONS(64, c9_pminten, env->cp15.c9_pminten, set_c9_pminten(env, value))
-
-static inline void set_c9_pmintclr(CPUState *env, uint64_t val)
-{
-    val &= (1 << 31);
-    env->cp15.c9_pminten &= ~val;
-}
-RW_FUNCTIONS(64, c9_pmintclr, env->cp15.c9_pminten, set_c9_pmintclr(env, value))
+RW_FUNCTIONS(64, c9_pmintenset, env->cp15.c9_pminten, set_c9_pmintenset(env, value))
+RW_FUNCTIONS(64, c9_pmintenclr, env->cp15.c9_pminten, set_c9_pmintenclr(env, value))
+READ_FUNCTION(64, c9_pmccntr, get_c9_pmccntr(env))
+RW_FUNCTIONS(64, c9_pmselr, env->pmu.selected_counter_id, set_c9_pmselr(env, value))
+RW_FUNCTIONS(64, c9_pmxevtyper, env->cp15.c9_pmxevtyper, set_c9_pmxevtyper(env, value))
+RW_FUNCTIONS(64, c9_pmxevcntr, get_c9_pmxevcntr(env), set_c9_pmxevcntr(env, value))
+WRITE_FUNCTION(64, c9_pmswinc, set_c9_pmswinc(env, value))
 
 static inline void set_c1_sctlr(CPUState *env, uint64_t val)
 {
@@ -431,8 +394,6 @@ RW_FUNCTIONS(64, read_cp15_write_ignore, tlib_read_cp15_32(encode_as_aarch32_32b
 WRITE_FUNCTION(64, write_cp15, tlib_write_cp15_32(encode_as_aarch32_32bit_register(info), value))
 RW_FUNCTIONS(64, read_write_cp15, tlib_read_cp15_32(encode_as_aarch32_32bit_register(info)),
              tlib_write_cp15_32(encode_as_aarch32_32bit_register(info), value))
-
-RW_FUNCTIONS(64, c9_pmxevtyper, env->cp15.c9_pmxevtyper, env->cp15.c9_pmxevtyper = value & 0xff)
 
 static inline uint64_t get_c9_l2auxcctrl(CPUState *env)
 {
@@ -640,24 +601,27 @@ static ARMCPRegInfo feature_v7_registers[] = {
     ARM32_CP_REG_DEFINE(CP15WFIprev7,     15,   0,   7,   0,   4,   1, WO | ARM_CP_NOP)                    // Wait For Interrupt pre-v7, now NOP
 
     // Performance Monitor Extensions
-    ARM32_CP_REG_DEFINE(PMCR,             15,   0,   9,  12,   0,   0, RW, RW_FNS(c9_pmcr))                // Performance monitor control register
-    ARM32_CP_REG_DEFINE(PMCNTENSET,       15,   0,   9,  12,   1,   0, RW, RW_FNS(c9_pmcnten))             // Performance monitor Count enable set register
-    ARM32_CP_REG_DEFINE(PMCNTENCLR,       15,   0,   9,  12,   2,   0, RW, RW_FNS(c9_pmcntclr))            // Performance monitor Count enable clear
-    ARM32_CP_REG_DEFINE(PMOVSR,           15,   0,   9,  12,   3,   0, RW, RW_FNS(c9_pmovsr))              // Performance monitor Overflow flag status
-    ARM32_CP_REG_DEFINE(PMSWINC,          15,   0,   9,  12,   4,   0, WO, WRITEFN(write_cp15))            // Performance monitor software increment /* RAZ/WI since we don't implement the software-count event */
-
-    /* Since we don't implement any events, writing to this register
-     * is actually UNPREDICTABLE. So we choose to RAZ/WI.
+    /* We force TB end on some of these registers, even on reads
+     * The reason is that PMU can be used to count instructions and it takes instruction count value from the TB header (block_header_arch_action)
+     * So we do this to increase the precision of the counters
      */
-    ARM32_CP_REG_DEFINE(PMSELR,           15,   0,   9,  12,   5,   0, RW, RW_FNS(read_cp15_write_ignore)) // Performance monitor event counter selection register
+    ARM32_CP_REG_DEFINE(PMCR,             15,   0,   9,  12,   0,   0, RW | ARM_CP_FORCE_TB_END, RW_FNS(c9_pmcr))       // Performance monitor control register
+    ARM32_CP_REG_DEFINE(PMCNTENSET,       15,   0,   9,  12,   1,   0, RW | ARM_CP_FORCE_TB_END, RW_FNS(c9_pmcntenset)) // Performance monitor Count enable set register
+    ARM32_CP_REG_DEFINE(PMCNTENCLR,       15,   0,   9,  12,   2,   0, RW | ARM_CP_FORCE_TB_END, RW_FNS(c9_pmcntenclr)) // Performance monitor Count enable clear
+    ARM32_CP_REG_DEFINE(PMOVSR,           15,   0,   9,  12,   3,   0, RW, RW_FNS(c9_pmovsr))                           // Performance monitor Overflow flag status
+    ARM32_CP_REG_DEFINE(PMSWINC,          15,   0,   9,  12,   4,   0, WO, WRITEFN(c9_pmswinc))                         // Performance monitor software increment
 
-    ARM32_CP_REG_DEFINE(PMCCNTR,          15,   0,   9,  13,   0,   0, RW, RW_FNS(read_write_cp15))        // Cycle count register
-    ARM32_CP_REG_DEFINE(PMXEVTYPER,       15,   0,   9,  13,   1,   0, RW, RW_FNS(c9_pmxevtyper))          // Event type select
-    ARM32_CP_REG_DEFINE(PMXEVCNTR,        15,   0,   9,  13,   2,   0, RW, RW_FNS(read_write_cp15))        // Event count register
+    ARM32_CP_REG_DEFINE(PMSELR,           15,   0,   9,  12,   5,   0, RW, RW_FNS(c9_pmselr))                           // Performance monitor event counter selection register
+    ARM32_CP_REG_DEFINE(PMCEID0,          15,   0,   9,  12,   6,   0, RO, FIELD(cp15.c9_pmceid0))                      // Performance Monitors Common Event ID registers 0
+    ARM32_CP_REG_DEFINE(PMCEID1,          15,   0,   9,  12,   7,   0, RO | CONST(0))                                   // Performance Monitors Common Event ID registers 1
 
-    ARM32_CP_REG_DEFINE(PMUSERENR,        15,   0,   9,  14,   0,   0, RW, RW_FNS(c9_pmuserenr))           // Performance monitor control user enable
-    ARM32_CP_REG_DEFINE(PMINTENSET,       15,   0,   9,  14,   1,   1, RW, RW_FNS(c9_pminten))             // Performance monitor control interrupt enable set
-    ARM32_CP_REG_DEFINE(PMINTENCLR,       15,   0,   9,  14,   2,   1, RW, RW_FNS(c9_pmintclr))            // Performance monitor control interrupt enable clear
+    ARM32_CP_REG_DEFINE(PMCCNTR,          15,   0,   9,  13,   0,   0, RO | ARM_CP_FORCE_TB_END, READFN(c9_pmccntr))    // Cycle counter register
+    ARM32_CP_REG_DEFINE(PMXEVTYPER,       15,   0,   9,  13,   1,   0, RW | ARM_CP_FORCE_TB_END, RW_FNS(c9_pmxevtyper)) // Event type select
+    ARM32_CP_REG_DEFINE(PMXEVCNTR,        15,   0,   9,  13,   2,   0, RW | ARM_CP_FORCE_TB_END, RW_FNS(c9_pmxevcntr))  // Event counter value get/set
+
+    ARM32_CP_REG_DEFINE(PMUSERENR,        15,   0,   9,  14,   0,   0, RW, RW_FNS(c9_pmuserenr))                        // Performance monitor control user access enable
+    ARM32_CP_REG_DEFINE(PMINTENSET,       15,   0,   9,  14,   1,   1, RW, RW_FNS(c9_pmintenset))                       // Performance monitor control interrupt enable set
+    ARM32_CP_REG_DEFINE(PMINTENCLR,       15,   0,   9,  14,   2,   1, RW, RW_FNS(c9_pmintenclr))                       // Performance monitor control interrupt enable clear
 };
 
 static ARMCPRegInfo feature_pre_v7_registers[] = {

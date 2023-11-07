@@ -21,5 +21,6 @@ uint32_t tlib_is_wfi_as_nop(void);
 uint32_t tlib_is_wfe_and_sev_as_nop(void);
 uint32_t tlib_do_semihosting(void);
 void tlib_set_system_event(int32_t value);
+void tlib_report_pmu_overflow(int32_t counter);
 
 #endif

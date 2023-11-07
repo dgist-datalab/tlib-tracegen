@@ -164,12 +164,12 @@ void HELPER(tlb_flush)(CPUState* env)
 }
 
 __attribute__((weak))
-void block_header_arch_action()
+void block_header_arch_action(uint32_t icount)
 {
     // It will be overriden by arch-specific actions
 }
 
-void HELPER(block_header_arch_trampoline)()
+void HELPER(block_header_arch_trampoline)(uint32_t icount)
 {
-    block_header_arch_action();
+    block_header_arch_action(icount);
 }

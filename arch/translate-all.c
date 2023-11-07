@@ -104,7 +104,14 @@ static inline void gen_block_header(TranslationBlock *tb)
 #if defined(TARGET_ARM) && !defined(TARGET_PROTO_ARM_M)
     // It's important that the trampoline occurs after all actions in the header are generated
     // PMU counters in Arm depend on it
-    gen_helper_block_header_arch_trampoline();
+    TCGv_i64 icount = tcg_temp_new_i64();
+    tb_pointer = tcg_const_ptr((tcg_target_long)tb);
+
+    tcg_gen_ld32u_i64(icount, tb_pointer, offsetof(TranslationBlock, icount));
+    gen_helper_block_header_arch_trampoline(icount);
+
+    tcg_temp_free_ptr(tb_pointer);
+    tcg_temp_free_i64(icount);
 #endif
 }
 

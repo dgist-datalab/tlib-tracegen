@@ -488,4 +488,6 @@ DEF_HELPER_3(set_cp_reg64, void, env, ptr, i64)
 DEF_HELPER_2(get_cp_reg, i32, env, ptr)
 DEF_HELPER_2(get_cp_reg64, i64, env, ptr)
 
+DEF_HELPER_3(pmu_update_event_counters, void, env, int, i32)
+
 #include "def-helper.h"

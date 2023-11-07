@@ -162,6 +162,20 @@ void tlib_register_tcm_region(uint32_t address, uint64_t size, uint64_t index)
 
 EXC_VOID_3(tlib_register_tcm_region, uint32_t, address, uint64_t, size, uint64_t, index)
 
+void tlib_update_pmu_counters(int event_id, uint32_t amount)
+{
+    helper_pmu_update_event_counters(cpu, event_id, amount);
+}
+
+EXC_VOID_2(tlib_update_pmu_counters, int, event_id, uint32_t, amount);
+
+void tlib_pmu_set_debug(uint32_t debug)
+{
+    env->pmu.extra_logs_enabled = debug != 0;
+}
+
+EXC_VOID_1(tlib_pmu_set_debug, uint32_t, debug)
+
 #ifdef TARGET_PROTO_ARM_M
 
 void tlib_set_interrupt_vector_base(uint32_t address)

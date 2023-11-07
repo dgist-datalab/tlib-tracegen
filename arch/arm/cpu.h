@@ -24,6 +24,7 @@
 #include "cpu-defs.h"
 #include "bit_helper.h" // extract32
 #include "ttable.h"
+#include "pmu.h"
 
 #include "softfloat.h"
 #include "arch_callbacks.h"
@@ -184,7 +185,7 @@ typedef struct CPUState {
 
     /* System control coprocessor (cp15) */
     struct {
-        uint32_t c0_cpuid;
+        uint32_t c0_cpuid;       /* Sometimes known as MIDR - Main ID Register */
         uint32_t c0_cachetype;
         uint32_t c0_tcmtype;     /* TCM type. */
         uint32_t c0_ccsid[16];   /* Cache size.  */
@@ -225,6 +226,7 @@ typedef struct CPUState {
         uint32_t c9_pmxevtyper;  /* perf monitor event type */
         uint32_t c9_pmuserenr;   /* perf monitor user enable */
         uint32_t c9_pminten;     /* perf monitor interrupt enables */
+        uint32_t c9_pmceid0;     /* perf monitor supported events */
         uint32_t c12_vbar;       /* vector base address register, security extensions*/
         uint32_t c13_fcse;       /* FCSE PID.  */
         uint32_t c13_context;    /* Context ID.  */
@@ -237,6 +239,29 @@ typedef struct CPUState {
         uint32_t c15_i_min;      /* Minimum D-cache dirty line index.  */
         uint32_t c15_threadid;   /* TI debugger thread-ID.  */
     } cp15;
+
+    struct {
+        bool counters_enabled;                /* Are PMU counters enabled? (E bit in PMCR) */
+        uint16_t counters_number;             /* Number of PM counters available for the current SoC */
+
+        uint32_t cycles_divisor;
+        uint32_t cycles_remainder;            /* Cycles remainder if we use divisor */
+
+        int selected_counter_id;              /* Currently selected PMU counter */
+
+        pmu_event implemented_events[PMU_EVENTS_NUMBER];       /* Supported PMU events */
+        pmu_counter counters[PMU_MAX_PROGRAMMABLE_COUNTERS];   /* Individual PMU counter values */
+
+        pmu_counter cycle_counter;                       /* Cycle counter - special case, since it has it's own fields all over the place, and is reset via Control Register */
+
+        // These are used to optimize calling PMU
+        // Touch them with extra caution
+        int is_any_overflow_interrupt_enabled;           /* Have we enabled any overflow interrupt? */
+        uint32_t cycles_overflow_nearest_limit;          /* How many instructions left to cycles counting overflow */
+        uint32_t insns_overflow_nearest_limit;           /* How many instructions left to instructions counting overflow */
+
+        bool extra_logs_enabled;
+    } pmu;
 
 #ifdef TARGET_PROTO_ARM_M
     struct {

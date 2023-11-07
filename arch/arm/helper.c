@@ -448,6 +448,8 @@ void cpu_reset(CPUState *env)
     set_float_detect_tininess(float_tininess_before_rounding, &env->vfp.standard_fp_status);
 
     system_instructions_and_registers_reset(env);
+
+    pmu_init_reset(env);
 }
 
 int cpu_init(const char *cpu_model)
@@ -2714,6 +2716,11 @@ invalid:
     return 0;
 }
 #endif
+
+void block_header_arch_action(uint32_t icount)
+{
+    pmu_count_instructions_cycles(icount);
+}
 
 void tlib_arch_dispose()
 {
