@@ -230,6 +230,7 @@ enum {
     OPC_RISC_LBU = OPC_RISC_LOAD | (0x4 << 12),
     OPC_RISC_LHU = OPC_RISC_LOAD | (0x5 << 12),
     OPC_RISC_LWU = OPC_RISC_LOAD | (0x6 << 12),
+    OPC_RISC_LDU = OPC_RISC_LOAD | (0x7 << 12),
 };
 
 #define MASK_OP_STORE(op) (MASK_OP_MAJOR(op) | (op & (0x7 << 12)))
