@@ -5173,7 +5173,12 @@ static void decode_RV32_64G(CPUState *env, DisasContext *dc)
         gen_branch(env, dc, MASK_OP_BRANCH(dc->opcode), rs1, rs2, GET_B_IMM(dc->opcode));
         break;
     case OPC_RISC_LOAD:
-        gen_load(dc, MASK_OP_LOAD(dc->opcode), rd, rs1, imm);
+        /* Illegal, RV128I is not supported yet */
+        if (MASK_OP_LOAD(dc->opcode) == OPC_RISC_LDU) {
+            kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+        } else {
+            gen_load(dc, MASK_OP_LOAD(dc->opcode), rd, rs1, imm);
+        }
         break;
     case OPC_RISC_STORE:
         gen_store(dc, MASK_OP_STORE(dc->opcode), rs1, rs2, GET_STORE_IMM(dc->opcode));
