@@ -5296,8 +5296,10 @@ static int disas_insn(CPUState *env, DisasContext *dc)
     if (instruction_length == 0 || instruction_length > 4) {
         tlib_printf(LOG_LEVEL_ERROR, "Unsupported instruction length: %d bits. PC: 0x%llx, opcode: 0x%0*llx", 
                     8 * instruction_length , dc->base.pc,  /* padding */ 2 * instruction_length, format_opcode(dc->opcode, instruction_length));
-        return 0;
     }
+    // Default to 32-bit if encountered an instruction of unsupported length.
+    // Allow for an exception to be raised while decoding.
+    instruction_length = instruction_length == 2 ? 2 : 4;
 
     int is_compressed = instruction_length == 2;
     if (is_compressed && !ensure_extension(dc, RISCV_FEATURE_RVC)) {
