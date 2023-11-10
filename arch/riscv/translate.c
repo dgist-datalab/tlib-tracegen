@@ -4937,6 +4937,7 @@ static void decode_RV32_64C1(CPUState *env, DisasContext *dc)
     uint8_t rd_rs1 = GET_C_RS1(dc->opcode);
     uint8_t rs1s, rs2s;
     uint8_t funct2;
+    target_long imm;
 
     switch (funct3) {
     case 0:
@@ -4946,7 +4947,11 @@ static void decode_RV32_64C1(CPUState *env, DisasContext *dc)
     case 1:
 #if defined(TARGET_RISCV64)
         /* C.ADDIW (RV64/128) -> addiw rd, rd, imm[5:0]*/
-        gen_arith_imm(dc, OPC_RISC_ADDIW, rd_rs1, rd_rs1, GET_C_IMM(dc->opcode));
+        if (!rd_rs1) { /* ISA V20191213: Reserved when rd == 0 */
+            kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+        } else {
+            gen_arith_imm(dc, OPC_RISC_ADDIW, rd_rs1, rd_rs1, GET_C_IMM(dc->opcode));
+        }
 #else
         /* C.JAL(RV32) -> jal x1, offset[11:1] */
         gen_jal(env, dc, 1, GET_C_J_IMM(dc->opcode));
@@ -4958,11 +4963,21 @@ static void decode_RV32_64C1(CPUState *env, DisasContext *dc)
         break;
     case 3:
         if (rd_rs1 == 2) {
+            imm = GET_C_ADDI16SP_IMM(dc->opcode);
             /* C.ADDI16SP -> addi x2, x2, nzimm[9:4]*/
-            gen_arith_imm(dc, OPC_RISC_ADDI, 2, 2, GET_C_ADDI16SP_IMM(dc->opcode));
+            if (!imm) { /* ISA V20191213: Reserved when nzimm == 0 */
+                kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+            } else {
+                gen_arith_imm(dc, OPC_RISC_ADDI, 2, 2, imm);
+            }
         } else if (rd_rs1 != 0) {
+            imm = GET_C_IMM(dc->opcode);
             /* C.LUI (rs1/rd =/= {0,2}) -> lui rd, nzimm[17:12]*/
-            get_set_gpr_imm(rd_rs1, GET_C_IMM(dc->opcode) << 12);
+            if (!imm) { /* ISA V20191213: Reserved when nzimm == 0 */
+                kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+            } else {
+                get_set_gpr_imm(rd_rs1, imm << 12);
+            }
         }
         break;
     case 4:
@@ -5054,11 +5069,19 @@ static void decode_RV32_64C2(CPUState *env, DisasContext *dc)
         gen_fp_load(dc, OPC_RISC_FLD, rd, 2, GET_C_LDSP_IMM(dc->opcode));
         break;
     case 2: /* C.LWSP -> lw rd, offset[7:2](x2) */
-        gen_load(dc, OPC_RISC_LW, rd, 2, GET_C_LWSP_IMM(dc->opcode));
+        if (!rd) { /* ISA V20191213: Reserved when rd == 0 */
+            kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+        } else {
+            gen_load(dc, OPC_RISC_LW, rd, 2, GET_C_LWSP_IMM(dc->opcode));
+        }
         break;
     case 3:
 #if defined(TARGET_RISCV64)
         /* C.LDSP(RVC64) -> ld rd, offset[8:3](x2) */
+        if (!rd) { /* ISA V20191213: Reserved when rd == 0 */
+            kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+            break;
+        }
         gen_load(dc, OPC_RISC_LD, rd, 2, GET_C_LDSP_IMM(dc->opcode));
 #else
         /* C.FLWSP(RV32FC) -> flw rd, offset[7:2](x2) */
@@ -5071,7 +5094,11 @@ static void decode_RV32_64C2(CPUState *env, DisasContext *dc)
         if (extract32(dc->opcode, 12, 1) == 0) {
             if (rs2 == 0) {
                 /* C.JR -> jalr x0, rs1, 0*/
-                gen_jalr(env, dc, OPC_RISC_JALR, 0, rd, 0);
+                if (!rd) {/* ISA V20191213: Reserved when rd == 0 */
+                    kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
+                } else {
+                    gen_jalr(env, dc, OPC_RISC_JALR, 0, rd, 0);
+                }
             } else {
                 /* C.MV -> add rd, x0, rs2 */
                 gen_arith(dc, OPC_RISC_ADD, rd, 0, rs2);
