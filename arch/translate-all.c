@@ -100,6 +100,12 @@ static inline void gen_block_header(TranslationBlock *tb)
     }
 
     gen_update_instructions_count(tb);
+
+#if defined(TARGET_ARM) && !defined(TARGET_PROTO_ARM_M)
+    // It's important that the trampoline occurs after all actions in the header are generated
+    // PMU counters in Arm depend on it
+    gen_helper_block_header_arch_trampoline();
+#endif
 }
 
 static void gen_block_finished_hook(TranslationBlock *tb, uint32_t instructions_count)

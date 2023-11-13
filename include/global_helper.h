@@ -25,4 +25,6 @@ DEF_HELPER_2(reserve_address_always, void, env, uintptr)
 DEF_HELPER_2(check_address_reservation_always, tl, env, uintptr)
 DEF_HELPER_1(cancel_reservation_always, void, env)
 
+DEF_HELPER_0(block_header_arch_trampoline, void)
+
 #include "def-helper.h"

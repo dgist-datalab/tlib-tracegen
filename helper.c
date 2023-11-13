@@ -162,3 +162,14 @@ void HELPER(tlb_flush)(CPUState* env)
 {
      tlb_flush(env, 1, true);
 }
+
+__attribute__((weak))
+void block_header_arch_action()
+{
+    // It will be overriden by arch-specific actions
+}
+
+void HELPER(block_header_arch_trampoline)()
+{
+    block_header_arch_action();
+}
