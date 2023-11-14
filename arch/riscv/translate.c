@@ -5333,6 +5333,9 @@ static int disas_insn(CPUState *env, DisasContext *dc)
         return 0;
     }
 
+    // Clear upper bits, leaves only the instruction to be decoded.
+    dc->opcode = extract64(dc->opcode, 0, instruction_length * 8);
+
     /* check for compressed insn */
     dc->npc = dc->base.pc + instruction_length;
 
