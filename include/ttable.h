@@ -28,6 +28,7 @@ typedef struct
  */
 typedef int TTableEntryCompareFn(TTable_entry entry, const void *value);
 typedef void TTableEntryRemoveCallback(TTable_entry *entry);
+typedef bool ValuesArrayTrySetEntryFn(void **array_entry, void *value);
 
 typedef struct
 {
@@ -94,6 +95,30 @@ static inline TTable *ttable_create(uint32_t entries_max, TTableEntryRemoveCallb
     ttable->size = entries_max;
     ttable->sorted = false;
     return ttable;
+}
+
+/*
+ * Returns entries count.
+ */
+static inline uint32_t ttable_create_values_array(TTable *ttable, void ***array_pointer, ValuesArrayTrySetEntryFn *try_set_array_entry)
+{
+    tlib_assert(array_pointer != NULL && ttable != NULL);
+
+    if (ttable->count == 0) {
+        return 0;
+    }
+
+    *array_pointer = tlib_malloc(sizeof(ttable->entries->value) * ttable->count);
+
+    int i, array_index = 0;
+    for (i = 0; i < ttable->count; i++) {
+        void **array_entry = &(*array_pointer)[array_index];
+        bool selected = try_set_array_entry(array_entry, ttable->entries[i].value);
+        if (selected) {
+            array_index++;
+        }
+    }
+    return array_index;
 }
 
 /* Inserting many entries to the sorted TTable will be painfully slow, as it will sort automatically after each insert.
