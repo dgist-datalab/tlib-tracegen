@@ -225,6 +225,13 @@ static void cp_reg_add_with_key(CPUState *env, TTable *cp_regs, uint32_t *key, A
     }
 }
 
+static inline bool is_system_register(ARMCPRegInfo *reg_info)
+{
+    tlib_assert(reg_info != NULL);
+    bool is_system_instruction = reg_info->type & ARM_CP_INSTRUCTION;
+    return !is_system_instruction;
+}
+
 static inline void log_unhandled_sysreg_access(const char *sysreg_name, bool is_write)
 {
     // %-6s is used to have sysreg names aligned for both reads and writes.
@@ -240,6 +247,19 @@ static inline void log_unhandled_sysreg_read(const char *sysreg_name)
 static inline void log_unhandled_sysreg_write(const char *sysreg_name)
 {
     log_unhandled_sysreg_access(sysreg_name, true);
+}
+
+static inline bool try_set_array_entry_to_system_register_name(void **array_entry, void *value)
+{
+    tlib_assert(value != NULL && array_entry != NULL);
+    ARMCPRegInfo *reg_info = (ARMCPRegInfo *)value;
+
+    // The value can be a system instruction and should be excluded.
+    if (is_system_register(reg_info)) {
+        *array_entry = (void*)reg_info->name;
+        return true;
+    }
+    return false;
 }
 
 // ARM Architecture Reference Manual ARMv7A and ARMv7-R (A8.6.92)
