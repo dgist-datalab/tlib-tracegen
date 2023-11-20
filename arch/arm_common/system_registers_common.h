@@ -261,4 +261,97 @@ static inline uint32_t encode_as_aarch32_32bit_register(const ARMCPRegInfo *info
         (info->crm << CP_REG_ARM32_32BIT_SYSREG_CRM_SHIFT);
 }
 
+/* Functions for accessing system registers by their names. */
+
+static inline uint64_t *sysreg_field_ptr(CPUState *env, const ARMCPRegInfo *ri)
+{
+    // Fieldoffset is in bytes hence 'env' is cast to 'uint8_t' before the addition.
+    return (uint64_t *)(((uint8_t *)env) + ri->fieldoffset);
+}
+
+static int ttable_compare_sysreg_name(TTable_entry entry, const void *sysreg_name)
+{
+    ARMCPRegInfo *ri = (ARMCPRegInfo *)entry.value;
+    return strcasecmp(ri->name, sysreg_name);
+}
+
+const char *sysreg_patch_lookup_name(CPUState *env, const char *name);
+static const ARMCPRegInfo *sysreg_find_by_name(CPUState *env, const char *name)
+{
+    const char *lookup_name = sysreg_patch_lookup_name(env, name);
+
+#ifdef TARGET_ARM64
+    TTable *cp_regs = env->arm_core_config->cp_regs;
+#else
+    TTable *cp_regs = env->cp_regs;
+#endif
+
+    TTable_entry *entry = ttable_lookup_custom(cp_regs, ttable_compare_sysreg_name, lookup_name);
+    if (entry != NULL) {
+        return (ARMCPRegInfo *)entry->value;
+    }
+    return NULL;
+}
+
+static void sysreg_access_nzcv()
+{
+    // For now let's just inform that it can be handled through PSTATE.
+    tlib_printf(LOG_LEVEL_INFO, "Use '<cpu_name> PSTATE' to access NZCV.");
+}
+
+static inline uint64_t sysreg_get_by_name(CPUState *env, const char *name)
+{
+    const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
+    if (ri == NULL) {
+        tlib_printf(LOG_LEVEL_WARNING, "Reading from system register failure. No such register: %s", name);
+        return 0x0;
+    }
+
+    if (ri->type & ARM_CP_NZCV) {
+        sysreg_access_nzcv();
+        return 0x0;
+    }
+
+    if (ri->type & ARM_CP_CONST) {
+        return ri->resetvalue;
+    } else if (ri->readfn) {
+        return ri->readfn(env, ri);
+    } else if (ri->fieldoffset != 0) {
+        if (ri->type & ARM_CP_64BIT) {
+            return *sysreg_field_ptr(env, ri);
+        } else {
+            return *(uint32_t *)sysreg_field_ptr(env, ri);
+        }
+    } else {
+        log_unhandled_sysreg_read(ri->name);
+        return 0x0;
+    }
+}
+
+static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t value)
+{
+    const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
+    if (ri == NULL) {
+        tlib_printf(LOG_LEVEL_WARNING, "Writing to system register failure. No such register: %s", name);
+        return;
+    }
+
+    if (ri->type & ARM_CP_NZCV) {
+        sysreg_access_nzcv();
+    }
+
+    if (ri->writefn) {
+        ri->writefn(env, ri, value);
+    } else if (ri->fieldoffset != 0) {
+        if (ri->type & ARM_CP_64BIT) {
+            *sysreg_field_ptr(env, ri) = value;
+        } else {
+            *(uint32_t *)sysreg_field_ptr(env, ri) = (uint32_t)value;
+        }
+    } else {
+        log_unhandled_sysreg_write(ri->name);
+        return;
+    }
+}
+
 #endif
