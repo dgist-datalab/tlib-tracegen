@@ -6630,7 +6630,7 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
         }
 
         /* I/O operations must end the TB here (whether read or write) */
-        need_exit_tb = (ri->type & ARM_CP_IO);
+        need_exit_tb = (ri->type & ARM_CP_IO) || (ri->type & ARM_CP_FORCE_TB_END);
 
         if (!isread && !(ri->type & ARM_CP_SUPPRESS_TB_END)) {
             /*

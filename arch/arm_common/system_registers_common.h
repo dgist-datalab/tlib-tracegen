@@ -34,9 +34,10 @@
 #define ARM_CP_TLB_FLUSH       (1 << 18)  // TLB will be flushed after writing such a register
 // TODO: Implement gen_helper_rebuild_hflags_a32_newel() for handling ARM_CP_NEWEL
 #define ARM_CP_NEWEL           (1 << 19)  // Write can change EL
+#define ARM_CP_FORCE_TB_END    (1 << 20)  // Force end of TB, even if the register is only read from
 
 // Minimum EL access
-#define ARM_CP_EL_SHIFT        20
+#define ARM_CP_EL_SHIFT        21
 #define ARM_CP_EL_MASK         (3 << ARM_CP_EL_SHIFT)
 #define ARM_CP_EL_0            (0 << ARM_CP_EL_SHIFT)
 #define ARM_CP_EL_1            (1 << ARM_CP_EL_SHIFT)
