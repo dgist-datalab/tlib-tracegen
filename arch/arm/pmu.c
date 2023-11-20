@@ -217,12 +217,19 @@ void set_c9_pmcr(struct CPUState *env, uint64_t val)
 
         // After enable we need to obtain nearest limit again
         pmu_recalculate_cycles_instruction_limit();
+
+        // We inject code into block header to count instructions
+        // This can be costly, so do it only when PMU is active
+        env->has_block_header_arch_trampoline = true;
     } else if (((val & (1 << 0)) == 0) && env->pmu.counters_enabled) {
         if (unlikely(env->pmu.extra_logs_enabled)) {
             tlib_printf(LOG_LEVEL_DEBUG, "Disabling PMU");
         }
         pmu_recalculate_all_lazy();
         env->pmu.counters_enabled = false;
+
+        // No need to recalculate limit, we will return if PMU is disabled
+        env->has_block_header_arch_trampoline = false;
     }
 
     // P (Reset Counters - except cycle counter) bit

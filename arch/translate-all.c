@@ -38,6 +38,9 @@ extern CPUState *cpu;
 
 static int exit_no_hook_label;
 static int block_header_interrupted_label;
+#if defined(TARGET_ARM) && !defined(TARGET_PROTO_ARM_M)
+static int block_header_ignore_arch_trampoline_label;
+#endif
 
 CPUBreakpoint *process_breakpoints(CPUState *env, target_ulong pc)
 {
@@ -104,6 +107,14 @@ static inline void gen_block_header(TranslationBlock *tb)
 #if defined(TARGET_ARM) && !defined(TARGET_PROTO_ARM_M)
     // It's important that the trampoline occurs after all actions in the header are generated
     // PMU counters in Arm depend on it
+
+    // Let's save a costly function call by branching forward if the lib has the header trampoline disabled at runtime
+    block_header_ignore_arch_trampoline_label = gen_new_label();
+    TCGv_i32 tmp32 = tcg_temp_new_i64();
+    tcg_gen_ld_i32(tmp32, cpu_env, offsetof(CPUState, has_block_header_arch_trampoline));
+    tcg_gen_brcondi_i32(TCG_COND_EQ, tmp32, false, block_header_ignore_arch_trampoline_label);
+    tcg_temp_free_i32(tmp32);
+
     TCGv_i64 icount = tcg_temp_new_i64();
     tb_pointer = tcg_const_ptr((tcg_target_long)tb);
 
@@ -112,6 +123,8 @@ static inline void gen_block_header(TranslationBlock *tb)
 
     tcg_temp_free_ptr(tb_pointer);
     tcg_temp_free_i64(icount);
+
+    gen_set_label(block_header_ignore_arch_trampoline_label);
 #endif
 }
 

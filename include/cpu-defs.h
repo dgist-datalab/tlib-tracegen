@@ -175,6 +175,7 @@ typedef struct ExtMmuRange
     uint32_t instructions_count_limit;                                        \
     uint32_t instructions_count_value;                                        \
     uint64_t instructions_count_total_value;                                  \
+    uint32_t has_block_header_arch_trampoline;                                \
     /* soft mmu support */                                                    \
     /* in order to avoid passing too many arguments to the MMIO \
        helpers, we store some rarely used information in the CPU \
