@@ -177,18 +177,6 @@ void tlib_pmu_set_debug(uint32_t debug)
 
 EXC_VOID_1(tlib_pmu_set_debug, uint32_t, debug)
 
-uint64_t tlib_get_system_register(const char *name)
-{
-    return sysreg_get_by_name(cpu, name);
-}
-EXC_INT_1(uint64_t, tlib_get_system_register, const char *, name)
-
-void tlib_set_system_register(const char *name, uint64_t value)
-{
-    sysreg_set_by_name(cpu, name, value);
-}
-EXC_VOID_2(tlib_set_system_register, const char *, name, uint64_t, value)
-
 #ifdef TARGET_PROTO_ARM_M
 
 void tlib_set_interrupt_vector_base(uint32_t address)
