@@ -21,7 +21,7 @@
 #include "cpu.h"
 #include "system_registers_arm.h"
 #include "../../unwind.h"
-#include "../arm_common/tightly_coupled_memory.h"
+#include "tightly_coupled_memory.h"
 #include "bit_helper.h"
 #include "host-utils.h"
 

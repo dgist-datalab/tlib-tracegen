@@ -8,7 +8,7 @@
 #define ARCH_EXPORTS_H_
 
 #include <stdint.h>
-#include "../arm_common/arch_exports_common.h"
+#include "arch_exports_common.h"
 
 uint32_t tlib_has_el3();
 

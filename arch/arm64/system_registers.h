@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include "cpu.h"
-#include "../arm_common/system_registers_common.h"
+#include "system_registers_common.h"
 
 // This doesn't seem to be of any real use. It's passed to ENCODE_AA64_CP_REG in 'translate-a64.c:handle_sys'
 // as 'cp' so it seems to be a coprocessor ID. However, there's no information about coprocessor for AArch64

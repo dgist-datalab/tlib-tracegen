@@ -146,6 +146,11 @@ add_definitions (
     ${DEBUG_DEFS}
     )
 
+if("${TARGET_ACTUAL_ARCH}" STREQUAL "arm" OR "${TARGET_ACTUAL_ARCH}" STREQUAL "arm64")
+    file (GLOB SOURCES_ADDITIONAL "arch/arm_common/*.c")
+    set (HEADERS_ADDITIONAL "arch/arm_common")
+endif()
+
 include_directories (
     tcg
     fpu
@@ -153,6 +158,7 @@ include_directories (
     include_empty
     tcg/${HOST_ARCH}
     arch/${TARGET_ACTUAL_ARCH}
+    ${HEADERS_ADDITIONAL}
     )
 
 file (GLOB SOURCES
@@ -161,6 +167,7 @@ file (GLOB SOURCES
     "arch/*.c"
     "external/*.c"
     "arch/${TARGET_ACTUAL_ARCH}/*.c"
+    ${SOURCES_ADDITIONAL}
     )
 
 add_library (tlib SHARED ${SOURCES})

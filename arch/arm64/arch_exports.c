@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "cpu.h"
 #include "system_registers.h"
-#include "../arm_common/tightly_coupled_memory.h"
+#include "tightly_coupled_memory.h"
 #include "../../unwind.h"
 
 uint32_t tlib_check_system_register_access(const char *name, bool is_write)
