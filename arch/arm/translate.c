@@ -26,7 +26,7 @@
 #include <inttypes.h>
 
 #include "cpu.h"
-#include "../arm_common/system_registers_common.h"
+#include "system_registers_arm.h"
 #include "ttable.h"
 #include "bit_helper.h"
 

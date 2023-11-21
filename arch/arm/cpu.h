@@ -39,8 +39,6 @@
 #error "Target arch can be only 32-bit or 64-bit"
 #endif
 
-#include "system_registers_arm.h"
-
 #include "cpu_registers.h"
 
 #define EXCP_UDEF           1    /* undefined instruction */

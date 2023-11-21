@@ -7,6 +7,8 @@
 #ifndef SYSTEM_REGISTERS_COMMON_H_
 #define SYSTEM_REGISTERS_COMMON_H_
 
+#include "cpu.h"
+
 // Types of ARMCPRegInfo.
 // Each bit is a different type.
 #define ARM_CP_NOP             (1 << 0)

@@ -2,6 +2,7 @@
 #define ARCH_EXPORTS_H_
 
 #include <stdint.h>
+#include "../arm_common/arch_exports_common.h"
 
 uint32_t tlib_get_cpu_id(void);
 uint32_t tlib_get_it_state(void);

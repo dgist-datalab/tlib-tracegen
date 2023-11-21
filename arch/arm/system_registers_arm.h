@@ -7,6 +7,10 @@
 #ifndef SYSTEM_REGISTERS_ARM_H_
 #define SYSTEM_REGISTERS_ARM_H_
 
+#include <stdint.h>
+#include "cpu.h"
+#include "../arm_common/system_registers_common.h"
+
 /* To enable banking of coprocessor registers depending on ns-bit we
  * add a bit to distinguish between secure and non-secure cpregs in the
  * hashtable.
