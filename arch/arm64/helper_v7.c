@@ -477,7 +477,7 @@ enum mpu_result {
     OVERLAP,
 };
 
-static int pmsav8_mpu_find_matching_region(pmsav8_region *regions, target_ulong address, int num_regions, pmsav8_region *found_region)
+static enum mpu_result pmsav8_mpu_find_matching_region(pmsav8_region *regions, target_ulong address, int num_regions, pmsav8_region *found_region)
 {
     int found_region_index = find_first_matching_region_for_addr(regions, address, num_regions);
     if (found_region_index != -1) {
@@ -494,16 +494,80 @@ static int pmsav8_mpu_find_matching_region(pmsav8_region *regions, target_ulong 
     return FOUND;
 }
 
-/* All addresses are flat mapped -> (virtual address == physical address), all we do is figure out the access permissions and memory attributes.
-There is no distinction between reads from data/instruction fetch paths, hence the execute_never attribute.
-ACCESS_TYPE_READ and ACCESS_TYPE_INSN_FETCH are both cosidered reads access.
-There is no need to respect the cacheability and shareability settings - we handle it all as shareable and cacheable anyway,
-with all the necessary restrictions and precautions. */
+// Two-stage translation modeled after figures C1-2 and C1-3 from ARM ID110520, as well as the pseudocode from section H1.2.4
+// NOTE: We don't use the convention the pseudocode uses (first and second stage).
+//       Instead, we structure the code in a similar fashion to figures C1-2 and C1-3,
+//       i.e. we define an EL1 stage and EL2 stage, both of which are optional,
+//       though at least one always takes place, and EL1 always goes before EL2.
+static bool pmsav8_translate_stage(CPUState *env, target_ulong address, uint32_t current_el, uint32_t access_type,
+                                   int *out_fault_type, int *out_prot, bool use_el2_mpu)
+{
+    int mpu_el = use_el2_mpu ? 2 : 1;
+    tlib_assert(current_el <= mpu_el);
+    uint64_t sctlr = arm_sctlr_eff(env, mpu_el);
+    // The logic is broken for HCTLR.M == 0 and HSCTLR.BR == 0 in Figure C1-3 from Armv8 Manual Supplement for Armv8-R AArch32.
+    // It's contrary to section C1.3:
+    // "Each PMSAv8-32 MPU has an associated default memory map which is used when the MPU is not enabled.".
+    // The translation should fail with HSCTLR.BR == 0 only when the MPU is enabled and no MPU region was hit for the address.
+    if ((sctlr & SCTLR_M) == 0) {
+        goto default_mapping;
+    }
+
+    pmsav8_region *mpu_regions = use_el2_mpu
+        ? env->pmsav8.hregions
+        : env->pmsav8.regions;
+    int num_regions = use_el2_mpu
+        ? pmsav8_number_of_el2_regions(env)
+        : pmsav8_number_of_el1_regions(env);
+    pmsav8_region region;
+    enum mpu_result result = pmsav8_mpu_find_matching_region(mpu_regions, address, num_regions, &region);
+
+    switch (result) {
+    case FOUND:
+        *out_prot = get_region_prot(&region, current_el, use_el2_mpu);
+        goto check_permissions;
+    case OVERLAP:
+        *out_fault_type = TRANSLATION_FAULT;
+        return false;
+    case NOT_FOUND:
+        if ((sctlr & SCTLR_BR) == 0) {
+            *out_fault_type = BACKGROUND_FAULT;
+            return false;
+        }
+        break;
+        /* Fall-through to default_mapping */
+    }
+
+default_mapping:
+    if (current_el == mpu_el) {
+        *out_prot = pmsav8_default_cacheability_enabled(env)
+            ? PAGE_READ | PAGE_WRITE | PAGE_EXEC
+            : get_default_memory_map_access(current_el, address);
+    } else {
+        *out_fault_type = TRANSLATION_FAULT;
+        return false;
+    }
+
+    /* Fall-through to check_permissions */
+
+check_permissions:
+    if (!is_page_access_valid(*out_prot, access_type)) {
+        *out_fault_type = PERMISSION_FAULT;
+        return false;
+    }
+    return true;
+}
+
+// All addresses are flat mapped -> (virtual address == physical address), all we do is figure out the access permissions and memory attributes.
+// There is no distinction between reads from data/instruction fetch paths, hence the execute_never attribute.
+// There is no need to respect the cacheability and shareability settings - we handle it all as shareable and cacheable anyway,
+// with all the necessary restrictions and precautions.
 int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, uint32_t current_el, uintptr_t return_address, bool suppress_faults, 
-                         target_ulong *phys_ptr, int *prot, target_ulong *page_size, bool at_instruction_or_cache_maintenance)
+                         target_ulong *phys_ptr, int *prot, target_ulong *page_size)
 {
     tlib_assert(current_el <= 2);
     int fault_type = TRANSLATION_FAULT;
+    bool stage_result;
 
     // Fixed for now to the minimum size to avoid adding to tlb
     *page_size = 0x40;
@@ -514,77 +578,35 @@ int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, u
         goto do_fault;
     }
 
+    uint64_t hcr = arm_hcr_el2_eff(env);
+    bool tge_set = (hcr & HCR_TGE) != 0;
+    bool vm_set = (hcr & HCR_VM) != 0;
 
-    int num_el1_regions = pmsav8_number_of_el1_regions(env);
-    int num_el2_regions = pmsav8_number_of_el2_regions(env);
-    pmsav8_region region;
-    pmsav8_region *found_region = &region;
+    bool has_el1_stage = current_el < 2 && !tge_set;
+    bool has_el2_stage = !has_el1_stage || vm_set;
 
-    bool first_stage_as_el2 = (current_el == 2) || (env->cp15.hcr_el2 & HCR_TGE);
-    bool has_second_stage = (current_el < 2) && !(env->cp15.hcr_el2 & HCR_TGE) && (env->cp15.hcr_el2 & HCR_VM);
-    bool is_second_stage = false;
-
-    // Stage one 
-    enum mpu_result result =
-        first_stage_as_el2 ?
-                                 pmsav8_mpu_find_matching_region(env->pmsav8.hregions, address, num_el2_regions, found_region) :
-                                 pmsav8_mpu_find_matching_region(env->pmsav8.regions, address, num_el1_regions, found_region);
-    if (result == FOUND) {
-        *prot = get_region_prot(found_region, current_el, first_stage_as_el2);   
-        if (!is_page_access_valid(*prot, access_type)) {
-            fault_type = PERMISSION_FAULT;
+    int el1_stage_prot = -1;
+    if (has_el1_stage) {
+        stage_result = pmsav8_translate_stage(env, address, current_el, access_type, &fault_type, &el1_stage_prot, false);
+        if (!stage_result) {
             goto do_fault;
         }
-    } else if (result == OVERLAP) {
-        fault_type = TRANSLATION_FAULT;
-        goto do_fault;
-    } else if (result == NOT_FOUND){
-        if (first_stage_as_el2 && current_el < 2) {
-            // Default mapping does not apply
-            fault_type = PERMISSION_FAULT;
-            goto do_fault;
-        }
-        goto default_mapping;
+    } else if (unlikely(current_el == 1)) {
+        // Being in EL1 when HCR.TGE is set is an illegal state,
+        // meaning we should never be in EL1 with only EL2 stage.
+        tlib_assert_not_reached();
     }
 
- default_mapping:
-    // Not found in regions: figure c1-2 page 42 of ARM DDI 0568A.c (ID110520)
-    if (result != FOUND)
-    {
-        if (is_second_stage || ((env->cp15.sctlr_el[current_el] & 0b1))) {
-            *prot = pmsav8_default_cacheability_enabled(env) ? get_default_memory_map_access(current_el, address) : PAGE_READ | PAGE_WRITE | PAGE_EXEC;
-            if (!is_page_access_valid(*prot, access_type)) {
-                fault_type = PERMISSION_FAULT;
-                goto do_fault;
-            }
-        } else {
-            goto do_fault;
-        }
-        if (is_second_stage) {
-            return TRANSLATE_SUCCESS;
-        }
+    int el2_stage_prot = -1;
+    if (has_el2_stage) {
+        stage_result = pmsav8_translate_stage(env, address, current_el, access_type, &fault_type, &el2_stage_prot, true);
     }
 
-    if (has_second_stage) {
-        if (is_second_stage) {
-            goto default_mapping;
-        }
-        enum mpu_result result = pmsav8_mpu_find_matching_region(env->pmsav8.hregions, address, num_el2_regions, found_region);
-        if (result == FOUND) {
-            *prot = get_region_prot(found_region, current_el, is_second_stage || first_stage_as_el2);   
-            if (!is_page_access_valid(*prot, access_type)) {
-                fault_type = PERMISSION_FAULT;
-                goto do_fault;
-            }
-        } else if (result == OVERLAP) {
-            fault_type = TRANSLATION_FAULT;
-            goto do_fault;
-        } else if (result == NOT_FOUND){
-            goto default_mapping;
-        }
+    *prot = el1_stage_prot & el2_stage_prot;
+    if (stage_result) {
+        return TRANSLATE_SUCCESS;
     }
 
-    return TRANSLATE_SUCCESS;
 do_fault:
     if (!suppress_faults) {
         set_mmu_fault_registers(access_type, address, fault_type);
@@ -603,16 +625,17 @@ inline int get_phys_addr(CPUState *env, target_ulong address, int access_type, i
     ARMMMUIdx arm_mmu_idx = core_to_aa64_mmu_idx(mmu_idx);
     uint32_t el = arm_mmu_idx_to_el(arm_mmu_idx);
 
-    if ((arm_sctlr(env, el) & SCTLR_M) == 0) {
+    // get_phys_addr_pmsav8 handles disabled MPU itself
+    if (arm_feature(env, ARM_FEATURE_PMSA) && arm_feature(env, ARM_FEATURE_V8)) {
+        return get_phys_addr_pmsav8(env, address, access_type, el, return_address, suppress_faults, phys_ptr, prot, page_size);
+    }
+
+    if ((arm_sctlr_eff(env, el) & SCTLR_M) == 0) {
         /* MMU/MPU disabled.  */
         *phys_ptr = address;
         *prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
         *page_size = TARGET_PAGE_SIZE;
         return TRANSLATE_SUCCESS;
-    }
-
-    if (arm_feature(env, ARM_FEATURE_PMSA)) {
-        return get_phys_addr_pmsav8(env, address, access_type, el, return_address, suppress_faults, phys_ptr, prot, page_size, false);
     }
 
     int result = get_phys_addr_v8(env, address, access_type, mmu_idx, return_address, suppress_faults, phys_ptr, prot, page_size,
