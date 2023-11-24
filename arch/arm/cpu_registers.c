@@ -21,7 +21,7 @@
 
 #include "cpu.h"
 #include "cpu_registers.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 #ifdef TARGET_ARM64
 uint64_t *get_reg_pointer_64(int reg)

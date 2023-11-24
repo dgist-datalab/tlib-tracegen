@@ -8,7 +8,7 @@
 #include "cpu.h"
 #include "system_registers.h"
 #include "tightly_coupled_memory.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 uint32_t tlib_has_el3()
 {

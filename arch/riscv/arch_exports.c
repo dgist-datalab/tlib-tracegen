@@ -18,7 +18,7 @@
  */
 #include <stdint.h>
 #include "cpu.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 void tlib_set_hart_id(uint32_t id)
 {

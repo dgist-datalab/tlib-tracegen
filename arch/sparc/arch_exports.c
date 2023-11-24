@@ -19,7 +19,7 @@
  */
 #include <stdint.h>
 #include "cpu.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 /* Add CPU slot number info to ASR17 register, */
 /* bit field [31:28] is for processor index */

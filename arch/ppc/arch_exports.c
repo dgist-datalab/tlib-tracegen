@@ -19,7 +19,7 @@
  */
 #include <stdint.h>
 #include "cpu.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 int32_t tlib_set_pending_interrupt(int32_t interruptNo, int32_t level)
 {

@@ -26,7 +26,7 @@
 #include "targphys.h"
 #include "infrastructure.h"
 #include "atomic.h"
-#include "../unwind.h"
+#include "unwind.h"
 
 /* The return address may point to the start of the next instruction.
    Subtracting one gets us the call instruction itself.  */

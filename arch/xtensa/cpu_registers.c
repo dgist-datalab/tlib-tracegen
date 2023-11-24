@@ -20,7 +20,7 @@
 
 #include "cpu.h"
 #include "cpu_registers.h"
-#include "../../unwind.h"
+#include "unwind.h"
 
 // REMARK: here we use #ifdef/#endif,#ifdef/#endif notation just to be consistent with header file; in header it is required by our parser
 
