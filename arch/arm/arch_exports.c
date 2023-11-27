@@ -19,7 +19,7 @@
  */
 #include <stdint.h>
 #include "cpu.h"
-#include "system_registers_arm.h"
+#include "system_registers.h"
 #include "../../unwind.h"
 #include "tightly_coupled_memory.h"
 #include "bit_helper.h"

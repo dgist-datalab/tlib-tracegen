@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <stdint.h>
-#include "cpu.h"
 #include "system_registers_common.h"
 
 /* To enable banking of coprocessor registers depending on ns-bit we

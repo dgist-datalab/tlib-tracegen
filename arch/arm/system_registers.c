@@ -10,7 +10,7 @@
 
 #include "cpu.h"
 #include "helper.h"
-#include "system_registers_arm.h"
+#include "system_registers.h"
 
 #define ARM_ARCHITECTURE_MASK (0xFF00FFF0)
 
