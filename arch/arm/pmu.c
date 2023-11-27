@@ -495,8 +495,11 @@ uint32_t pmu_get_insn_cycle_value(const pmu_counter *const counter)
 {
     uint64_t remainder = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_remainder : 0;
     uint64_t divisor = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_divisor : 1;
+    uint64_t cycles_per_insn = counter->measured_event_id == PMU_EVENT_CYCLES ? env->cycles_per_instruction : 1;
     return counter->val +
-           (((counter->has_snapshot) ? (env->instructions_count_total_value - counter->snapshot) : 0) + remainder) / divisor;
+           ((((counter->has_snapshot) ? (env->instructions_count_total_value - counter->snapshot) : 0) + remainder) *
+            cycles_per_insn) /
+           divisor;
 }
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -614,7 +617,7 @@ void HELPER(pmu_update_event_counters)(CPUState * env, int event_id, uint32_t am
 
         // After we updated all counters, update cycles remainder
         uint64_t old_remainder = env->pmu.cycles_remainder;
-        env->pmu.cycles_remainder = (amount + old_remainder) % env->pmu.cycles_divisor;
+        env->pmu.cycles_remainder = ((amount + old_remainder) * env->cycles_per_instruction) % env->pmu.cycles_divisor;
     }
 
     if (event_id == PMU_EVENT_CYCLES || event_id == PMU_EVENT_INSTRUCTIONS_EXECUTED) {
@@ -629,7 +632,9 @@ void pmu_count_instructions_cycles(uint32_t icount)
     }
 
     bool will_overflow = false;
-    if ((((icount + env->pmu.cycles_remainder) / env->pmu.cycles_divisor) > env->pmu.cycles_overflow_nearest_limit) ||
+    const uint64_t new_cycles_count = (icount + env->pmu.cycles_remainder) * env->cycles_per_instruction;
+
+    if (((new_cycles_count / env->pmu.cycles_divisor) > env->pmu.cycles_overflow_nearest_limit) ||
         (icount > env->pmu.insns_overflow_nearest_limit)) {
         will_overflow = true;
     }
@@ -643,7 +648,7 @@ void pmu_count_instructions_cycles(uint32_t icount)
         helper_pmu_update_event_counters(env, PMU_EVENT_CYCLES, icount);
     } else {
         env->pmu.insns_overflow_nearest_limit -= icount;
-        env->pmu.cycles_overflow_nearest_limit -= (icount + env->pmu.cycles_remainder) / env->pmu.cycles_divisor;
-        env->pmu.cycles_remainder = (icount + env->pmu.cycles_remainder) % env->pmu.cycles_divisor;
+        env->pmu.cycles_overflow_nearest_limit -= new_cycles_count / env->pmu.cycles_divisor;
+        env->pmu.cycles_remainder = new_cycles_count % env->pmu.cycles_divisor;
     }
 }
