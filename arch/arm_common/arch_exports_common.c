@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) Antmicro
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <stdint.h>
 #include "cpu.h"
 #include "system_registers_common.h"

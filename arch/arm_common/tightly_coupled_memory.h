@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) Antmicro
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #pragma once
 
 #define TCM_UNIT_SIZE  0x200
