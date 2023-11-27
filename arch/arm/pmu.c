@@ -220,7 +220,7 @@ void set_c9_pmcr(struct CPUState *env, uint64_t val)
 
         // We inject code into block header to count instructions
         // This can be costly, so do it only when PMU is active
-        env->has_block_header_arch_trampoline = true;
+        env->pmu.counters_enabled = true;
     } else if (((val & (1 << 0)) == 0) && env->pmu.counters_enabled) {
         if (unlikely(env->pmu.extra_logs_enabled)) {
             tlib_printf(LOG_LEVEL_DEBUG, "Disabling PMU");
@@ -229,7 +229,7 @@ void set_c9_pmcr(struct CPUState *env, uint64_t val)
         env->pmu.counters_enabled = false;
 
         // No need to recalculate limit, we will return if PMU is disabled
-        env->has_block_header_arch_trampoline = false;
+        env->pmu.counters_enabled = false;
     }
 
     // P (Reset Counters - except cycle counter) bit
@@ -625,7 +625,7 @@ void HELPER(pmu_update_event_counters)(CPUState * env, int event_id, uint32_t am
     }
 }
 
-void pmu_count_instructions_cycles(uint32_t icount)
+void HELPER(pmu_count_instructions_cycles)(uint32_t icount)
 {
     if (!env->pmu.counters_enabled || !env->pmu.is_any_overflow_interrupt_enabled) {
         return;

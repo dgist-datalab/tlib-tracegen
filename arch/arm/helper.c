@@ -2717,11 +2717,6 @@ invalid:
 }
 #endif
 
-void block_header_arch_action(uint32_t icount)
-{
-    pmu_count_instructions_cycles(icount);
-}
-
 void tlib_arch_dispose()
 {
     ttable_remove(cpu->cp_regs);

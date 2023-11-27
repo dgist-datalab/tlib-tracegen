@@ -10532,6 +10532,29 @@ int process_interrupt(int interrupt_request, CPUState *env)
     return 0;
 }
 
+#if !defined(TARGET_PROTO_ARM_M)
+void gen_block_header_arch_action(TranslationBlock *tb)
+{
+    // Let's save a costly function call by branching forward if the lib has the header trampoline disabled at runtime
+    int pmu_counters_disabled_label = gen_new_label();
+    TCGv_i32 tmp32 = tcg_temp_new_i64();
+    tcg_gen_ld_i32(tmp32, cpu_env, offsetof(CPUState, pmu.counters_enabled));
+    tcg_gen_brcondi_i32(TCG_COND_EQ, tmp32, false, pmu_counters_disabled_label);
+    tcg_temp_free_i32(tmp32);
+
+    TCGv_i64 icount = tcg_temp_new_i64();
+    TCGv_ptr tb_pointer = tcg_const_ptr((tcg_target_long)tb);
+
+    tcg_gen_ld32u_i64(icount, tb_pointer, offsetof(TranslationBlock, icount));
+    gen_helper_pmu_count_instructions_cycles(icount);
+
+    tcg_temp_free_ptr(tb_pointer);
+    tcg_temp_free_i64(icount);
+
+    gen_set_label(pmu_counters_disabled_label);
+}
+#endif
+
 //TODO: These empty implementations are required due to problems with weak attribute.
 //Remove this after #7035.
 void cpu_exec_epilogue(CPUState *env)

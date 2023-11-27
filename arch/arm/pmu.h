@@ -98,7 +98,7 @@ uint32_t get_c9_pmxevcntr(struct CPUState *env);
 void set_c9_pmxevcntr(struct CPUState *env, uint64_t val);
 void set_c9_pmswinc(struct CPUState *env, uint64_t val);
 
-void pmu_count_instructions_cycles(uint32_t icount);
+void helper_pmu_count_instructions_cycles(uint32_t icount);
 
 void pmu_update_counter(struct CPUState *env, pmu_counter *const counter, uint64_t amount);
 void helper_pmu_update_event_counters(struct CPUState *env, int event_id, uint32_t amount);
