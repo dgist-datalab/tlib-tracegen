@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TARGET_ARM_VEC_INTERNAL_H
-#define TARGET_ARM_VEC_INTERNAL_H
+#pragma once
 
 /*
  * Note that vector data is stored in host-endian 64-bit chunks,
@@ -242,5 +241,3 @@ uint64_t pmull_w(uint64_t op1, uint64_t op2);
  * Corresponds to the ARM pseudocode function BFDotAdd.
  */
 float32 bfdotadd(float32 sum, uint32_t e1, uint32_t e2);
-
-#endif /* TARGET_ARM_VEC_INTERNAL_H */

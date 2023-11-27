@@ -1,7 +1,6 @@
 /* Define target_phys_addr_t if it exists.  */
 
-#ifndef TARGPHYS_H
-#define TARGPHYS_H
+#pragma once
 
 #ifndef TARGET_PHYS_ADDR_BITS
 #define TARGET_PHYS_ADDR_BITS TARGET_LONG_BITS
@@ -24,5 +23,4 @@ typedef uint64_t target_phys_addr_t;
   #define TARGET_FMT_plx       "%016" PRIX64
 #else
   #error "Target physical address width is too big"
-#endif
 #endif

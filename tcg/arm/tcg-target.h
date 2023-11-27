@@ -22,8 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __TCG_TARGET_H__
-#define __TCG_TARGET_H__
+#pragma once
 
 #define TCG_TARGET_ARM 1
 
@@ -99,4 +98,3 @@ static inline void flush_icache_range(unsigned long start, unsigned long stop)
     __asm __volatile__ ("swi 0x9f0002" : : "r" (_beg), "r" (_end), "r" (_flg));
 #endif
 }
-#endif

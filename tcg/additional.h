@@ -1,5 +1,4 @@
-#ifndef ADDITIONAL_H
-#define ADDITIONAL_H
+#pragma once
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -69,5 +68,3 @@ static inline void tcg_abortf(char *fmt, ...)
     va_end(ap);
     __builtin_unreachable();
 }
-
-#endif

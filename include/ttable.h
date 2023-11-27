@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef TTABLE_H_
-#define TTABLE_H_
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h> // NULL
@@ -197,5 +196,3 @@ static inline void ttable_remove(TTable *ttable)
     tlib_free(ttable->entries);
     tlib_free(ttable);
 }
-
-#endif // TTABLE_H_

@@ -28,11 +28,9 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#pragma once
+
 #if !defined __XCC__
-
-#ifndef _XTENSA_CORE_CONFIGURATION_H
-#define _XTENSA_CORE_CONFIGURATION_H
-
 
 /****************************************************************************
 	    Parameters Useful for Any Code, USER or PRIVILEGED
@@ -625,9 +623,6 @@
 #define XCHAL_MPU_ALIGN			0
 
 #endif /* !XTENSA_HAL_NON_PRIVILEGED_ONLY */
-
-
-#endif /* _XTENSA_CORE_CONFIGURATION_H */
 
 #else
 

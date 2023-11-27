@@ -37,8 +37,7 @@
  *      @(#)queue.h     8.5 (Berkeley) 8/20/94
  */
 
-#ifndef TLIB_QUEUE_H_
-#define TLIB_QUEUE_H_
+#pragma once
 
 /*
  * This file defines four types of data structures:
@@ -442,5 +441,3 @@ struct {                                                                \
         (((elm)->field.cqe_prev == (void *)(head))                      \
             ? ((head)->cqh_last)                                        \
             : (elm->field.cqe_prev))
-
-#endif  /* !TLIB_QUEUE_H_ */

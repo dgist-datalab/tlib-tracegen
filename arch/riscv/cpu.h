@@ -1,5 +1,4 @@
-#if !defined (__RISCV_CPU_H__)
-#define __RISCV_CPU_H__
+#pragma once
 
 #include "bit_helper.h"
 #include "cpu-defs.h"
@@ -393,5 +392,3 @@ static inline int supported_fpu_extensions_count(CPUState *env)
 #define V_IDX_INVALID_EEW(n, eew) V_IDX_INVALID_EMUL(n, EMUL(eew))
 #define V_IDX_INVALID(n) V_IDX_INVALID_EMUL(n, env->vlmul)
 #define V_INVALID_NF(vd, nf, emul) (((emul) & 0x4) != 0 && (((nf) << (emul)) >= 8 || ((vd) + ((nf) << (emul))) >= 32))
-
-#endif /* !defined (__RISCV_CPU_H__) */

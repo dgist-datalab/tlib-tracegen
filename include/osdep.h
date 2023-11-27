@@ -1,5 +1,4 @@
-#ifndef QEMU_OSDEP_H
-#define QEMU_OSDEP_H
+#pragma once
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -39,6 +38,4 @@
 #define REGPARM __attribute((regparm(3)))
 #else
 #define REGPARM
-#endif
-
 #endif

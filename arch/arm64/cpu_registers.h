@@ -1,5 +1,4 @@
-#ifndef __ARM_CPU_REGISTERS__
-#define __ARM_CPU_REGISTERS__
+#pragma once
 
 #include "cpu-defs.h"
 
@@ -67,5 +66,3 @@ typedef enum {
 
 /* The return address is stored here */
 #define RA   (is_a64(cpu) ? X_30_64 : R_14_32)
-
-#endif /* #ifndef __ARM_CPU_REGISTERS__ */

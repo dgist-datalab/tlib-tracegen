@@ -1,5 +1,4 @@
-#ifndef ARCH_EXPORTS_H_
-#define ARCH_EXPORTS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -30,5 +29,3 @@ uint32_t tlib_install_post_opcode_execution_hook(uint64_t mask, uint64_t value);
 void tlib_enable_post_opcode_execution_hooks(uint32_t value);
 void tlib_enable_post_gpr_access_hooks(uint32_t value);
 void tlib_enable_post_gpr_access_hook_on(uint32_t register_index, uint32_t value);
-
-#endif

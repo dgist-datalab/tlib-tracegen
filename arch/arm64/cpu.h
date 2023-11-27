@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ARM_CPU_H
-#define ARM_CPU_H
+#pragma once
 
 #if defined(TARGET_ARM64)
 // Such a define was used in the original 'arm64' files.
@@ -3877,5 +3876,3 @@ typedef struct DisasContext {
 } DisasContext;
 
 #include "cpu_h_epilogue.h"
-
-#endif

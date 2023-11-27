@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SYSTEM_REGISTERS_ARM_H_
-#define SYSTEM_REGISTERS_ARM_H_
+#pragma once
 
 #include <stdint.h>
 #include "cpu.h"
@@ -24,5 +23,3 @@
 
 // Cover the entire register width, when used on an instruction address field (crm, opc1, opc2)
 #define ANY 0xFF
-
-#endif

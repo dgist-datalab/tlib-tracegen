@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef _RISCV_PMP_H_
-#define _RISCV_PMP_H_
+#pragma once
 
 typedef enum {
     PMP_READ  = 1 << 0,
@@ -64,5 +63,3 @@ void pmpaddr_csr_write(CPUState *env, uint32_t addr_index, target_ulong val);
 target_ulong pmpaddr_csr_read(CPUState *env, uint32_t addr_index);
 int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size);
 int pmp_find_overlapping(CPUState *env, target_ulong addr, target_ulong size, int starting_index);
-
-#endif

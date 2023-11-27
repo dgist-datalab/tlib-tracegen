@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TCG_TCG_GVEC_DESC_H
-#define TCG_TCG_GVEC_DESC_H
+#pragma once
 
 #include "../include/bit_helper.h"
 
@@ -64,5 +63,3 @@ static inline int32_t simd_data(uint32_t desc)
 {
     return sextract32(desc, SIMD_DATA_SHIFT, SIMD_DATA_BITS);
 }
-
-#endif

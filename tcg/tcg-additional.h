@@ -1,5 +1,4 @@
-#ifndef TCG_ADDITIONAL_H
-#define TCG_ADDITIONAL_H
+#pragma once
 
 void attach_gen_opc_buf(void *buf);
 void attach_tcg(void *tcg_c);
@@ -18,5 +17,3 @@ void set_tlb_entry_addr_rwu(unsigned int read, unsigned int write, unsigned int 
 void attach_malloc(void *malloc_callback);
 void attach_realloc(void *reall);
 void attach_free(void *free_callback);
-
-#endif

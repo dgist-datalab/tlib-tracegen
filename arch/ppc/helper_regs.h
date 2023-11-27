@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined(__HELPER_REGS_H__)
-#define __HELPER_REGS_H__
+#pragma once
 
 /* Swap temporary saved registers with GPRs */
 static inline void hreg_swap_gpr_tgpr(CPUState *env)
@@ -99,5 +98,3 @@ static inline int hreg_store_msr(CPUState *env, target_ulong value, int alter_hv
 
     return excp;
 }
-
-#endif /* !defined(__HELPER_REGS_H__) */

@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef INT128_H_
-#define INT128_H_
+#pragma once
 
 #include "stdint.h"
 #include "stdbool.h"
@@ -59,5 +58,3 @@ static inline __int128_t int128_rshift(const __int128_t a, const uint8_t shift)
 {
     return a >> shift;
 }
-
-#endif // INT128_H_

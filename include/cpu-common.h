@@ -1,5 +1,4 @@
-#ifndef CPU_COMMON_H
-#define CPU_COMMON_H 1
+#pragma once
 
 /* CPU interfaces that are target indpendent.  */
 
@@ -104,5 +103,3 @@ target_ulong virt_to_phys(target_ulong virtual, uint32_t access_type, uint32_t n
 
 void tlib_arch_dispose(void);
 void translate_init(void);
-
-#endif /* !CPU_COMMON_H */

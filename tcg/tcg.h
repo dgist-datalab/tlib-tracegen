@@ -22,8 +22,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef TCG_H
-#define TCG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -805,5 +804,3 @@ static inline const TCGOpcode *tcg_swap_vecop_list(const TCGOpcode *n)
     static inline TCGArg tcgv_ptr_arg(TCGv_ptr v) { vec_unsupported(); }
     static inline TCGArg tcgv_vec_arg(TCGv_vec v) { vec_unsupported(); }
 #endif
-
-#endif //TCG_H

@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _EXEC_ALL_H_
-#define _EXEC_ALL_H_
+#pragma once
 
 #include <stdlib.h>
 #include <errno.h>
@@ -308,5 +307,3 @@ void generate_stack_announcement_imm_i64(uint64_t addr, int type, bool clear_lsb
 void generate_stack_announcement(TCGv pc, int type, bool clear_lsb);
 void tlib_announce_stack_change(target_ulong pc, int state);
 void tlib_announce_context_change(target_ulong context_id);
-
-#endif

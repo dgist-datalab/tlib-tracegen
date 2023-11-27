@@ -1,5 +1,4 @@
-#ifndef EXPORTS_H_
-#define EXPORTS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -105,6 +104,4 @@ void tlib_set_register_value_32(int reg_number, uint32_t value);
 #if TARGET_LONG_BITS == 64
 uint64_t tlib_get_register_value_64(int reg_number);
 void tlib_set_register_value_64(int reg_number, uint64_t value);
-#endif
-
 #endif

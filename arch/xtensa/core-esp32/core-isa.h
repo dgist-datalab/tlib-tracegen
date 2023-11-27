@@ -28,8 +28,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef _XTENSA_CORE_CONFIGURATION_H
-#define _XTENSA_CORE_CONFIGURATION_H
+#pragma once
 
 
 /****************************************************************************
@@ -650,6 +649,4 @@
 
 #endif /* !XTENSA_HAL_NON_PRIVILEGED_ONLY */
 
-
-#endif /* _XTENSA_CORE_CONFIGURATION_H */
 

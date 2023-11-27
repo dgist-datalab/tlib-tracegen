@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TCG_TCG_OP_GVEC_H
-#define TCG_TCG_OP_GVEC_H
+#pragma once
 
 /*
  * "Generic" vectors.  All operands are given as offsets from ENV,
@@ -464,6 +463,4 @@ void tcg_gen_vec_sar16i_i32(TCGv_i32 d, TCGv_i32 a, int32_t);
 #define tcg_gen_vec_shl16i_tl tcg_gen_vec_shl16i_i32
 #define tcg_gen_vec_shr16i_tl tcg_gen_vec_shr16i_i32
 #define tcg_gen_vec_sar16i_tl tcg_gen_vec_sar16i_i32
-#endif
-
 #endif

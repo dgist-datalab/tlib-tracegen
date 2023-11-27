@@ -1,5 +1,4 @@
-#ifndef SOFTMMU_DEFS_H
-#define SOFTMMU_DEFS_H
+#pragma once
 
 uint8_t REGPARM __ldb_mmu(target_ulong addr, int mmu_idx);
 uint8_t REGPARM __ldb_err_mmu(target_ulong addr, int mmu_idx, int *err);
@@ -26,5 +25,3 @@ void REGPARM __stl_cmmu(target_ulong addr, uint32_t val, int mmu_idx);
 uint64_t REGPARM __ldq_cmmu(target_ulong addr, int mmu_idx);
 uint64_t REGPARM __ldq_err_cmmu(target_ulong addr, int mmu_idx, int *err);
 void REGPARM __stq_cmmu(target_ulong addr, uint64_t val, int mmu_idx);
-
-#endif

@@ -22,8 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef XTENSA_ISA_INTERNAL_H
-#define XTENSA_ISA_INTERNAL_H
+#pragma once
 
 #ifndef uint32
 #define uint32 uint32_t
@@ -227,5 +226,3 @@ int xtensa_isa_name_compare(const void *, const void *);
 
 extern xtensa_isa_status xtisa_errno;
 extern char xtisa_error_msg[];
-
-#endif /* XTENSA_ISA_INTERNAL_H */

@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CPU_ARM_H
-#define CPU_ARM_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -708,5 +707,3 @@ static inline void find_pending_irq_if_primask_unset(CPUState *env)
     }
 #endif
 }
-
-#endif

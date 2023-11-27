@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _PMU_H_
-#define _PMU_H_
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -103,5 +102,3 @@ void pmu_count_instructions_cycles(uint32_t icount);
 
 void pmu_update_counter(struct CPUState *env, pmu_counter *const counter, uint64_t amount);
 void helper_pmu_update_event_counters(struct CPUState *env, int event_id, uint32_t amount);
-
-#endif

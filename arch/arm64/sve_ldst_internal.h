@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TARGET_ARM_SVE_LDST_INTERNAL_H
-#define TARGET_ARM_SVE_LDST_INTERNAL_H
+#pragma once
 
 /*
  * Load one element into @vd + @reg_off from @host.
@@ -207,5 +206,3 @@ void sve_cont_ldst_watchpoints(SVEContLdSt *info, CPUARMState *env,
 void sve_cont_ldst_mte_check(SVEContLdSt *info, CPUARMState *env, uint64_t *vg,
                              target_ulong addr, int esize, int msize,
                              uint32_t mtedesc, uintptr_t ra);
-
-#endif /* TARGET_ARM_SVE_LDST_INTERNAL_H */

@@ -21,8 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __TCG_TARGET_H__
-#define __TCG_TARGET_H__
+#pragma once
 #define TCG_TARGET_I386 1
 
 //#define TCG_TARGET_WORDS_BIGENDIAN
@@ -156,4 +155,3 @@ typedef enum {
 static inline void flush_icache_range(uintptr_t start, uintptr_t stop)
 {
 }
-#endif

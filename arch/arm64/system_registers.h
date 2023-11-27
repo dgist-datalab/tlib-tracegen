@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SYSTEM_REGISTERS_H_
-#define SYSTEM_REGISTERS_H_
+#pragma once
 
 #include <stdint.h>
 #include "cpu.h"
@@ -29,5 +28,3 @@
 
 void system_instructions_and_registers_reset(CPUState *env);
 void system_instructions_and_registers_init(CPUState *env, uint32_t cpu_model_id);
-
-#endif // SYSTEM_REGISTERS_H_

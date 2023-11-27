@@ -1,8 +1,7 @@
 // Header based on Zephyr ARM64 MMU implementation:
 // https://github.com/zephyrproject-rtos/zephyr/blob/zephyr-v3.2.0/arch/arm64/core/mmu.h
 
-#ifndef MMU_H_
-#define MMU_H_
+#pragma once
 
 #define MMU_XLAT_LAST_LEVEL  3U
 
@@ -40,5 +39,3 @@ enum
 };
 
 ARMMMUIdx get_current_arm_mmu_idx(CPUState *env);
-
-#endif /* MMU_H_ */

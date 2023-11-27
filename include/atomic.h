@@ -1,5 +1,4 @@
-#ifndef ATOMIC_H_
-#define ATOMIC_H_
+#pragma once
 
 #include <pthread.h>
 #include <stdint.h>
@@ -55,5 +54,3 @@ void cancel_reservation(struct CPUState *env);
 void reserve_address_always(struct CPUState *env, target_phys_addr_t address);
 uint32_t check_address_reservation_always(struct CPUState *env, target_phys_addr_t address);
 void cancel_reservation_always(struct CPUState *env);
-
-#endif

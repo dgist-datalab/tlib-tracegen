@@ -1,5 +1,4 @@
-#ifndef CPU_SPARC_H
-#define CPU_SPARC_H
+#pragma once
 
 #if (TARGET_LONG_BITS == 32)
 #ifdef TARGET_PHYS_ADDR_BITS
@@ -401,5 +400,3 @@ static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
     env->pc = tb->pc;
     env->npc = tb->cs_base;
 }
-
-#endif

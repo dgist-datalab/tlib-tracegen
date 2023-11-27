@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef BIT_HELPER_H_
-#define BIT_HELPER_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -231,5 +230,3 @@ static inline uint64_t orcb64(uint64_t val) {
 static inline int is_power_of_2(uint64_t val) {
     return ((val - 1) & val) == 0;
 }
-
-#endif  // BIT_HELPER_H_

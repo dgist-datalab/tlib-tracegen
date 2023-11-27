@@ -28,8 +28,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef XTENSA_CORE_CONFIGURATION_H_
-#define XTENSA_CORE_CONFIGURATION_H_
+#pragma once
 
 //depot/dev/Homewood/Xtensa/SWConfig/hal/core-common.h.tph#24 - edit change 444323 (text+ko)
 
@@ -722,6 +721,4 @@
 
 #endif /* !XTENSA_HAL_NON_PRIVILEGED_ONLY */
 
-
-#endif /* XTENSA_CORE_CONFIGURATION_H_ */
 

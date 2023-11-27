@@ -1,5 +1,4 @@
-#ifndef __ARM_CPU_REGISTERS__
-#define __ARM_CPU_REGISTERS__
+#pragma once
 
 #include "cpu-defs.h"
 
@@ -108,5 +107,3 @@ typedef enum {
 #if TARGET_LONG_BITS == 32
 #define RA   R_14_32
 #endif
-
-#endif /* #ifndef __ARM_CPU_REGISTERS__ */

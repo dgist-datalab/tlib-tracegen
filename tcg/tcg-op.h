@@ -21,8 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __TCG_OP_H__
-#define __TCG_OP_H__
+#pragma once
 
 #include <inttypes.h>
 
@@ -3857,5 +3856,3 @@ void tcg_gen_stl_vec(TCGv_vec r, TCGv_ptr base, TCGArg offset, TCGType t);
                                                  TCGV_PTR_TO_NAT(A), (B))
 #define tcg_gen_ext_i32_ptr(R, A) tcg_gen_ext_i32_i64(TCGV_PTR_TO_NAT(R), (A))
 #endif /* TCG_TARGET_REG_BITS != 32 */
-
-#endif

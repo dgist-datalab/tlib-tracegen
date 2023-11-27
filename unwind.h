@@ -1,5 +1,4 @@
-#ifndef UNWIND_H_
-#define UNWIND_H_
+#pragma once
 
 #include <setjmp.h>
 #include <stdlib.h>
@@ -133,5 +132,3 @@ extern __thread struct unwind_state {
         }                                                                   \
         POP_ENV();                                                          \
     }
-
-#endif

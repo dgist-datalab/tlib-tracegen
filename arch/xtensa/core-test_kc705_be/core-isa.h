@@ -28,8 +28,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef XTENSA_CORE_TEST_KC705_BE_CORE_ISA_H
-#define XTENSA_CORE_TEST_KC705_BE_CORE_ISA_H
+#pragma once
 
 /****************************************************************************
 	    Parameters Useful for Any Code, USER or PRIVILEGED
@@ -569,5 +568,3 @@
 
 #endif /* !XTENSA_HAL_NON_PRIVILEGED_ONLY */
 
-
-#endif /* XTENSA_CORE_TEST_KC705_BE_CORE_ISA_H */

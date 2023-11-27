@@ -1,5 +1,4 @@
-#ifndef __SVM_H
-#define __SVM_H
+#pragma once
 
 #define TLB_CONTROL_DO_NOTHING     0
 #define TLB_CONTROL_FLUSH_ALL_ASID 1
@@ -218,5 +217,3 @@ struct TLIB_PACKED vmcb {
     struct vmcb_control_area control;
     struct vmcb_save_area save;
 };
-
-#endif

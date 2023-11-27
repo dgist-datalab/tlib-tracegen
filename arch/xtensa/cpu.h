@@ -25,8 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XTENSA_CPU_H
-#define XTENSA_CPU_H
+#pragma once
 
 #include "arch_callbacks.h"
 #include "bit_helper.h"
@@ -776,5 +775,3 @@ extern XtensaConfig sample_controller;
 extern XtensaConfig test_kc705_be;
 extern XtensaConfig test_mmuhifi_c3;
 extern XtensaConfig tigerlake;
-
-#endif

@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SYSTEM_REGISTERS_COMMON_H_
-#define SYSTEM_REGISTERS_COMMON_H_
+#pragma once
 
 #include "cpu.h"
 
@@ -355,5 +354,3 @@ static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t 
         return;
     }
 }
-
-#endif

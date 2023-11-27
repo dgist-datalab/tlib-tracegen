@@ -23,8 +23,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef __HOST_UTILS_H__
-#define __HOST_UTILS_H__
+#pragma once
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -512,5 +511,3 @@ static inline bool usub64_overflow(uint64_t x, uint64_t y, uint64_t *ret)
     return x < y;
 #endif
 }
-
-#endif

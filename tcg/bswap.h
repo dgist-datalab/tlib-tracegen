@@ -1,5 +1,4 @@
-#ifndef BSWAP_H
-#define BSWAP_H
+#pragma once
 
 #include <inttypes.h>
 
@@ -223,5 +222,3 @@ static inline void cpu_to_be64wu(uint64_t *p, uint64_t v)
 #undef be_bswap
 #undef le_bswaps
 #undef be_bswaps
-
-#endif /* BSWAP_H */

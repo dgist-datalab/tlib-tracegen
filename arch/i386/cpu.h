@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CPU_I386_H
-#define CPU_I386_H
+#pragma once
 
 #include <stdbool.h>
 #include "compiler.h"
@@ -1019,5 +1018,3 @@ void svm_check_intercept(CPUState *env1, uint32_t type);
 uint32_t cpu_cc_compute_all(CPUState *env1, int op);
 
 int cpu_is_bsp(CPUState *env);
-
-#endif /* CPU_I386_H */

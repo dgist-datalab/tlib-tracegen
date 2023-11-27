@@ -1,7 +1,6 @@
 /* public domain */
 
-#ifndef COMPILER_H
-#define COMPILER_H
+#pragma once
 
 #define TLIB_NORETURN __attribute__ ((__noreturn__))
 
@@ -10,5 +9,3 @@
 #else
 # define TLIB_PACKED  __attribute__((packed))
 #endif
-
-#endif /* COMPILER_H */

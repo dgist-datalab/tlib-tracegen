@@ -21,8 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __TCG_OP_ATOMIC_H__
-#define __TCG_OP_ATOMIC_H__
+#pragma once
 
 #include "tb-helper.h"
 
@@ -160,5 +159,3 @@ static void tcg_gen_mov2_i64(TCGv_i64 r, TCGv_i64 a, TCGv_i64 b)
 }
 
 GEN_ATOMIC_HELPER(xchg, mov2, 0)
-
-#endif

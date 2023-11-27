@@ -1,5 +1,4 @@
-#ifndef ARCH_EXPORTS_H_
-#define ARCH_EXPORTS_H_
+#pragma once
 
 #include <stdint.h>
 #include "arch_exports_common.h"
@@ -49,7 +48,5 @@ uint32_t tlib_get_pmsav8_rnr(void);
 uint32_t tlib_get_pmsav8_rbar(void);
 uint32_t tlib_get_pmsav8_rlar(void);
 uint32_t tlib_get_pmsav8_mair(uint32_t index);
-
-#endif
 
 #endif

@@ -44,8 +44,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 
-#ifndef XTENSA_CONFIG_CORE_MATMAP_H
-#define XTENSA_CONFIG_CORE_MATMAP_H
+#pragma once
 
 
 /*----------------------------------------------------------------------
@@ -307,6 +306,4 @@
 
 
 
-
-#endif /*XTENSA_CONFIG_CORE_MATMAP_H*/
 

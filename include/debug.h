@@ -1,5 +1,4 @@
-#if !defined (__DEBUG_H__)
-#define __DEBUG_H__
+#pragma once
 
 #include <stdint.h>
 #include "tcg-op.h"
@@ -28,5 +27,3 @@ void check_locked(struct TranslationBlock *tb);
 #define UNLOCK_TB(tb)
 #define CHECK_LOCKED(tb)
 #endif
-
-#endif // __DEBUG_H__

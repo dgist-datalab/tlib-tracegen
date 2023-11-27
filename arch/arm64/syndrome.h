@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SYNDROME_H_
-#define SYNDROME_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -286,5 +285,3 @@ static inline uint32_t syn_aa32_smc(void) {
 static inline uint32_t syn_aa32_bkpt(uint32_t imm16, bool is_16bit) {
     return syndrome32_create(SYN_EC_AA32_BKPT, !is_16bit, imm16);
 }
-
-#endif  // SYNDROME_H_

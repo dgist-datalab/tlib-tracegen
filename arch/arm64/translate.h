@@ -1,5 +1,4 @@
-#ifndef TARGET_ARM_TRANSLATE_H
-#define TARGET_ARM_TRANSLATE_H
+#pragma once
 
 #include "syndrome.h"
 
@@ -461,5 +460,3 @@ static inline void tcg_gen_mb(TCGBar bar)
 {
     gen_helper_memory_barrier_assert(cpu_env);
 }
-
-#endif /* TARGET_ARM_TRANSLATE_H */

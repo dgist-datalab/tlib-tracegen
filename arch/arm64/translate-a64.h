@@ -15,8 +15,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TARGET_ARM_TRANSLATE_A64_H
-#define TARGET_ARM_TRANSLATE_A64_H
+#pragma once
 
 TCGv_i64 new_tmp_a64(DisasContext *s);
 TCGv_i64 new_tmp_a64_local(DisasContext *s);
@@ -197,5 +196,3 @@ void gen_gvec_xar(unsigned vece, uint32_t rd_ofs, uint32_t rn_ofs,
 
 void gen_sve_ldr(DisasContext *s, TCGv_ptr, int vofs, int len, int rn, int imm);
 void gen_sve_str(DisasContext *s, TCGv_ptr, int vofs, int len, int rn, int imm);
-
-#endif /* TARGET_ARM_TRANSLATE_A64_H */

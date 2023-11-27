@@ -1,5 +1,4 @@
-#ifndef CALLBACKS_H_
-#define CALLBACKS_H_
+#pragma once
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -102,5 +101,3 @@ void *tlib_get_dirty_addresses_list(void *size);
 uint32_t tlib_is_in_debug_mode(void);
 
 void tlib_clean_wfi_proc_state(void);
-
-#endif

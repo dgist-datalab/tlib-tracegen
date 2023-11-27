@@ -28,8 +28,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef XTENSA_CORE_TEST_MMUHIFI_C3_CORE_ISA_H
-#define XTENSA_CORE_TEST_MMUHIFI_C3_CORE_ISA_H
+#pragma once
 
 
 /****************************************************************************
@@ -468,5 +467,3 @@
 
 #endif /* !XTENSA_HAL_NON_PRIVILEGED_ONLY */
 
-
-#endif /* XTENSA_CORE_TEST_MMUHIFI_C3_CORE_ISA_H */

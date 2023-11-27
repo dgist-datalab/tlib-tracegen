@@ -22,8 +22,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef TCG_MEMOP_H
-#define TCG_MEMOP_H
+#pragma once
 
 /* Constants for qemu_ld and qemu_st for the Memory Operation field.  */
 typedef enum TCGMemOp {
@@ -112,5 +111,3 @@ typedef enum TCGMemOp {
 
     MO_SSIZE = MO_SIZE | MO_SIGN,
 } TCGMemOp;
-
-#endif // TCG_MEMOP_H

@@ -17,8 +17,7 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ARM_LDST_H
-#define ARM_LDST_H
+#pragma once
 
 #include "bswap.h"
 
@@ -49,5 +48,3 @@ static inline uint16_t arm_lduw_code(CPUARMState *env, DisasContextBase* s,
 
     return lduw_code(addr);
 }
-
-#endif

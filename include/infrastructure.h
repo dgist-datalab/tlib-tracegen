@@ -1,5 +1,4 @@
-#ifndef INFRASTRUCTURE_H_
-#define INFRASTRUCTURE_H_
+#pragma once
 
 #include <stdlib.h>
 
@@ -36,5 +35,3 @@ void tlib_abortf(char *fmt, ...);
 #define g_assert_not_reached tlib_assert_not_reached
 
 #include "callbacks.h"
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __TB_HELPER_H__
-#define __TB_HELPER_H__
+#pragma once
 
 #include "tcg-op.h"
 
@@ -14,5 +13,3 @@
 #include "helper.h"
 
 extern TCGv_ptr cpu_env;
-
-#endif

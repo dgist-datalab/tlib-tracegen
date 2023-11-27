@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef CPU_NAMES_H_
-#define CPU_NAMES_H_
+#pragma once
 
 #include <stddef.h>
 #include <inttypes.h>
@@ -28,5 +27,3 @@ static const struct arm_cpu_t arm_cpu_names[] = {
 };
 
 uint32_t cpu_arm_find_by_name(const char *name);
-
-#endif // CPU_NAMES_H_

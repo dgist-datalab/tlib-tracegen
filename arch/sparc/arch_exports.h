@@ -1,5 +1,4 @@
-#ifndef ARCH_EXPORTS_H_
-#define ARCH_EXPORTS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -14,5 +13,3 @@ void tlib_set_wfi(void);
 void tlib_before_save(void *env)
 
 void tlib_after_load(void *env)
-
-#endif

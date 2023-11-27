@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CPU_ALL_H
-#define CPU_ALL_H
+#pragma once
 
 #include <stdint.h>
 
@@ -677,7 +676,6 @@ bool is_interrupt_pending(CPUState *env, int mask);
 void clear_interrupt_pending(CPUState *env, int mask);
 void set_interrupt_pending(CPUState *env, int mask);
 
-#endif /* CPU_ALL_H */
 
 #if TARGET_LONG_BITS == 64
 uint64_t *get_reg_pointer_64(int reg);

@@ -1,5 +1,4 @@
-#ifndef ARCH_CALLBACKS_H_
-#define ARCH_CALLBACKS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -22,5 +21,3 @@ uint32_t tlib_is_wfe_and_sev_as_nop(void);
 uint32_t tlib_do_semihosting(void);
 void tlib_set_system_event(int32_t value);
 void tlib_report_pmu_overflow(int32_t counter);
-
-#endif
