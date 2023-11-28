@@ -108,6 +108,7 @@ void cpu_init_v8_2(CPUState *env, uint32_t id)
         || id == ARM_CPUID_CORTEXA76
         || id == ARM_CPUID_CORTEXA78);
 
+    set_feature(env, ARM_FEATURE_A);
     set_feature(env, ARM_FEATURE_AARCH64);
     set_feature(env, ARM_FEATURE_V8);
     set_feature(env, ARM_FEATURE_NEON);
@@ -194,6 +195,7 @@ void cpu_init_a53(CPUState *env, uint32_t id)
 {
     assert(id == ARM_CPUID_CORTEXA53);
 
+    set_feature(env, ARM_FEATURE_A);
     set_feature(env, ARM_FEATURE_AARCH64);
     set_feature(env, ARM_FEATURE_V8);
     set_feature(env, ARM_FEATURE_NEON);
@@ -265,6 +267,7 @@ void cpu_init_r52(CPUState *env, uint32_t id)
     // Comments point to sections from
     // the Arm Cortex-R52 Processor Technical Reference Manual (version: r1p3)
 
+    set_feature(env, ARM_FEATURE_R);
     set_feature(env, ARM_FEATURE_V8);
     set_feature(env, ARM_FEATURE_V7VE); // enables ERET
     set_feature(env, ARM_FEATURE_V7);

@@ -2116,6 +2116,11 @@ enum arm_features {
     ARM_FEATURE_THUMB2,
     ARM_FEATURE_PMSA,   /* no MMU; may have Memory Protection Unit */
     ARM_FEATURE_NEON,
+    /* All profile features are mutually exclusive 
+     * and it's an error to have more than one be enabled
+     */
+    ARM_FEATURE_A, /* Application profile */
+    ARM_FEATURE_R, /* Real-time profile */
     ARM_FEATURE_M, /* Microcontroller profile.  */
     ARM_FEATURE_OMAPCP, /* OMAP specific CP15 ops handling.  */
     ARM_FEATURE_THUMB2EE,
