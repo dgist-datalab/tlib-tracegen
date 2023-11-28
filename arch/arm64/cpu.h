@@ -3754,7 +3754,8 @@ static inline bool isar_feature_any_ras(const ARMISARegisters *id)
 
 static inline bool pmsav8_default_cacheability_enabled(CPUState *env)
 {
-    return (extract32(env->cp15.hcr_el2, 12,1) == 1);
+    int current_el = arm_current_el(env);
+    return (arm_hcr_el2_eff(env) & HCR_DC) && current_el < 2;
 }
 
 /*
