@@ -244,18 +244,18 @@ static inline void arm_clear_exclusive(CPUState *env)
 // TODO: Calculate effective values for all bits.
 // The returned value is currently valid for all the bits used in tlib:
 //       HCR_TGE, HCR_TWE, HCR_TWI, HCR_E2H, HCR_TSC, HCR_AMO,
-//       HCR_VSE, HCR_TID0, HCR_TID3, HCR_API, HCR_E2H
+//       HCR_VSE, HCR_TID0, HCR_TID3, HCR_API, HCR_E2H, HCR_VM
 static inline uint64_t arm_hcr_el2_eff(CPUARMState *env)
 {
     uint64_t hcr = env->cp15.hcr_el2;
     uint64_t effective_hcr = hcr;
 
-    // TODO: Really check if FEAT_VHE is implemented.
-    bool feat_vhe = true;
+    bool feat_vhe = isar_feature_aa64_vh(&env->arm_core_config->isar);
     bool el2_enabled = arm_is_el2_enabled(env);
 
     bool tge = hcr & HCR_TGE;
     bool e2h = hcr & HCR_E2H;
+    bool dc = hcr & HCR_DC;
 
     if (tge) {
         effective_hcr &= ~HCR_FB;
@@ -290,7 +290,29 @@ static inline uint64_t arm_hcr_el2_eff(CPUARMState *env)
         effective_hcr &= ~HCR_VSE;
     }
 
+    if (is_a64(env) && feat_vhe && e2h && tge) {
+        effective_hcr &= ~HCR_DC;
+    } else if (dc) {
+        effective_hcr |= HCR_VM;
+    }
+
+
     return effective_hcr;
+}
+
+static inline uint64_t arm_sctlr_eff(CPUARMState *env, int el)
+{
+    uint64_t effective_sctlr = arm_sctlr(env, el);
+    uint64_t hcr = arm_hcr_el2_eff(env);
+
+    // For AArch32 R-profile, SCTLR.M is effectively 0 if HCR.TGE is set. For A-profile,
+    // SCTLR_EL1.M (AArch32: SCTLR.M) is effectively 0 in non-secure state if DC or TGE flag is
+    // set in HCR_EL2 (AArch32: HCR). Neither of these apply to SCTLR_EL2.M (AArch32: HSCTLR.M).
+    if (el == 1 && ((hcr & HCR_TGE) || (arm_feature(env, ARM_FEATURE_A) && (hcr & HCR_DC)))) {
+        effective_sctlr &= ~SCTLR_M;
+    }
+
+    return effective_sctlr;
 }
 
 static inline bool arm_is_el3_enabled(CPUState *env)
