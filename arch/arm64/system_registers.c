@@ -293,6 +293,7 @@ RW_FUNCTIONS(64, interrupt_cpu_interface,
              tlib_read_system_register_interrupt_cpu_interface(encode_as_aarch64_register(env, info)),
              tlib_write_system_register_interrupt_cpu_interface(encode_as_aarch64_register(env, info), value))
 
+RW_FUNCTIONS(64, nzcv, nzcv_read(env), nzcv_write(env, value))
 
 RW_FUNCTIONS_PTR(64, cpacr_el1,     cpacr_el1_register_pointer(env))
 RW_FUNCTIONS_PTR(64, spsr_el1,      spsr_el1_register_pointer(env))
@@ -1358,7 +1359,7 @@ ARMCPRegInfo aarch64_registers[] = {
     ARM64_CP_REG_DEFINE(MVFR0_EL1,               3,   0,   0,   3,   0,  1, RO, READFN(mvfr0_el1))
     ARM64_CP_REG_DEFINE(MVFR1_EL1,               3,   0,   0,   3,   1,  1, RO, READFN(mvfr1_el1))
     ARM64_CP_REG_DEFINE(MVFR2_EL1,               3,   0,   0,   3,   2,  1, RO, READFN(mvfr2_el1))
-    ARM64_CP_REG_DEFINE(NZCV,                    3,   3,   4,   2,   0,  0, RW | ARM_CP_NZCV)
+    ARM64_CP_REG_DEFINE(NZCV,                    3,   3,   4,   2,   0,  0, RW | ARM_CP_NZCV, RW_FNS(nzcv))
     ARM64_CP_REG_DEFINE(OSDLR_EL1,               2,   0,   1,   3,   4,  1, RW, FIELD(cp15.osdlr_el1))
     ARM64_CP_REG_DEFINE(OSDTRRX_EL1,             2,   0,   0,   0,   2,  1, RW)
     ARM64_CP_REG_DEFINE(OSDTRTX_EL1,             2,   0,   0,   3,   2,  1, RW)

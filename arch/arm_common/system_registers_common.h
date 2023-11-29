@@ -294,22 +294,11 @@ static const ARMCPRegInfo *sysreg_find_by_name(CPUState *env, const char *name)
     return NULL;
 }
 
-static void sysreg_access_nzcv()
-{
-    // For now let's just inform that it can be handled through PSTATE.
-    tlib_printf(LOG_LEVEL_INFO, "Use '<cpu_name> PSTATE' to access NZCV.");
-}
-
 static inline uint64_t sysreg_get_by_name(CPUState *env, const char *name)
 {
     const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
     if (ri == NULL) {
         tlib_printf(LOG_LEVEL_WARNING, "Reading from system register failure. No such register: %s", name);
-        return 0x0;
-    }
-
-    if (ri->type & ARM_CP_NZCV) {
-        sysreg_access_nzcv();
         return 0x0;
     }
 
@@ -335,10 +324,6 @@ static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t 
     if (ri == NULL) {
         tlib_printf(LOG_LEVEL_WARNING, "Writing to system register failure. No such register: %s", name);
         return;
-    }
-
-    if (ri->type & ARM_CP_NZCV) {
-        sysreg_access_nzcv();
     }
 
     if (ri->writefn) {

@@ -2251,26 +2251,33 @@ static inline bool arm_el_is_aa64(CPUARMState *env, int el)
     return aa64;
 }
 
+static inline uint32_t nzcv_read(CPUState *env)
+{
+    int ZF = (env->ZF == 0);
+    return (env->NF & 0x80000000) | (ZF << 30)
+        | (env->CF << 29) | ((env->VF & 0x80000000) >> 3);
+}
+
 /* Return the current PSTATE value. For the moment we don't support 32<->64 bit
  * interprocessing, so we don't attempt to sync with the cpsr state used by
  * the 32 bit decoder.
  */
 static inline uint32_t pstate_read(CPUARMState *env)
 {
-    int ZF;
-
-    ZF = (env->ZF == 0);
-    return (env->NF & 0x80000000) | (ZF << 30)
-        | (env->CF << 29) | ((env->VF & 0x80000000) >> 3)
-        | env->pstate | env->daif | (env->btype << 10);
+    return nzcv_read(env) | env->pstate | env->daif | (env->btype << 10);
 }
 
-static inline void pstate_write(CPUARMState *env, uint32_t val)
+static inline void nzcv_write(CPUState *env, uint32_t val)
 {
     env->ZF = (~val) & PSTATE_Z;
     env->NF = val;
     env->CF = (val >> 29) & 1;
     env->VF = (val << 3) & 0x80000000;
+}
+
+static inline void pstate_write(CPUARMState *env, uint32_t val)
+{
+    nzcv_write(env, val);
     env->daif = val & PSTATE_DAIF;
     env->btype = (val >> 10) & 3;
 
