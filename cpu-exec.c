@@ -249,6 +249,26 @@ static void verify_state(CPUState *env)
     }
 }
 
+// `was_not_working` is in `env` so it will reset when CPU is reset
+// and so it behaves properly after deserialization
+inline static void on_cpu_no_work(CPUState *const env)
+{
+    if (!env->was_not_working) {
+        env->was_not_working = true;
+        // Report WFI enter
+        tlib_on_wfi_state_change(true);
+    }
+}
+
+inline static void on_cpu_has_work(CPUState *const env)
+{
+    if (env->was_not_working) {
+        env->was_not_working = false;
+        // Report WFI exit
+        tlib_on_wfi_state_change(false);
+    }
+}
+
 /* main execution loop */
 
 int process_interrupt(int interrupt_request, CPUState *env);
@@ -269,7 +289,13 @@ int cpu_exec(CPUState *env)
 
 
     if (!cpu_has_work(env)) {
+        if (unlikely(env->cpu_wfi_state_change_hook_present)) {
+            on_cpu_no_work(env);
+        }
         return EXCP_WFI;
+    }
+    if (unlikely(env->cpu_wfi_state_change_hook_present)) {
+        on_cpu_has_work(env);
     }
 
     cpu_exec_prologue(env);

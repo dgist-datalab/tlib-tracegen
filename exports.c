@@ -924,3 +924,9 @@ char *tlib_get_commit()
 #endif
 }
 EXC_POINTER_0(char *, tlib_get_commit)
+
+void tlib_set_cpu_wfi_state_change_hook_present(uint32_t val)
+{
+    cpu->cpu_wfi_state_change_hook_present = !!val;
+}
+EXC_VOID_1(tlib_set_cpu_wfi_state_change_hook_present, uint32_t, val);

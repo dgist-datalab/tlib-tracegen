@@ -64,6 +64,7 @@ void tlib_set_tb_cache_enabled(uint32_t val);
 uint32_t tlib_get_tb_cache_enabled(void);
 
 void tlib_set_block_finished_hook_present(uint32_t val);
+void tlib_set_cpu_wfi_state_change_hook_present(uint32_t val);
 
 int32_t tlib_set_return_on_exception(int32_t value);
 void tlib_flush_page(uint64_t address);

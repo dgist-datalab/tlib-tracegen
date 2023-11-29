@@ -116,3 +116,5 @@ DEFAULT_VOID_HANDLER1(void tlib_profiler_announce_context_change, uint64_t conte
 DEFAULT_VOID_HANDLER2(void tlib_mass_broadcast_dirty, void* list_start ,int32_t size)
 
 DEFAULT_PTR_HANDLER1(void *tlib_get_dirty_addresses_list, void *size)
+
+DEFAULT_VOID_HANDLER1(void tlib_on_wfi_state_change, int32_t is_in_wfi)

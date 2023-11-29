@@ -190,6 +190,8 @@ typedef struct ExtMmuRange
                                                                               \
     uint32_t io_access_regions_count;                                         \
     uint32_t io_access_regions[MAX_IO_ACCESS_REGIONS_COUNT];                  \
+    /* in previous run cpu_exec returned with WFI */                          \
+    bool was_not_working;                                                     \
                                                                               \
     /* --------------------------------------- */                             \
     /* from this point: preserved by CPU reset */                             \
@@ -218,6 +220,7 @@ typedef struct ExtMmuRange
     int block_finished_hook_present;                                          \
     /* indicates if the block_begin hook is registered */                     \
     int block_begin_hook_present;                                             \
+    int cpu_wfi_state_change_hook_present;                                    \
     uint32_t cycles_per_instruction;                                          \
     int interrupt_begin_callback_enabled;                                     \
     int interrupt_end_callback_enabled;                                       \
