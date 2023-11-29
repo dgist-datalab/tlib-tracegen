@@ -270,7 +270,7 @@ static inline uint64_t *sysreg_field_ptr(CPUState *env, const ARMCPRegInfo *ri)
     return (uint64_t *)(((uint8_t *)env) + ri->fieldoffset);
 }
 
-static int ttable_compare_sysreg_name(TTable_entry entry, const void *sysreg_name)
+static inline int ttable_compare_sysreg_name(TTable_entry entry, const void *sysreg_name)
 {
     ARMCPRegInfo *ri = (ARMCPRegInfo *)entry.value;
     return strcasecmp(ri->name, sysreg_name);
