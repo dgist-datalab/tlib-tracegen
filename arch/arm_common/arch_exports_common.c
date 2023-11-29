@@ -35,14 +35,14 @@ uint32_t tlib_check_system_register_access(const char *name, bool is_write)
 }
 EXC_INT_2(uint32_t, tlib_check_system_register_access, const char *, name, bool, is_write)
 
-uint64_t tlib_get_system_register(const char *name)
+uint64_t tlib_get_system_register(const char *name, bool log_unhandled_access)
 {
-    return sysreg_get_by_name(cpu, name);
+    return sysreg_get_by_name(cpu, name, log_unhandled_access);
 }
-EXC_INT_1(uint64_t, tlib_get_system_register, const char *, name)
+EXC_INT_2(uint64_t, tlib_get_system_register, const char *, name, bool, log_unhandled_access)
 
-void tlib_set_system_register(const char *name, uint64_t value)
+void tlib_set_system_register(const char *name, uint64_t value, bool log_unhandled_access)
 {
-    sysreg_set_by_name(cpu, name, value);
+    sysreg_set_by_name(cpu, name, value, log_unhandled_access);
 }
-EXC_VOID_2(tlib_set_system_register, const char *, name, uint64_t, value)
+EXC_VOID_3(tlib_set_system_register, const char *, name, uint64_t, value, bool, log_unhandled_access)

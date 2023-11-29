@@ -296,7 +296,7 @@ static const ARMCPRegInfo *sysreg_find_by_name(CPUState *env, const char *name)
     return NULL;
 }
 
-static inline uint64_t sysreg_get_by_name(CPUState *env, const char *name)
+static inline uint64_t sysreg_get_by_name(CPUState *env, const char *name, bool log_unhandled_access)
 {
     const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
     if (ri == NULL) {
@@ -315,12 +315,14 @@ static inline uint64_t sysreg_get_by_name(CPUState *env, const char *name)
             return *(uint32_t *)sysreg_field_ptr(env, ri);
         }
     } else {
-        log_unhandled_sysreg_read(ri->name);
+        if (log_unhandled_access) {
+            log_unhandled_sysreg_read(ri->name);
+        }
         return 0x0;
     }
 }
 
-static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t value)
+static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t value, bool log_unhandled_access)
 {
     const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
     if (ri == NULL) {
@@ -336,8 +338,7 @@ static inline void sysreg_set_by_name(CPUState *env, const char *name, uint64_t 
         } else {
             *(uint32_t *)sysreg_field_ptr(env, ri) = (uint32_t)value;
         }
-    } else {
+    } else if (log_unhandled_access) {
         log_unhandled_sysreg_write(ri->name);
-        return;
     }
 }
