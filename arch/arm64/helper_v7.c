@@ -481,10 +481,10 @@ static enum mpu_result pmsav8_mpu_find_matching_region(pmsav8_region *regions, t
 {
     int found_region_index = find_first_matching_region_for_addr(regions, address, num_regions);
     if (found_region_index != -1) {
-        *found_region = env->pmsav8.regions[found_region_index];
+        *found_region = regions[found_region_index];
         if (unlikely(found_region->overlapping_regions_mask)) {
             // Only need to check regions that follow that one
-            if (find_first_matching_region_for_addr_masked(env->pmsav8.regions, address, found_region_index + 1, num_regions, found_region->overlapping_regions_mask) != -1) {
+            if (find_first_matching_region_for_addr_masked(regions, address, found_region_index + 1, num_regions, found_region->overlapping_regions_mask) != -1) {
                 return OVERLAP;
             }
         }
