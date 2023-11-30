@@ -276,6 +276,13 @@ void tlib_reset()
 {
     tb_flush(cpu);
     tlb_flush(cpu, 1, false);
+    if (unlikely(cpu->cpu_wfi_state_change_hook_present)) {
+        if (cpu->was_not_working) {
+            // CPU left WFI on reset
+            tlib_on_wfi_state_change(false);
+            // was_not_working will be cleared by `cpu_reset`
+        }
+    }
     cpu_reset(cpu);
 }
 
