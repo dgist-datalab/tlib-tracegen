@@ -78,6 +78,9 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
 {
     env->cp15.c0_cpuid = id;
     switch (id) {
+    case ARM_CPUID_ARM7TDMI:
+        set_feature(env, ARM_FEATURE_V4T);
+        break;
     case ARM_CPUID_ARM926:
         set_feature(env, ARM_FEATURE_V4T);
         set_feature(env, ARM_FEATURE_V5);
@@ -475,6 +478,7 @@ struct arm_cpu_t {
 };
 
 static const struct arm_cpu_t arm_cpu_names[] = {
+    { ARM_CPUID_ARM7TDMI, "arm7tdmi" },
     { ARM_CPUID_ARM926, "arm926" }, { ARM_CPUID_ARM946, "arm946" }, { ARM_CPUID_ARM1026, "arm1026" },
     { ARM_CPUID_ARM1136, "arm1136" }, { ARM_CPUID_ARM1136_R2, "arm1136-r2" }, { ARM_CPUID_ARM1176, "arm1176" },
     { ARM_CPUID_ARM11MPCORE, "arm11mpcore" }, { ARM_CPUID_CORTEXM3, "cortex-m0" }, { ARM_CPUID_CORTEXM3, "cortex-m0+" },

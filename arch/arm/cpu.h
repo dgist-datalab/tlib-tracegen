@@ -531,6 +531,7 @@ static inline int arm_feature(const CPUState *env, int feature)
 #define ARM_CPUID(env) (env->cp15.c0_cpuid)
 
 // MIDR, Main ID Register value
+#define ARM_CPUID_ARM7TDMI          0x40700f0f
 #define ARM_CPUID_ARM1026           0x4106a262
 #define ARM_CPUID_ARM926            0x41069265
 #define ARM_CPUID_ARM946            0x41059461
