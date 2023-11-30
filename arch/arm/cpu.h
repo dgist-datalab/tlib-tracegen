@@ -438,7 +438,13 @@ enum arm_cpu_mode {
     ARM_CPU_MODE_SVC = 0x13,
     ARM_CPU_MODE_ABT = 0x17,
     ARM_CPU_MODE_UND = 0x1b,
-    ARM_CPU_MODE_SYS = 0x1f
+    ARM_CPU_MODE_SYS = 0x1f,
+    /* Legacy 26-bit modes.
+       They are treated as aliases for the corresponding 32-bit mode. */
+    ARM_CPU_MODE_USR26 = 0x00,
+    ARM_CPU_MODE_FIQ26 = 0x01,
+    ARM_CPU_MODE_IRQ26 = 0x02,
+    ARM_CPU_MODE_SVC26 = 0x03,
 };
 
 /* VFP system registers.  */

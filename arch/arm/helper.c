@@ -605,21 +605,26 @@ uint32_t HELPER(abs)(uint32_t x)
 }
 
 /* Map CPU modes onto saved register banks.  */
+/* 26-bit mode currently affects only the bank number. */
 static inline int bank_number (int mode)
 {
     switch (mode) {
     case ARM_CPU_MODE_USR:
+    case ARM_CPU_MODE_USR26:
     case ARM_CPU_MODE_SYS:
         return 0;
     case ARM_CPU_MODE_SVC:
+    case ARM_CPU_MODE_SVC26:
         return 1;
     case ARM_CPU_MODE_ABT:
         return 2;
     case ARM_CPU_MODE_UND:
         return 3;
     case ARM_CPU_MODE_IRQ:
+    case ARM_CPU_MODE_IRQ26:
         return 4;
     case ARM_CPU_MODE_FIQ:
+    case ARM_CPU_MODE_FIQ26:
         return 5;
     }
     cpu_abort(cpu, "Bad mode %x\n", mode);
