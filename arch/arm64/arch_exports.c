@@ -16,6 +16,33 @@ uint32_t tlib_has_el3()
 }
 EXC_INT_0(uint32_t, tlib_has_el3)
 
+// Clang, at least Apple clang version 13.0.0 (clang-1300.0.29.30; x86_64-apple-darwin20.5.0),
+// improperly optimizes the functions below (EXC_INT_1 generates a wrapper function).
+//
+// If 'is_generic_timer_register(ri) == true' then the return value read through the wrapper
+// is correct but if 'is_gic_register(ri) == true' then the return value is invalid (false).
+//
+// Disabling optimization for either of these functions fixes the issue.
+//
+// The functions are also problematic with GCC 12+ when compiled with '-ftree-pre'.
+// A value read through the wrapper is always false even if any of 'is_gic_*' is true.
+#ifdef __clang__
+#  pragma clang optimize off
+#elif __GNUC__
+  // Disable GCC's Partial Redundancy Elimination for this function.
+  __attribute__((optimize("-fno-tree-pre")))
+#endif
+bool tlib_is_gic_or_generic_timer_system_register(char *name)
+{
+    const ARMCPRegInfo *ri = sysreg_find_by_name(env, name);
+    return ri != NULL && (is_gic_register(ri) || is_generic_timer_register(ri));
+}
+EXC_INT_1(bool, tlib_is_gic_or_generic_timer_system_register, char *, name)
+
+#ifdef __clang__
+#  pragma clang optimize on
+#endif
+
 uint32_t tlib_set_available_els(bool el2_enabled, bool el3_enabled)
 {
     enum {

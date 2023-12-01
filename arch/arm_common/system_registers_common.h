@@ -229,6 +229,18 @@ static void cp_reg_add_with_key(CPUState *env, TTable *cp_regs, uint32_t *key, A
     }
 }
 
+static inline bool is_gic_register(const ARMCPRegInfo *reg_info)
+{
+    tlib_assert(reg_info != NULL);
+    return reg_info->type & ARM_CP_GIC;
+}
+
+static inline bool is_generic_timer_register(const ARMCPRegInfo *reg_info)
+{
+    tlib_assert(reg_info != NULL);
+    return reg_info->type & ARM_CP_GTIMER;
+}
+
 static inline bool is_system_register(ARMCPRegInfo *reg_info)
 {
     tlib_assert(reg_info != NULL);
