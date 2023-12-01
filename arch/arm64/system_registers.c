@@ -20,7 +20,7 @@
  * Basically all the mnemonics used in MRS/MSR (AArch64), MRC/MCR (AArch32), AT, DC, IC, TLBI etc. instructions should have their entry in 'cp_regs'.
  */
 
-inline const char *sysreg_patch_lookup_name(CPUState *env, const char *name)
+inline const char *sysreg_patch_lookup_name(const char *name)
 {
     const char *lookup_name = name;
 

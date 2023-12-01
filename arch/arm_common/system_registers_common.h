@@ -276,10 +276,10 @@ static inline int ttable_compare_sysreg_name(TTable_entry entry, const void *sys
     return strcasecmp(ri->name, sysreg_name);
 }
 
-const char *sysreg_patch_lookup_name(CPUState *env, const char *name);
+const char *sysreg_patch_lookup_name(const char *name);
 static const ARMCPRegInfo *sysreg_find_by_name(CPUState *env, const char *name)
 {
-    const char *lookup_name = sysreg_patch_lookup_name(env, name);
+    const char *lookup_name = sysreg_patch_lookup_name(name);
 
 #ifdef TARGET_ARM64
     TTable *cp_regs = env->arm_core_config->cp_regs;
