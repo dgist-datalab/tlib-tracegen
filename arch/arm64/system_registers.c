@@ -876,67 +876,67 @@ ARMCPRegInfo aarch32_registers[] = {
 
 ARMCPRegInfo aarch32_instructions[] = {
     // The params are:  name              cp, op1, crn, crm, op2, el, extra_type, ...
-    ARM32_CP_REG_DEFINE(ATS12NSOPR,       15,   0,   7,   8,   4,   2, RW)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Read
-    ARM32_CP_REG_DEFINE(ATS12NSOPW,       15,   0,   7,   8,   5,   2, RW)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Write
-    ARM32_CP_REG_DEFINE(ATS12NSOUR,       15,   0,   7,   8,   6,   2, RW)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Read
-    ARM32_CP_REG_DEFINE(ATS12NSOUW,       15,   0,   7,   8,   7,   2, RW)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Write
-    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, RW)  // Address Translate Stage 1 Current state PL1 Read
-    ARM32_CP_REG_DEFINE(ATS1CPRP,         15,   0,   7,   9,   0,   1, RW)  // Address Translate Stage 1 Current state PL1 Read PAN
-    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, RW)  // Address Translate Stage 1 Current state PL1 Write
-    ARM32_CP_REG_DEFINE(ATS1CPWP,         15,   0,   7,   9,   1,   1, RW)  // Address Translate Stage 1 Current state PL1 Write PAN
-    ARM32_CP_REG_DEFINE(ATS1CUR,          15,   0,   7,   8,   2,   1, RW)  // Address Translate Stage 1 Current state Unprivileged Read
-    ARM32_CP_REG_DEFINE(ATS1CUW,          15,   0,   7,   8,   3,   1, RW)  // Address Translate Stage 1 Current state Unprivileged Write
-    ARM32_CP_REG_DEFINE(ATS1HR,           15,   4,   7,   8,   0,   2, RW)  // Address Translate Stage 1 Hyp mode Read
-    ARM32_CP_REG_DEFINE(ATS1HW,           15,   4,   7,   8,   1,   2, RW)  // Address Translate Stage 1 Hyp mode Write
-    ARM32_CP_REG_DEFINE(BPIALL,           15,   0,   7,   5,   6,   1, RW)  // Branch Predictor Invalidate All
-    ARM32_CP_REG_DEFINE(BPIALLIS,         15,   0,   7,   1,   6,   1, RW)  // Branch Predictor Invalidate All, Inner Shareable
-    ARM32_CP_REG_DEFINE(BPIMVA,           15,   0,   7,   5,   7,   1, RW)  // Branch Predictor Invalidate by VA
-    ARM32_CP_REG_DEFINE(CFPRCTX,          15,   0,   7,   3,   4,   0, RW)  // Control Flow Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(CP15DMB,          15,   0,   7,  10,   5,   0, RW)  // Data Memory Barrier System instruction
-    ARM32_CP_REG_DEFINE(CP15DSB,          15,   0,   7,  10,   4,   0, RW)  // Data Synchronization Barrier System instruction
-    ARM32_CP_REG_DEFINE(CP15ISB,          15,   0,   7,   5,   4,   0, RW)  // Instruction Synchronization Barrier System instruction
-    ARM32_CP_REG_DEFINE(CPPRCTX,          15,   0,   7,   3,   7,   0, RW)  // Cache Prefetch Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(DCCIMVAC,         15,   0,   7,  14,   1,   1, RW)  // Data Cache line Clean and Invalidate by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCISW,           15,   0,   7,  14,   2,   1, RW)  // Data Cache line Clean and Invalidate by Set/Way
-    ARM32_CP_REG_DEFINE(DCCMVAC,          15,   0,   7,  10,   1,   1, RW)  // Data Cache line Clean by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCMVAU,          15,   0,   7,  11,   1,   1, RW)  // Data Cache line Clean by VA to PoU
-    ARM32_CP_REG_DEFINE(DCCSW,            15,   0,   7,  10,   2,   1, RW)  // Data Cache line Clean by Set/W ay
-    ARM32_CP_REG_DEFINE(DCIMVAC,          15,   0,   7,   6,   1,   1, RW)  // Data Cache line Invalidate by VA to PoC
-    ARM32_CP_REG_DEFINE(DCISW,            15,   0,   7,   6,   2,   1, RW)  // Data Cache line Invalidate by Set/Way
-    ARM32_CP_REG_DEFINE(DTLBIALL,         15,   0,   8,   6,   0,   1, RW)  // Data TLB Invalidate All
-    ARM32_CP_REG_DEFINE(DTLBIASID,        15,   0,   8,   6,   2,   1, RW)  // Data TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(DTLBIMVA,         15,   0,   8,   6,   1,   1, RW)  // Data TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(DVPRCTX,          15,   0,   7,   3,   5,   0, RW)  // Data V alue Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(ICIALLU,          15,   0,   7,   5,   0,   1, RW)  // Instruction Cache Invalidate All to PoU
-    ARM32_CP_REG_DEFINE(ICIALLUIS,        15,   0,   7,   1,   0,   1, RW)  // Instruction Cache Invalidate All to PoU, Inner Shareable
-    ARM32_CP_REG_DEFINE(ICIMVAU,          15,   0,   7,   5,   1,   1, RW)  // Instruction Cache line Invalidate by VA to PoU AArch32 System Instructions
-    ARM32_CP_REG_DEFINE(ITLBIALL,         15,   0,   8,   5,   0,   1, RW)  // Instruction TLB Invalidate All
-    ARM32_CP_REG_DEFINE(ITLBIASID,        15,   0,   8,   5,   2,   1, RW)  // Instruction TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(ITLBIMVA,         15,   0,   8,   5,   1,   1, RW)  // Instruction TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(TLBIALL,          15,   0,   8,   7,   0,   1, RW)  // TLB Invalidate All
-    ARM32_CP_REG_DEFINE(TLBIALLH,         15,   4,   8,   7,   0,   2, RW)  // TLB Invalidate All, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIALLHIS,       15,   4,   8,   3,   0,   2, RW)  // TLB Invalidate All, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1, RW)  // TLB Invalidate All, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIALLNSNH,      15,   4,   8,   7,   4,   2, RW)  // TLB Invalidate All, Non-Secure Non-Hyp
-    ARM32_CP_REG_DEFINE(TLBIALLNSNHIS,    15,   4,   8,   3,   4,   2, RW)  // TLB Invalidate All, Non-Secure Non-Hyp, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIASID,         15,   0,   8,   7,   2,   1, RW)  // TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1, RW)  // TLB Invalidate by ASID match, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIIPAS2,        15,   4,   8,   4,   1,   2, RW)  // TLB Invalidate by Intermediate Physical Address, Stage 2
-    ARM32_CP_REG_DEFINE(TLBIIPAS2IS,      15,   4,   8,   0,   1,   2, RW)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIIPAS2L,       15,   4,   8,   4,   5,   2, RW)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level
-    ARM32_CP_REG_DEFINE(TLBIIPAS2LIS,     15,   4,   8,   0,   5,   2, RW)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVA,          15,   0,   8,   7,   1,   1, RW)  // TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(TLBIMVAA,         15,   0,   8,   7,   3,   1, RW)  // TLB Invalidate by VA, All ASID
-    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1, RW)  // TLB Invalidate by VA, All ASID , Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAAL,        15,   0,   8,   7,   7,   1, RW)  // TLB Invalidate by VA, All ASID , Last level
-    ARM32_CP_REG_DEFINE(TLBIMVAALIS,      15,   0,   8,   3,   7,   1, RW)  // TLB Invalidate by VA, All ASID , Last level, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAH,         15,   4,   8,   7,   1,   2, RW)  // TLB Invalidate by VA, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIMVAHIS,       15,   4,   8,   3,   1,   2, RW)  // TLB Invalidate by VA, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1, RW)  // TLB Invalidate by VA, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAL,         15,   0,   8,   7,   5,   1, RW)  // TLB Invalidate by VA, Last level
-    ARM32_CP_REG_DEFINE(TLBIMVALH,        15,   4,   8,   7,   5,   2, RW)  // TLB Invalidate by VA, Last level, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIMVALHIS,      15,   4,   8,   3,   5,   2, RW)  // TLB Invalidate by VA, Last level, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVALIS,       15,   0,   8,   3,   5,   1, RW)  // TLB Invalidate by VA, Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(ATS12NSOPR,       15,   0,   7,   8,   4,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Read
+    ARM32_CP_REG_DEFINE(ATS12NSOPW,       15,   0,   7,   8,   5,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Write
+    ARM32_CP_REG_DEFINE(ATS12NSOUR,       15,   0,   7,   8,   6,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Read
+    ARM32_CP_REG_DEFINE(ATS12NSOUW,       15,   0,   7,   8,   7,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Write
+    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read
+    ARM32_CP_REG_DEFINE(ATS1CPRP,         15,   0,   7,   9,   0,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read PAN
+    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write
+    ARM32_CP_REG_DEFINE(ATS1CPWP,         15,   0,   7,   9,   1,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write PAN
+    ARM32_CP_REG_DEFINE(ATS1CUR,          15,   0,   7,   8,   2,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Read
+    ARM32_CP_REG_DEFINE(ATS1CUW,          15,   0,   7,   8,   3,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Write
+    ARM32_CP_REG_DEFINE(ATS1HR,           15,   4,   7,   8,   0,   2, RW | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Read
+    ARM32_CP_REG_DEFINE(ATS1HW,           15,   4,   7,   8,   1,   2, RW | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Write
+    ARM32_CP_REG_DEFINE(BPIALL,           15,   0,   7,   5,   6,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate All
+    ARM32_CP_REG_DEFINE(BPIALLIS,         15,   0,   7,   1,   6,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate All, Inner Shareable
+    ARM32_CP_REG_DEFINE(BPIMVA,           15,   0,   7,   5,   7,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate by VA
+    ARM32_CP_REG_DEFINE(CFPRCTX,          15,   0,   7,   3,   4,   0, RW | INSTRUCTION)  // Control Flow Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(CP15DMB,          15,   0,   7,  10,   5,   0, RW | INSTRUCTION)  // Data Memory Barrier System instruction
+    ARM32_CP_REG_DEFINE(CP15DSB,          15,   0,   7,  10,   4,   0, RW | INSTRUCTION)  // Data Synchronization Barrier System instruction
+    ARM32_CP_REG_DEFINE(CP15ISB,          15,   0,   7,   5,   4,   0, RW | INSTRUCTION)  // Instruction Synchronization Barrier System instruction
+    ARM32_CP_REG_DEFINE(CPPRCTX,          15,   0,   7,   3,   7,   0, RW | INSTRUCTION)  // Cache Prefetch Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(DCCIMVAC,         15,   0,   7,  14,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean and Invalidate by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCISW,           15,   0,   7,  14,   2,   1, RW | INSTRUCTION)  // Data Cache line Clean and Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(DCCMVAC,          15,   0,   7,  10,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCMVAU,          15,   0,   7,  11,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean by VA to PoU
+    ARM32_CP_REG_DEFINE(DCCSW,            15,   0,   7,  10,   2,   1, RW | INSTRUCTION)  // Data Cache line Clean by Set/W ay
+    ARM32_CP_REG_DEFINE(DCIMVAC,          15,   0,   7,   6,   1,   1, RW | INSTRUCTION)  // Data Cache line Invalidate by VA to PoC
+    ARM32_CP_REG_DEFINE(DCISW,            15,   0,   7,   6,   2,   1, RW | INSTRUCTION)  // Data Cache line Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(DTLBIALL,         15,   0,   8,   6,   0,   1, RW | INSTRUCTION)  // Data TLB Invalidate All
+    ARM32_CP_REG_DEFINE(DTLBIASID,        15,   0,   8,   6,   2,   1, RW | INSTRUCTION)  // Data TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(DTLBIMVA,         15,   0,   8,   6,   1,   1, RW | INSTRUCTION)  // Data TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(DVPRCTX,          15,   0,   7,   3,   5,   0, RW | INSTRUCTION)  // Data V alue Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(ICIALLU,          15,   0,   7,   5,   0,   1, RW | INSTRUCTION)  // Instruction Cache Invalidate All to PoU
+    ARM32_CP_REG_DEFINE(ICIALLUIS,        15,   0,   7,   1,   0,   1, RW | INSTRUCTION)  // Instruction Cache Invalidate All to PoU, Inner Shareable
+    ARM32_CP_REG_DEFINE(ICIMVAU,          15,   0,   7,   5,   1,   1, RW | INSTRUCTION)  // Instruction Cache line Invalidate by VA to PoU AArch32 System Instructions
+    ARM32_CP_REG_DEFINE(ITLBIALL,         15,   0,   8,   5,   0,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate All
+    ARM32_CP_REG_DEFINE(ITLBIASID,        15,   0,   8,   5,   2,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(ITLBIMVA,         15,   0,   8,   5,   1,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(TLBIALL,          15,   0,   8,   7,   0,   1, RW | INSTRUCTION)  // TLB Invalidate All
+    ARM32_CP_REG_DEFINE(TLBIALLH,         15,   4,   8,   7,   0,   2, RW | INSTRUCTION)  // TLB Invalidate All, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIALLHIS,       15,   4,   8,   3,   0,   2, RW | INSTRUCTION)  // TLB Invalidate All, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1, RW | INSTRUCTION)  // TLB Invalidate All, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIALLNSNH,      15,   4,   8,   7,   4,   2, RW | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp
+    ARM32_CP_REG_DEFINE(TLBIALLNSNHIS,    15,   4,   8,   3,   4,   2, RW | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIASID,         15,   0,   8,   7,   2,   1, RW | INSTRUCTION)  // TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1, RW | INSTRUCTION)  // TLB Invalidate by ASID match, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIIPAS2,        15,   4,   8,   4,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2
+    ARM32_CP_REG_DEFINE(TLBIIPAS2IS,      15,   4,   8,   0,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIIPAS2L,       15,   4,   8,   4,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level
+    ARM32_CP_REG_DEFINE(TLBIIPAS2LIS,     15,   4,   8,   0,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVA,          15,   0,   8,   7,   1,   1, RW | INSTRUCTION)  // TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(TLBIMVAA,         15,   0,   8,   7,   3,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID
+    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAAL,        15,   0,   8,   7,   7,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level
+    ARM32_CP_REG_DEFINE(TLBIMVAALIS,      15,   0,   8,   3,   7,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAH,         15,   4,   8,   7,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIMVAHIS,       15,   4,   8,   3,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAL,         15,   0,   8,   7,   5,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level
+    ARM32_CP_REG_DEFINE(TLBIMVALH,        15,   4,   8,   7,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIMVALHIS,      15,   4,   8,   3,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVALIS,       15,   0,   8,   3,   5,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Inner Shareable
 };
 
 ARMCPRegInfo aarch64_registers[] = {
@@ -1624,209 +1624,209 @@ WRITE_FUNCTION(64, tlbi_vmall,
 
 ARMCPRegInfo aarch64_instructions[] = {
     // The params are:   name                   op0, op1, crn, crm, op2, el, extra_type, ...
-    ARM64_CP_REG_DEFINE(AT S12E0R,               1,   4,   7,   8,   6,  0, WO)
-    ARM64_CP_REG_DEFINE(AT S12E0W,               1,   4,   7,   8,   7,  0, WO)
-    ARM64_CP_REG_DEFINE(AT S12E1R,               1,   4,   7,   8,   4,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S12E1W,               1,   4,   7,   8,   5,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S1E0R,                1,   0,   7,   8,   2,  0, WO)
-    ARM64_CP_REG_DEFINE(AT S1E0W,                1,   0,   7,   8,   3,  0, WO)
-    ARM64_CP_REG_DEFINE(AT S1E1R,                1,   0,   7,   8,   0,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S1E1RP,               1,   0,   7,   9,   0,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S1E1W,                1,   0,   7,   8,   1,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S1E1WP,               1,   0,   7,   9,   1,  1, WO)
-    ARM64_CP_REG_DEFINE(AT S1E2R,                1,   4,   7,   8,   0,  2, WO)
-    ARM64_CP_REG_DEFINE(AT S1E2W,                1,   4,   7,   8,   1,  2, WO)
-    ARM64_CP_REG_DEFINE(AT S1E3R,                1,   6,   7,   8,   0,  3, WO)
-    ARM64_CP_REG_DEFINE(AT S1E3W,                1,   6,   7,   8,   1,  3, WO)
-    ARM64_CP_REG_DEFINE(CFP RCTX,                1,   3,   7,   3,   4,  0, WO)
-    ARM64_CP_REG_DEFINE(CPP RCTX,                1,   3,   7,   3,   7,  0, WO)
-    ARM64_CP_REG_DEFINE(DC CGDSW,                1,   0,   7,  10,   6,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGDVAC,               1,   3,   7,  10,   5,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGDVADP,              1,   3,   7,  13,   5,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGDVAP,               1,   3,   7,  12,   5,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGSW,                 1,   0,   7,  10,   4,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGVAC,                1,   3,   7,  10,   3,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGVADP,               1,   3,   7,  13,   3,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CGVAP,                1,   3,   7,  12,   3,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CIGDSW,               1,   0,   7,  14,   6,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CIGDVAC,              1,   3,   7,  14,   5,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CIGSW,                1,   0,   7,  14,   4,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CIGVAC,               1,   3,   7,  14,   3,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CISW,                 1,   0,   7,  14,   2,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CIVAC,                1,   3,   7,  14,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CSW,                  1,   0,   7,  10,   2,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CVAC,                 1,   3,   7,  10,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CVADP,                1,   3,   7,  13,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CVAP,                 1,   3,   7,  12,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC CVAU,                 1,   3,   7,  11,   1,  0, WO | IGNORED)
+    ARM64_CP_REG_DEFINE(AT S12E0R,               1,   4,   7,   8,   6,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S12E0W,               1,   4,   7,   8,   7,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S12E1R,               1,   4,   7,   8,   4,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S12E1W,               1,   4,   7,   8,   5,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E0R,                1,   0,   7,   8,   2,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E0W,                1,   0,   7,   8,   3,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E1R,                1,   0,   7,   8,   0,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E1RP,               1,   0,   7,   9,   0,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E1W,                1,   0,   7,   8,   1,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E1WP,               1,   0,   7,   9,   1,  1, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E2R,                1,   4,   7,   8,   0,  2, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E2W,                1,   4,   7,   8,   1,  2, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E3R,                1,   6,   7,   8,   0,  3, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(AT S1E3W,                1,   6,   7,   8,   1,  3, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(CFP RCTX,                1,   3,   7,   3,   4,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(CPP RCTX,                1,   3,   7,   3,   7,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(DC CGDSW,                1,   0,   7,  10,   6,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGDVAC,               1,   3,   7,  10,   5,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGDVADP,              1,   3,   7,  13,   5,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGDVAP,               1,   3,   7,  12,   5,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGSW,                 1,   0,   7,  10,   4,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGVAC,                1,   3,   7,  10,   3,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGVADP,               1,   3,   7,  13,   3,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CGVAP,                1,   3,   7,  12,   3,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CIGDSW,               1,   0,   7,  14,   6,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CIGDVAC,              1,   3,   7,  14,   5,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CIGSW,                1,   0,   7,  14,   4,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CIGVAC,               1,   3,   7,  14,   3,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CISW,                 1,   0,   7,  14,   2,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CIVAC,                1,   3,   7,  14,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CSW,                  1,   0,   7,  10,   2,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CVAC,                 1,   3,   7,  10,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CVADP,                1,   3,   7,  13,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CVAP,                 1,   3,   7,  12,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC CVAU,                 1,   3,   7,  11,   1,  0, WO | INSTRUCTION | IGNORED)
     // DC GVA, DC GZVA and DC ZVA are handled differently in 'handle_sys'.
-    ARM64_CP_REG_DEFINE(DC GVA,                  1,   3,   7,   4,   3,  0, WO | ARM_CP_DC_GVA)
-    ARM64_CP_REG_DEFINE(DC GZVA,                 1,   3,   7,   4,   4,  0, WO | ARM_CP_DC_GZVA)
-    ARM64_CP_REG_DEFINE(DC IGDSW,                1,   0,   7,   6,   6,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC IGDVAC,               1,   0,   7,   6,   5,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC IGSW,                 1,   0,   7,   6,   4,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC IGVAC,                1,   0,   7,   6,   3,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC ISW,                  1,   0,   7,   6,   2,  1, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC IVAC,                 1,   0,   7,   6,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(DC ZVA,                  1,   3,   7,   4,   1,  0, WO | ARM_CP_DC_ZVA)
-    ARM64_CP_REG_DEFINE(DVP RCTX,                1,   3,   7,   3,   5,  0, WO)
-    ARM64_CP_REG_DEFINE(IC IALLU,                1,   0,   7,   5,   0,  1, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(IC IALLUIS,              1,   0,   7,   1,   0,  0, WO, WRITEFN(ic_ialluis))
-    ARM64_CP_REG_DEFINE(IC IVAU,                 1,   3,   7,   5,   1,  0, WO | IGNORED)
-    ARM64_CP_REG_DEFINE(TLBI ALLE1,              1,   4,   8,   7,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE1IS,            1,   4,   8,   3,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE1ISNXS,         1,   4,   9,   3,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE1NXS,           1,   4,   9,   7,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE1OS,            1,   4,   8,   1,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE1OSNXS,         1,   4,   9,   1,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2,              1,   4,   8,   7,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2IS,            1,   4,   8,   3,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2ISNXS,         1,   4,   9,   3,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2NXS,           1,   4,   9,   7,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2OS,            1,   4,   8,   1,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE2OSNXS,         1,   4,   9,   1,   0,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3,              1,   6,   8,   7,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3IS,            1,   6,   8,   3,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3ISNXS,         1,   6,   9,   3,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3NXS,           1,   6,   9,   7,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3OS,            1,   6,   8,   1,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ALLE3OSNXS,         1,   6,   9,   1,   0,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1,             1,   0,   8,   7,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1IS,           1,   0,   8,   3,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1ISNXS,        1,   0,   9,   3,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1NXS,          1,   0,   9,   7,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1OS,           1,   0,   8,   1,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI ASIDE1OSNXS,        1,   0,   9,   1,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1,            1,   4,   8,   4,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1IS,          1,   4,   8,   0,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1ISNXS,       1,   4,   9,   0,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1NXS,         1,   4,   9,   4,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1OS,          1,   4,   8,   4,   0,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2E1OSNXS,       1,   4,   9,   4,   0,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1,           1,   4,   8,   4,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1IS,         1,   4,   8,   0,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1ISNXS,      1,   4,   9,   0,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1NXS,        1,   4,   9,   4,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1OS,         1,   4,   8,   4,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1OSNXS,      1,   4,   9,   4,   4,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1,           1,   4,   8,   4,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1IS,         1,   4,   8,   0,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1ISNXS,      1,   4,   9,   0,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1NXS,        1,   4,   9,   4,   2,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1OS,         1,   4,   8,   4,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1OSNXS,      1,   4,   9,   4,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1,          1,   4,   8,   4,   6,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1IS,        1,   4,   8,   0,   6,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1ISNXS,     1,   4,   9,   0,   6,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1NXS,       1,   4,   9,   4,   6,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1OS,        1,   4,   8,   4,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1OSNXS,     1,   4,   9,   4,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1,             1,   0,   8,   6,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1IS,           1,   0,   8,   2,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1ISNXS,        1,   0,   9,   2,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1NXS,          1,   0,   9,   6,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1OS,           1,   0,   8,   5,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAAE1OSNXS,        1,   0,   9,   5,   3,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1,            1,   0,   8,   6,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1IS,          1,   0,   8,   2,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1ISNXS,       1,   0,   9,   2,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1NXS,         1,   0,   9,   6,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1OS,          1,   0,   8,   5,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAALE1OSNXS,       1,   0,   9,   5,   7,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1,              1,   0,   8,   6,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1IS,            1,   0,   8,   2,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1ISNXS,         1,   0,   9,   2,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1NXS,           1,   0,   9,   6,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1OS,            1,   0,   8,   5,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE1OSNXS,         1,   0,   9,   5,   1,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE2,              1,   4,   8,   6,   1,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE2IS,            1,   4,   8,   2,   1,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE2ISNXS,         1,   4,   9,   2,   1,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE2NXS,           1,   4,   9,   6,   1,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3,              1,   6,   8,   6,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3IS,            1,   6,   8,   2,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3ISNXS,         1,   6,   9,   2,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3NXS,           1,   6,   9,   6,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3OS,            1,   6,   8,   5,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVAE3OSNXS,         1,   6,   9,   5,   1,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1,             1,   0,   8,   6,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1IS,           1,   0,   8,   2,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1ISNXS,        1,   0,   9,   2,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1NXS,          1,   0,   9,   6,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1OS,           1,   0,   8,   5,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE1OSNXS,        1,   0,   9,   5,   5,  1, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2,             1,   4,   8,   6,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2IS,           1,   4,   8,   2,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2ISNXS,        1,   4,   9,   2,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2NXS,          1,   4,   9,   6,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2OS,           1,   4,   8,   5,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE2OSNXS,        1,   4,   9,   5,   5,  2, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3,             1,   6,   8,   6,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3IS,           1,   6,   8,   2,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3ISNXS,        1,   6,   9,   2,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3NXS,          1,   6,   9,   6,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3OS,           1,   6,   8,   5,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI RVALE3OSNXS,        1,   6,   9,   5,   5,  3, WO, WRITEFN(tlbi_flush_all))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1,              1,   0,   8,   7,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1IS,            1,   0,   8,   3,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1ISNXS,         1,   0,   9,   3,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1NXS,           1,   0,   9,   7,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1OS,            1,   0,   8,   1,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAAE1OSNXS,         1,   0,   9,   1,   3,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1,             1,   0,   8,   7,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1IS,           1,   0,   8,   3,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1ISNXS,        1,   0,   9,   3,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1NXS,          1,   0,   9,   7,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1OS,           1,   0,   8,   1,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAALE1OSNXS,        1,   0,   9,   1,   7,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1,               1,   0,   8,   7,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1IS,             1,   0,   8,   3,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1ISNXS,          1,   0,   9,   3,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1NXS,            1,   0,   9,   7,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1OS,             1,   0,   8,   1,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE1OSNXS,          1,   0,   9,   1,   1,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2,               1,   4,   8,   7,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2IS,             1,   4,   8,   3,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2ISNXS,          1,   4,   9,   3,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2NXS,            1,   4,   9,   7,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2OS,             1,   4,   8,   1,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE2OSNXS,          1,   4,   9,   1,   1,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3,               1,   6,   8,   7,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3IS,             1,   6,   8,   3,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3ISNXS,          1,   6,   9,   3,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3NXS,            1,   6,   9,   7,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3OS,             1,   6,   8,   1,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VAE3OSNXS,          1,   6,   9,   1,   1,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1,              1,   0,   8,   7,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1IS,            1,   0,   8,   3,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1ISNXS,         1,   0,   9,   3,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1NXS,           1,   0,   9,   7,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1OS,            1,   0,   8,   1,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE1OSNXS,         1,   0,   9,   1,   5,  1, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2,              1,   4,   8,   7,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2IS,            1,   4,   8,   3,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2ISNXS,         1,   4,   9,   3,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2NXS,           1,   4,   9,   7,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2OS,            1,   4,   8,   1,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE2OSNXS,         1,   4,   9,   1,   5,  2, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3,              1,   6,   8,   7,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3IS,            1,   6,   8,   3,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3ISNXS,         1,   6,   9,   3,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3NXS,           1,   6,   9,   7,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3OS,            1,   6,   8,   1,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VALE3OSNXS,         1,   6,   9,   1,   5,  3, WO, WRITEFN(tlbi_va))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1,            1,   0,   8,   7,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1IS,          1,   0,   8,   3,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1ISNXS,       1,   0,   9,   3,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1NXS,         1,   0,   9,   7,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1OS,          1,   0,   8,   1,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLE1OSNXS,       1,   0,   9,   1,   0,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1,         1,   4,   8,   7,   6,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1IS,       1,   4,   8,   3,   6,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1ISNXS,    1,   4,   9,   3,   6,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1NXS,      1,   4,   9,   7,   6,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1OS,       1,   4,   8,   1,   6,  1, WO, WRITEFN(tlbi_vmall))
-    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1OSNXS,    1,   4,   9,   1,   6,  1, WO, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(DC GVA,                  1,   3,   7,   4,   3,  0, WO | INSTRUCTION | ARM_CP_DC_GVA)
+    ARM64_CP_REG_DEFINE(DC GZVA,                 1,   3,   7,   4,   4,  0, WO | INSTRUCTION | ARM_CP_DC_GZVA)
+    ARM64_CP_REG_DEFINE(DC IGDSW,                1,   0,   7,   6,   6,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC IGDVAC,               1,   0,   7,   6,   5,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC IGSW,                 1,   0,   7,   6,   4,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC IGVAC,                1,   0,   7,   6,   3,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC ISW,                  1,   0,   7,   6,   2,  1, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC IVAC,                 1,   0,   7,   6,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(DC ZVA,                  1,   3,   7,   4,   1,  0, WO | INSTRUCTION | ARM_CP_DC_ZVA)
+    ARM64_CP_REG_DEFINE(DVP RCTX,                1,   3,   7,   3,   5,  0, WO | INSTRUCTION)
+    ARM64_CP_REG_DEFINE(IC IALLU,                1,   0,   7,   5,   0,  1, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(IC IALLUIS,              1,   0,   7,   1,   0,  0, WO | INSTRUCTION, WRITEFN(ic_ialluis))
+    ARM64_CP_REG_DEFINE(IC IVAU,                 1,   3,   7,   5,   1,  0, WO | INSTRUCTION | IGNORED)
+    ARM64_CP_REG_DEFINE(TLBI ALLE1,              1,   4,   8,   7,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE1IS,            1,   4,   8,   3,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE1ISNXS,         1,   4,   9,   3,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE1NXS,           1,   4,   9,   7,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE1OS,            1,   4,   8,   1,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE1OSNXS,         1,   4,   9,   1,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2,              1,   4,   8,   7,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2IS,            1,   4,   8,   3,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2ISNXS,         1,   4,   9,   3,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2NXS,           1,   4,   9,   7,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2OS,            1,   4,   8,   1,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE2OSNXS,         1,   4,   9,   1,   0,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3,              1,   6,   8,   7,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3IS,            1,   6,   8,   3,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3ISNXS,         1,   6,   9,   3,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3NXS,           1,   6,   9,   7,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3OS,            1,   6,   8,   1,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ALLE3OSNXS,         1,   6,   9,   1,   0,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1,             1,   0,   8,   7,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1IS,           1,   0,   8,   3,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1ISNXS,        1,   0,   9,   3,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1NXS,          1,   0,   9,   7,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1OS,           1,   0,   8,   1,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI ASIDE1OSNXS,        1,   0,   9,   1,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1,            1,   4,   8,   4,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1IS,          1,   4,   8,   0,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1ISNXS,       1,   4,   9,   0,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1NXS,         1,   4,   9,   4,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1OS,          1,   4,   8,   4,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2E1OSNXS,       1,   4,   9,   4,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1,           1,   4,   8,   4,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1IS,         1,   4,   8,   0,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1ISNXS,      1,   4,   9,   0,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1NXS,        1,   4,   9,   4,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1OS,         1,   4,   8,   4,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI IPAS2LE1OSNXS,      1,   4,   9,   4,   4,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1,           1,   4,   8,   4,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1IS,         1,   4,   8,   0,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1ISNXS,      1,   4,   9,   0,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1NXS,        1,   4,   9,   4,   2,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1OS,         1,   4,   8,   4,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2E1OSNXS,      1,   4,   9,   4,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1,          1,   4,   8,   4,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1IS,        1,   4,   8,   0,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1ISNXS,     1,   4,   9,   0,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1NXS,       1,   4,   9,   4,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1OS,        1,   4,   8,   4,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RIPAS2LE1OSNXS,     1,   4,   9,   4,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1,             1,   0,   8,   6,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1IS,           1,   0,   8,   2,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1ISNXS,        1,   0,   9,   2,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1NXS,          1,   0,   9,   6,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1OS,           1,   0,   8,   5,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAAE1OSNXS,        1,   0,   9,   5,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1,            1,   0,   8,   6,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1IS,          1,   0,   8,   2,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1ISNXS,       1,   0,   9,   2,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1NXS,         1,   0,   9,   6,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1OS,          1,   0,   8,   5,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAALE1OSNXS,       1,   0,   9,   5,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1,              1,   0,   8,   6,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1IS,            1,   0,   8,   2,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1ISNXS,         1,   0,   9,   2,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1NXS,           1,   0,   9,   6,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1OS,            1,   0,   8,   5,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE1OSNXS,         1,   0,   9,   5,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE2,              1,   4,   8,   6,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE2IS,            1,   4,   8,   2,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE2ISNXS,         1,   4,   9,   2,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE2NXS,           1,   4,   9,   6,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3,              1,   6,   8,   6,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3IS,            1,   6,   8,   2,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3ISNXS,         1,   6,   9,   2,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3NXS,           1,   6,   9,   6,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3OS,            1,   6,   8,   5,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVAE3OSNXS,         1,   6,   9,   5,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1,             1,   0,   8,   6,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1IS,           1,   0,   8,   2,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1ISNXS,        1,   0,   9,   2,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1NXS,          1,   0,   9,   6,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1OS,           1,   0,   8,   5,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE1OSNXS,        1,   0,   9,   5,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2,             1,   4,   8,   6,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2IS,           1,   4,   8,   2,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2ISNXS,        1,   4,   9,   2,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2NXS,          1,   4,   9,   6,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2OS,           1,   4,   8,   5,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE2OSNXS,        1,   4,   9,   5,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3,             1,   6,   8,   6,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3IS,           1,   6,   8,   2,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3ISNXS,        1,   6,   9,   2,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3NXS,          1,   6,   9,   6,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3OS,           1,   6,   8,   5,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI RVALE3OSNXS,        1,   6,   9,   5,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_flush_all))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1,              1,   0,   8,   7,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1IS,            1,   0,   8,   3,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1ISNXS,         1,   0,   9,   3,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1NXS,           1,   0,   9,   7,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1OS,            1,   0,   8,   1,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAAE1OSNXS,         1,   0,   9,   1,   3,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1,             1,   0,   8,   7,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1IS,           1,   0,   8,   3,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1ISNXS,        1,   0,   9,   3,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1NXS,          1,   0,   9,   7,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1OS,           1,   0,   8,   1,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAALE1OSNXS,        1,   0,   9,   1,   7,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1,               1,   0,   8,   7,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1IS,             1,   0,   8,   3,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1ISNXS,          1,   0,   9,   3,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1NXS,            1,   0,   9,   7,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1OS,             1,   0,   8,   1,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE1OSNXS,          1,   0,   9,   1,   1,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2,               1,   4,   8,   7,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2IS,             1,   4,   8,   3,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2ISNXS,          1,   4,   9,   3,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2NXS,            1,   4,   9,   7,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2OS,             1,   4,   8,   1,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE2OSNXS,          1,   4,   9,   1,   1,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3,               1,   6,   8,   7,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3IS,             1,   6,   8,   3,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3ISNXS,          1,   6,   9,   3,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3NXS,            1,   6,   9,   7,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3OS,             1,   6,   8,   1,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VAE3OSNXS,          1,   6,   9,   1,   1,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1,              1,   0,   8,   7,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1IS,            1,   0,   8,   3,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1ISNXS,         1,   0,   9,   3,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1NXS,           1,   0,   9,   7,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1OS,            1,   0,   8,   1,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE1OSNXS,         1,   0,   9,   1,   5,  1, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2,              1,   4,   8,   7,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2IS,            1,   4,   8,   3,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2ISNXS,         1,   4,   9,   3,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2NXS,           1,   4,   9,   7,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2OS,            1,   4,   8,   1,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE2OSNXS,         1,   4,   9,   1,   5,  2, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3,              1,   6,   8,   7,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3IS,            1,   6,   8,   3,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3ISNXS,         1,   6,   9,   3,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3NXS,           1,   6,   9,   7,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3OS,            1,   6,   8,   1,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VALE3OSNXS,         1,   6,   9,   1,   5,  3, WO | INSTRUCTION, WRITEFN(tlbi_va))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1,            1,   0,   8,   7,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1IS,          1,   0,   8,   3,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1ISNXS,       1,   0,   9,   3,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1NXS,         1,   0,   9,   7,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1OS,          1,   0,   8,   1,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLE1OSNXS,       1,   0,   9,   1,   0,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1,         1,   4,   8,   7,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1IS,       1,   4,   8,   3,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1ISNXS,    1,   4,   9,   3,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1NXS,      1,   4,   9,   7,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1OS,       1,   4,   8,   1,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
+    ARM64_CP_REG_DEFINE(TLBI VMALLS12E1OSNXS,    1,   4,   9,   1,   6,  1, WO | INSTRUCTION, WRITEFN(tlbi_vmall))
 };
 
 void cp_reg_add(CPUState *env, ARMCPRegInfo *reg_info)

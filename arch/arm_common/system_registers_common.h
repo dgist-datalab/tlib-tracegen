@@ -36,9 +36,10 @@
 // TODO: Implement gen_helper_rebuild_hflags_a32_newel() for handling ARM_CP_NEWEL
 #define ARM_CP_NEWEL           (1 << 19)  // Write can change EL
 #define ARM_CP_FORCE_TB_END    (1 << 20)  // Force end of TB, even if the register is only read from
+#define ARM_CP_INSTRUCTION     (1 << 21)  // For system instructions
 
 // Minimum EL access
-#define ARM_CP_EL_SHIFT        21
+#define ARM_CP_EL_SHIFT        28
 #define ARM_CP_EL_MASK         (3 << ARM_CP_EL_SHIFT)
 #define ARM_CP_EL_0            (0 << ARM_CP_EL_SHIFT)
 #define ARM_CP_EL_1            (1 << ARM_CP_EL_SHIFT)
@@ -162,6 +163,7 @@ static inline bool cp_access_ok(int current_el, const ARMCPRegInfo *reg_info, bo
 
 #define CONST(resetvalue)  ARM_CP_CONST, RESETVALUE(resetvalue)
 #define IGNORED            ARM_CP_NOP
+#define INSTRUCTION        ARM_CP_INSTRUCTION
 #define RO                 ARM_CP_RO
 #define RW                 0x0
 #define WO                 ARM_CP_WO
