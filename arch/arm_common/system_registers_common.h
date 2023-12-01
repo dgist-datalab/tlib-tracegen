@@ -37,6 +37,8 @@
 #define ARM_CP_NEWEL           (1 << 19)  // Write can change EL
 #define ARM_CP_FORCE_TB_END    (1 << 20)  // Force end of TB, even if the register is only read from
 #define ARM_CP_INSTRUCTION     (1 << 21)  // For system instructions
+#define ARM_CP_GIC             (1 << 22)  // GIC register
+#define ARM_CP_GTIMER          (1 << 23)  // Generic Timer register
 
 // Minimum EL access
 #define ARM_CP_EL_SHIFT        28
@@ -162,6 +164,8 @@ static inline bool cp_access_ok(int current_el, const ARMCPRegInfo *reg_info, bo
  */
 
 #define CONST(resetvalue)  ARM_CP_CONST, RESETVALUE(resetvalue)
+#define GIC                ARM_CP_GIC
+#define GTIMER             ARM_CP_GTIMER
 #define IGNORED            ARM_CP_NOP
 #define INSTRUCTION        ARM_CP_INSTRUCTION
 #define RO                 ARM_CP_RO
