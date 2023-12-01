@@ -388,9 +388,9 @@ static void gen_jump_slot(DisasContext *dc, TCGv dest, int slot)
         }
         if (slot >= 0) {
             tcg_gen_goto_tb(slot);
-            tcg_gen_exit_tb((tcg_target_long)dc->base.tb + slot);
+            gen_exit_tb(dc->base.tb, slot);
         } else {
-            tcg_gen_exit_tb(0);
+            gen_exit_tb_no_chaining(dc->base.tb);
         }
     }
     dc->base.is_jmp = DISAS_NORETURN;

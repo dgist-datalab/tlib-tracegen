@@ -849,7 +849,7 @@ static inline void gen_bx_excret_final_code(DisasContext *s)
     if (s->ss_active) {
         gen_singlestep_exception(s);
     } else {
-        tcg_gen_exit_tb(0);
+        gen_exit_tb_no_chaining(s->base.tb);
     }
     gen_set_label(excret_label);
     /* Yes: this is an exception return.
@@ -9838,7 +9838,7 @@ void arm_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
             /* fall through */
         default:
             /* indicate that the hash table must be used to find the next TB */
-            tcg_gen_exit_tb(0);
+            gen_exit_tb_no_chaining(dc->base.tb);
             break;
         case DISAS_NORETURN:
             /* nothing more to generate */
@@ -9850,7 +9850,7 @@ void arm_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
              * The helper doesn't necessarily throw an exception, but we
              * must go back to the main loop to check for interrupts anyway.
              */
-            tcg_gen_exit_tb(0);
+            gen_exit_tb_no_chaining(dc->base.tb);
             break;
         case DISAS_WFE:
             gen_helper_wfe(cpu_env);

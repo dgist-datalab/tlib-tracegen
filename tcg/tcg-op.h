@@ -2627,6 +2627,8 @@ static inline void tcg_gen_insn_start(target_ulong pc, target_ulong a1,
 #error "Unhandled number of operands to insn_start"
 #endif
 
+// This function most likely shouldn't be called directly
+// Use `gen_exit_tb` or `gen_exit_tb_no_chaining` instead
 static inline void tcg_gen_exit_tb(tcg_target_long val)
 {
     tcg_gen_op1i(INDEX_op_exit_tb, val);

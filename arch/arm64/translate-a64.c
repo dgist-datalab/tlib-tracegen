@@ -15017,7 +15017,7 @@ static void aarch64_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
             gen_a64_set_pc_im(dc->base.pc_next);
             /* fall through */
         case DISAS_EXIT:
-            tcg_gen_exit_tb(0);
+            gen_exit_tb_no_chaining(dc->base.tb);
             break;
         case DISAS_UPDATE_NOCHAIN:
             gen_a64_set_pc_im(dc->base.pc_next);
@@ -15047,7 +15047,7 @@ static void aarch64_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
              * The helper doesn't necessarily throw an exception, but we
              * must go back to the main loop to check for interrupts anyway.
              */
-            tcg_gen_exit_tb(0);
+            gen_exit_tb_no_chaining(dc->base.tb);
             break;
         }
     }
