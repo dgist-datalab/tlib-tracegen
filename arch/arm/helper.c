@@ -246,6 +246,26 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         env->cp15.c1_sys = 0x00c50078;
         break;
 #ifdef TARGET_PROTO_ARM_M
+    case ARM_CPUID_CORTEXM85:
+        // We don't yet implement the DSP (although this is available in our arm64), ARMV8.1M and the VFP5.
+        // They should be added when available
+        set_feature(env, ARM_FEATURE_THUMB2);
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_VFP);
+        set_feature(env, ARM_FEATURE_VFP3);
+        set_feature(env, ARM_FEATURE_VFP_FP16);
+        set_feature(env, ARM_FEATURE_VFP4);
+        /* fallthrough */
+        break;
+    case ARM_CPUID_CORTEXM23:
+        set_feature(env, ARM_FEATURE_ARM_DIV);
+        set_feature(env, ARM_FEATURE_MPU);
+        set_feature(env, ARM_FEATURE_V4T);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V8);
+        break;
     case ARM_CPUID_CORTEXM33:
         set_feature(env, ARM_FEATURE_V8);
         /* fallthrough */
@@ -264,7 +284,6 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_VFP_FP16);
         // cortex-m7?
         set_feature(env, ARM_FEATURE_VFP4);
-
         break;
 #endif
     case ARM_CPUID_ANY: /* For userspace emulation.  */
@@ -491,7 +510,7 @@ static const struct arm_cpu_t arm_cpu_names[] = {
     { ARM_CPUID_PXA270_A1, "pxa270-a1" }, { ARM_CPUID_PXA270_B0, "pxa270-b0" }, { ARM_CPUID_PXA270_B1, "pxa270-b1" },
     { ARM_CPUID_PXA270_C0, "pxa270-c0" }, { ARM_CPUID_PXA270_C5, "pxa270-c5" }, { ARM_CPUID_CORTEXM33, "cortex-m33" },
     { ARM_CPUID_CORTEXR5, "cortex-r5" }, { ARM_CPUID_CORTEXR5F, "cortex-r5f" }, { ARM_CPUID_CORTEXR8, "cortex-r8" },
-    { ARM_CPUID_ANY, "any" }, { 0, NULL }
+    { ARM_CPUID_CORTEXM23, "cortex-m23" }, {ARM_CPUID_CORTEXM85, "cortex-m85"}, { ARM_CPUID_ANY, "any" }, { 0, NULL }
 };
 
 /* return 0 if not found */
