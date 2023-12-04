@@ -716,3 +716,8 @@ static inline void find_pending_irq_if_primask_unset(CPUState *env)
     }
 #endif
 }
+
+static inline enum arm_cpu_mode cpu_get_current_execution_mode()
+{
+    return env->uncached_cpsr & CPSR_M;
+}

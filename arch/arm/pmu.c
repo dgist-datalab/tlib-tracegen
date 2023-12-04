@@ -27,7 +27,7 @@ static pmu_event pmu_events[] = {
 };
 // *INDENT-ON*
 
-inline static void pmu_set_snapshot(pmu_counter *const counter, uint64_t snapshot)
+static inline void pmu_set_snapshot(pmu_counter *const counter, uint64_t snapshot)
 {
     counter->snapshot = snapshot;
     counter->has_snapshot = true;
@@ -36,7 +36,7 @@ inline static void pmu_set_snapshot(pmu_counter *const counter, uint64_t snapsho
     }
 }
 
-inline static void pmu_reset_snapshot(pmu_counter *const counter)
+static inline void pmu_reset_snapshot(pmu_counter *const counter)
 {
     counter->snapshot = 0;
     counter->has_snapshot = false;
@@ -45,9 +45,31 @@ inline static void pmu_reset_snapshot(pmu_counter *const counter)
     }
 }
 
-inline static pmu_counter *pmu_get_counter(int counter_id)
+static inline pmu_counter *pmu_get_counter(int counter_id)
 {
     return counter_id == PMU_CYCLE_COUNTER_ID ? &env->pmu.cycle_counter : &env->pmu.counters[env->pmu.selected_counter_id];
+}
+
+static inline bool pmu_counter_ignores_count_custom_pl(const pmu_counter *const counter, enum arm_cpu_mode mode)
+{
+    const bool is_user = mode == ARM_CPU_MODE_USR;
+
+    if (counter->ignore_count_at_pl0 && is_user) {
+        return true;
+    }
+
+    if (counter->ignore_count_at_pl1 && !is_user) {
+        return true;
+    }
+
+    // This PMU implementation doesn't support Hypervisor/Virtualization and Security Extensions
+
+    return false;
+}
+
+static inline bool pmu_counter_ignores_count_current_pl(const pmu_counter *const counter)
+{
+    return pmu_counter_ignores_count_custom_pl(counter, cpu_get_current_execution_mode());
 }
 
 inline void pmu_init_reset(CPUState *env)
@@ -380,8 +402,7 @@ void set_c9_pmselr(struct CPUState *env, uint64_t val)
 
 void set_c9_pmxevtyper(struct CPUState *env, uint64_t val)
 {
-    // TODO: now we don't support EL0/1 etc. event filtering
-    env->cp15.c9_pmxevtyper = val & PMXEVTYPER_EVT;
+    env->cp15.c9_pmxevtyper = val & (PMXEVTYPER_EVT | PMXEVTYPER_P | PMXEVTYPER_U);
     int selected_event = val & PMXEVTYPER_EVT;
 
     if (env->pmu.selected_counter_id == PMU_CYCLE_COUNTER_ID) {
@@ -402,8 +423,11 @@ void set_c9_pmxevtyper(struct CPUState *env, uint64_t val)
     // U bit - unprivileged execution
     selected_counter->ignore_count_at_pl0 = (PMXEVTYPER_U & val) ? 1 : 0;
 
-    if (PMXEVTYPER_P & val || PMXEVTYPER_U & val) {
-        tlib_printf(LOG_LEVEL_WARNING, "PMU: Filtering events based on EL is not supported");
+    if (unlikely(env->pmu.extra_logs_enabled)) {
+        if (PMXEVTYPER_P & val || PMXEVTYPER_U & val) {
+            tlib_printf(LOG_LEVEL_DEBUG, "PMU counter %d ignoring events in %s%s", selected_counter->id,
+                        selected_counter->ignore_count_at_pl0 ? "PL0 " : "", selected_counter->ignore_count_at_pl1 ? "PL1 " : "");
+        }
     }
 
     // NSK, NSU, NSH are unimplemented, as we don't support Security or Virtualization extensions
@@ -487,9 +511,25 @@ void set_c9_pmswinc(struct CPUState *env, uint64_t val)
     }
 }
 
+void pmu_switch_mode_user(enum arm_cpu_mode new_mode)
+{
+    // Privilege Level changed, we need to recalculate counters' values and snapshots
+    // As it's possible some might stop/start counting
+    pmu_recalculate_all_lazy();
+    pmu_take_all_snapshots();
+    // Also, the overflow limit changes
+    // The mode needs to temporarily change, so the limit updates correctly
+    pmu_recalculate_cycles_instruction_limit_custom_mode(new_mode);
+}
+
 // Compute the instruction/cycle value from a "lazy" counter. Will also work for any counter, that doesn't take snapshots
 uint32_t pmu_get_insn_cycle_value(const pmu_counter *const counter)
 {
+    if (pmu_counter_ignores_count_current_pl(counter)) {
+        // This counter doesn't count at the current PL, so return the previous value
+        return counter->val;
+    }
+
     uint64_t remainder = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_remainder : 0;
     uint64_t divisor = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_divisor : 1;
     uint64_t cycles_per_insn = counter->measured_event_id == PMU_EVENT_CYCLES ? env->cycles_per_instruction : 1;
@@ -500,37 +540,52 @@ uint32_t pmu_get_insn_cycle_value(const pmu_counter *const counter)
 }
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
-void pmu_update_cycles_instruction_limit(const pmu_counter *const cnt)
+void pmu_update_cycles_instruction_limit_custom_mode(const pmu_counter *const counter, enum arm_cpu_mode mode)
 {
-    if (!cnt->enabled_overflow_interrupt || !cnt->enabled || !env->pmu.counters_enabled) {
+    if (!counter->enabled_overflow_interrupt || !counter->enabled || !env->pmu.counters_enabled) {
+        return;
+    }
+
+    if (pmu_counter_ignores_count_custom_pl(counter, mode)) {
+        // This counter doesn't count at this PL, so it shouldn't matter in the limit calculation
         return;
     }
 
     // *INDENT-OFF*
-    if (cnt->measured_event_id == PMU_EVENT_CYCLES) {
+    if (counter->measured_event_id == PMU_EVENT_CYCLES) {
         // CPU cycles
-        env->pmu.cycles_overflow_nearest_limit = MIN(env->pmu.cycles_overflow_nearest_limit, UINT32_MAX - pmu_get_insn_cycle_value(cnt));
-    } else if (cnt->measured_event_id == PMU_EVENT_INSTRUCTIONS_EXECUTED) {
+        env->pmu.cycles_overflow_nearest_limit = MIN(env->pmu.cycles_overflow_nearest_limit, UINT32_MAX - pmu_get_insn_cycle_value(counter));
+    } else if (counter->measured_event_id == PMU_EVENT_INSTRUCTIONS_EXECUTED) {
         // Instructions executed
-        env->pmu.insns_overflow_nearest_limit = MIN(env->pmu.insns_overflow_nearest_limit, UINT32_MAX - pmu_get_insn_cycle_value(cnt));
+        env->pmu.insns_overflow_nearest_limit = MIN(env->pmu.insns_overflow_nearest_limit, UINT32_MAX - pmu_get_insn_cycle_value(counter));
     }
     // *INDENT-ON*
 
 }
 #undef MIN
 
+void pmu_update_cycles_instruction_limit(const pmu_counter *const counter)
+{
+    pmu_update_cycles_instruction_limit_custom_mode(counter, cpu_get_current_execution_mode());
+}
+
 // Recalculate value after which a nearest overflow on cycles/instructions will occur
-void pmu_recalculate_cycles_instruction_limit()
+void pmu_recalculate_cycles_instruction_limit_custom_mode(enum arm_cpu_mode mode)
 {
     // We reset the current limit, as we don't know the reason the recalculation is needed
     // It's possible that a counter has been turned off, and we can't rely on comparing with the presaved limit
     env->pmu.cycles_overflow_nearest_limit = UINT32_MAX;
     env->pmu.insns_overflow_nearest_limit = UINT32_MAX;
     for (int i = 0; i < env->pmu.counters_number; ++i) {
-        pmu_update_cycles_instruction_limit(&env->pmu.counters[i]);
+        pmu_update_cycles_instruction_limit_custom_mode(&env->pmu.counters[i], mode);
     }
 
-    pmu_update_cycles_instruction_limit(&env->pmu.cycle_counter);
+    pmu_update_cycles_instruction_limit_custom_mode(&env->pmu.cycle_counter, mode);
+}
+
+void pmu_recalculate_cycles_instruction_limit()
+{
+    pmu_recalculate_cycles_instruction_limit_custom_mode(cpu_get_current_execution_mode());
 }
 
 void pmu_update_counter(CPUState *env, pmu_counter *const counter, uint64_t amount)
@@ -538,6 +593,11 @@ void pmu_update_counter(CPUState *env, pmu_counter *const counter, uint64_t amou
     assert(counter != NULL);
 
     if (!counter->enabled || !env->pmu.counters_enabled) {
+        return;
+    }
+
+    if (pmu_counter_ignores_count_current_pl(counter)) {
+        // This counter doesn't count at the current PL, so it can't be updated
         return;
     }
 

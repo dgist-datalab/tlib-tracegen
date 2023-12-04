@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 struct CPUState;
+enum arm_cpu_mode;
 
 // PMU (Performance Monitoring Unit)
 
@@ -47,18 +48,17 @@ typedef struct pmu_event {
 } pmu_event;
 
 typedef struct pmu_counter {
-    // Counter id, which should be the same as it's position in pmu.counters array
+    // Counter id, which should be the same as its position in pmu.counters array
     int id;
     bool enabled;
     bool enabled_overflow_interrupt;
     // ID of measured event (`pm_event`)
     int measured_event_id;
 
-    /* These are PMUv2 specific. Note, that setting to 0/false means that they will count. Also note, they are unsupported */
+    /* These are PMUv2 specific. Note, that setting to 0/false means that they will count. */
     bool ignore_count_at_pl0;
     bool ignore_count_at_pl1;
     // Analogously would be counts in Secure/Non-Secure mode, which we don't support at this moment
-    // TODO: expand this for support with Security Extension and Virtualization Extension
 
     // === These fields should not be directly modified ===
     // Instead `helper_pmu_update_event_counters` (recommended) or `pmu_update_counter` should be called
@@ -79,10 +79,12 @@ static inline bool pmu_is_insns_or_cycles_counter(const pmu_counter *const count
     return counter->measured_event_id == PMU_EVENT_INSTRUCTIONS_EXECUTED || counter->measured_event_id == PMU_EVENT_CYCLES;
 }
 
+void pmu_recalculate_cycles_instruction_limit_custom_mode(enum arm_cpu_mode mode);
 void pmu_recalculate_cycles_instruction_limit();
 void pmu_update_cycles_instruction_limit(const pmu_counter *const cnt);
 uint32_t pmu_get_insn_cycle_value(const pmu_counter *const counter);
 void pmu_init_reset(struct CPUState *env);
+void pmu_switch_mode_user(enum arm_cpu_mode new_mode);
 
 void set_c9_pmcntenset(struct CPUState *env, uint64_t val);
 void set_c9_pmcntenclr(struct CPUState *env, uint64_t val);

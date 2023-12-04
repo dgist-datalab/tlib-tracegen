@@ -7,6 +7,7 @@
 #include "host-utils.h"
 #include "infrastructure.h"
 #include "arch_callbacks.h"
+#include "pmu.h"
 
 static uint32_t cortexa15_cp15_c0_c1[8] = {
     0x00001131, 0x00011011, 0x02010555, 0x00000000, 0x10201105, 0x20000000, 0x01240000, 0x02102211
@@ -662,6 +663,12 @@ void switch_mode(CPUState *env, int mode)
     old_mode = env->uncached_cpsr & CPSR_M;
     if (mode == old_mode) {
         return;
+    }
+
+    // PMU only has to be informed about changes between Privilege Levels
+    // but it doesn't care about mode changes within the same PL
+    if(unlikely(env->pmu.counters_enabled) && (mode == ARM_CPU_MODE_USR || old_mode == ARM_CPU_MODE_USR)) {
+        pmu_switch_mode_user(mode);
     }
 
     if (old_mode == ARM_CPU_MODE_FIQ) {
