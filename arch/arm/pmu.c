@@ -80,7 +80,7 @@ inline void pmu_init_reset(CPUState *env)
     // ideally from PMU external interface
     env->pmu.counters_number = PMU_MAX_PROGRAMMABLE_COUNTERS;
     assert(env->pmu.counters_number <= PMU_MAX_PROGRAMMABLE_COUNTERS);
-    assert(PMU_MAX_PROGRAMMABLE_COUNTERS >= PMU_CYCLE_COUNTER_ID);
+    assert(PMU_MAX_PROGRAMMABLE_COUNTERS <= PMU_CYCLE_COUNTER_ID);
 
     // Implementer fields in PMCR and CPUID/MIDR have the same position and width
     env->cp15.c9_pmcr |= (env->cp15.c0_cpuid & PMCR_IMPL);                                                // Extract Implementer field and copy to PMCR
@@ -136,7 +136,7 @@ void set_c9_pmcntenset(struct CPUState *env, uint64_t val)
         }
     }
 
-    if (val & (1 << 31) && !env->pmu.cycle_counter.enabled) {
+    if (val & (1 << PMU_CYCLE_COUNTER_ID) && !env->pmu.cycle_counter.enabled) {
         env->pmu.cycle_counter.enabled = true;
         pmu_set_snapshot(&env->pmu.cycle_counter, env->instructions_count_total_value);
         if (unlikely(env->pmu.extra_logs_enabled)) {
@@ -171,7 +171,7 @@ void set_c9_pmcntenclr(struct CPUState *env, uint64_t val)
         }
     }
 
-    if (val & (1 << 31) && env->pmu.cycle_counter.enabled) {
+    if (val & (1 << PMU_CYCLE_COUNTER_ID) && env->pmu.cycle_counter.enabled) {
         // See comment above
         env->pmu.cycle_counter.val = pmu_get_insn_cycle_value(&env->pmu.cycle_counter);
         pmu_reset_snapshot(&env->pmu.cycle_counter);
@@ -263,7 +263,7 @@ void set_c9_pmcr(struct CPUState *env, uint64_t val)
             }
         }
         // Cycle counter might still be active - so it will dictate the new limit
-        if (env->pmu.cycle_counter.enabled) {
+        if (env->pmu.cycle_counter.enabled && env->pmu.cycle_counter.enabled_overflow_interrupt) {
             env->pmu.cycles_overflow_nearest_limit = UINT32_MAX - pmu_get_insn_cycle_value(&env->pmu.cycle_counter);
         } else {
             env->pmu.cycles_overflow_nearest_limit = UINT32_MAX;
@@ -306,7 +306,7 @@ void set_c9_pmovsr(struct CPUState *env, uint64_t val)
         }
     }
 
-    if (val & (1 << 31)) {
+    if (val & (1 << PMU_CYCLE_COUNTER_ID)) {
         env->pmu.cycle_counter.overflowed = false;
     }
 }
@@ -334,7 +334,7 @@ void set_c9_pmintenset(struct CPUState *env, uint64_t val)
         }
     }
 
-    if (val & (1 << 31)) {
+    if (val & (1 << PMU_CYCLE_COUNTER_ID)) {
         env->pmu.cycle_counter.enabled_overflow_interrupt = true;
         ++env->pmu.is_any_overflow_interrupt_enabled;
         if (unlikely(env->pmu.extra_logs_enabled)) {
@@ -355,7 +355,7 @@ void set_c9_pmintenclr(struct CPUState *env, uint64_t val)
         }
     }
 
-    if (val & (1 << 31)) {
+    if (val & (1 << PMU_CYCLE_COUNTER_ID)) {
         env->pmu.cycle_counter.enabled_overflow_interrupt = false;
         --env->pmu.is_any_overflow_interrupt_enabled;
     }
