@@ -421,6 +421,7 @@ static TranslationBlock *tb_alloc(target_ulong pc)
     tb->pc = pc;
     tb->cflags = 0;
     tb->dirty_flag = false;
+    tb->phys_hash_next = NULL;
     return tb;
 }
 
@@ -596,11 +597,7 @@ void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr)
 
     tb_invalidated_flag = 1;
 
-    /* remove the TB from the hash list */
-    h = tb_jmp_cache_hash_func(tb->pc);
-    if (cpu->tb_jmp_cache[h] == tb) {
-        cpu->tb_jmp_cache[h] = NULL;
-    }
+    tb_jmp_cache_remove(tb);
 
     /* suppress this TB from the two jump lists */
     tb_jmp_remove(tb, 0);
@@ -766,6 +763,36 @@ void helper_mark_tbs_as_dirty(CPUState *env, target_ulong pc, int access_width, 
     }
 }
 
+static inline bool tb_blocks_related(TranslationBlock *tb1, TranslationBlock *tb2)
+{
+    if (tb1->pc == tb2->pc && tb1->page_addr[0] == tb2->page_addr[0] && tb1->cs_base == tb2->cs_base && tb1->flags == tb2->flags) {
+        return tb2->page_addr[1] == -1 || tb1->page_addr[1] == tb2->page_addr[1];
+    }
+    return false;
+}
+
+static void tb_phys_hash_insert(TranslationBlock *tb)
+{
+    TranslationBlock **ptb;
+    unsigned int h;
+    tb_page_addr_t phys_pc;
+
+    phys_pc = get_page_addr_code(env, tb->pc, true);
+    h = tb_phys_hash_func(phys_pc);
+    ptb = &tb_phys_hash[h];
+
+    while (*ptb) {
+        TranslationBlock *act_tb = *ptb;
+        if (tb_blocks_related(tb, act_tb) && tb->icount >= act_tb->icount) {
+           break;
+        }
+        ptb = &act_tb->phys_hash_next;
+    }
+
+    tb->phys_hash_next = *ptb;
+    *ptb = tb;
+}
+
 /* invalidate all TBs which intersect with the target physical page
    starting in range [start;end[. NOTE: start and end must refer to
    the same physical page. 'is_cpu_write_access' should be true if called
@@ -872,7 +899,8 @@ void tb_invalidate_phys_page_range_inner(tb_page_addr_t start, tb_page_addr_t en
         /* we generate a block containing just the instruction
            modifying the memory. It will ensure that it cannot modify
            itself */
-        tb_gen_code(env, current_pc, current_cs_base, current_flags, 1);
+        tb = tb_gen_code(env, current_pc, current_cs_base, current_flags, 1);
+        tb_phys_hash_insert(tb);
         env->exception_index = -1;
         cpu_loop_exit(env);
     }
@@ -949,21 +977,12 @@ static inline void tb_alloc_page(TranslationBlock *tb, unsigned int n, tb_page_a
     }
 }
 
-/* add a new TB and link it to the physical page tables. phys_page2 is
-   (-1) to indicate that only one page contains the TB. */
+/* add a new TB. phys_page2 is (-1) to indicate that only one page contains the TB. */
 void tb_link_page(TranslationBlock *tb, tb_page_addr_t phys_pc, tb_page_addr_t phys_page2)
 {
-    unsigned int h;
-    TranslationBlock **ptb;
-
     /* Grab the mmap lock to stop another thread invalidating this TB
        before we are done.  */
     mmap_lock();
-    /* add in the physical hash table */
-    h = tb_phys_hash_func(phys_pc);
-    ptb = &tb_phys_hash[h];
-    tb->phys_hash_next = *ptb;
-    *ptb = tb;
 
     /* add in the page list */
     tb_alloc_page(tb, 0, phys_pc & TARGET_PAGE_MASK);
@@ -1083,7 +1102,8 @@ void interrupt_current_translation_block(CPUState *env, int exeception_type)
 
     cpu_get_tb_cpu_state(cpu, &pc, &cs_base, &cpu_flags);
     tb_phys_invalidate(cpu->current_tb, -1);
-    tb_gen_code(cpu, pc, cs_base, cpu_flags, 0);
+    tb = tb_gen_code(cpu, pc, cs_base, cpu_flags, 0);
+    tb_phys_hash_insert(tb);
 
     if (cpu->block_finished_hook_present) {
         tlib_on_block_finished(pc, executed_instructions);

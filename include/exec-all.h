@@ -158,6 +158,16 @@ static inline unsigned int tb_jmp_cache_hash_func(target_ulong pc)
     return (((tmp >> (TARGET_PAGE_BITS - TB_JMP_PAGE_BITS)) & TB_JMP_PAGE_MASK) | (tmp & TB_JMP_ADDR_MASK));
 }
 
+/* remove the TB from the hash list */
+static inline void tb_jmp_cache_remove(TranslationBlock *tb)
+{
+    unsigned int h;
+    h = tb_jmp_cache_hash_func(tb->pc);
+    if (cpu->tb_jmp_cache[h] == tb) {
+        cpu->tb_jmp_cache[h] = NULL;
+    }
+}
+
 static inline unsigned int tb_phys_hash_func(tb_page_addr_t pc)
 {
     return (pc >> 2) & (CODE_GEN_PHYS_HASH_SIZE - 1);

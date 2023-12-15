@@ -148,15 +148,19 @@ void TLIB_NORETURN cpu_loop_exit_restore(CPUState *cpu, uintptr_t pc, uint32_t c
     cpu_loop_exit_without_hook(cpu);
 }
 
-static TranslationBlock *tb_find_slow(CPUState *env, target_ulong pc, target_ulong cs_base, uint64_t flags, uint32_t force_translation)
+static TranslationBlock *tb_find_slow(CPUState *env, target_ulong pc, target_ulong cs_base, uint64_t flags)
 {
     tlib_on_translation_block_find_slow(pc);
     TranslationBlock *tb, **ptb1;
+    TranslationBlock *prev_related_tb;
     unsigned int h;
     tb_page_addr_t phys_pc, phys_page1;
     target_ulong virt_page2;
+    uint32_t max_icount;
 
     tb_invalidated_flag = 0;
+    prev_related_tb = NULL;
+    max_icount = env->instructions_count_limit - env->instructions_count_value;
 
     /* find translated block using physical mappings */
     phys_pc = get_page_addr_code(env, pc, true);
@@ -164,7 +168,7 @@ static TranslationBlock *tb_find_slow(CPUState *env, target_ulong pc, target_ulo
     h = tb_phys_hash_func(phys_pc);
     ptb1 = &tb_phys_hash[h];
 
-    if (unlikely(env->tb_cache_disabled || force_translation)) {
+    if (unlikely(env->tb_cache_disabled)) {
         goto not_found;
     }
 
@@ -174,17 +178,21 @@ static TranslationBlock *tb_find_slow(CPUState *env, target_ulong pc, target_ulo
             goto not_found;
         }
         if (tb->pc == pc && tb->page_addr[0] == phys_page1 && tb->cs_base == cs_base && tb->flags == flags) {
-            /* check next page if needed */
-            if (tb->page_addr[1] != -1) {
-                tb_page_addr_t phys_page2;
+            if (tb->icount <= max_icount) {
+                /* check next page if needed */
+                if (tb->page_addr[1] != -1) {
+                    tb_page_addr_t phys_page2;
 
-                virt_page2 = (pc & TARGET_PAGE_MASK) + TARGET_PAGE_SIZE;
-                phys_page2 = get_page_addr_code(env, virt_page2, true);
-                if (tb->page_addr[1] == phys_page2) {
+                    virt_page2 = (pc & TARGET_PAGE_MASK) + TARGET_PAGE_SIZE;
+                    phys_page2 = get_page_addr_code(env, virt_page2, true);
+                    if (tb->page_addr[1] == phys_page2) {
+                        goto found;
+                    }
+                } else {
                     goto found;
                 }
             } else {
-                goto found;
+                prev_related_tb = tb;
             }
         }
         ptb1 = &tb->phys_hash_next;
@@ -194,11 +202,22 @@ not_found:
     tb = tb_gen_code(env, pc, cs_base, flags, 0);
 
 found:
-    /* Move the last found TB to the head of the list */
-    if (likely(*ptb1)) {
+    /* Move the last found TB closer to the beginning of the list,
+     * but keeping related TBs sorted.
+     * 'related' means TBs generated from the same code, but with
+     * different icount */
+    if (!tb->was_cut || !prev_related_tb) {
+        /* TB wasn't cut or is the first in the list among related to it.
+         * It means it is the largest TB and can be
+         * inserted at the beginning of the list */
         *ptb1 = tb->phys_hash_next;
         tb->phys_hash_next = tb_phys_hash[h];
         tb_phys_hash[h] = tb;
+    }  else {
+        /* Move the TB just after previous related TB */
+        *ptb1 = tb->phys_hash_next;
+        tb->phys_hash_next = prev_related_tb->phys_hash_next;
+        prev_related_tb->phys_hash_next = tb;
     }
     /* we add the TB in the virtual pc hash table */
     env->tb_jmp_cache[tb_jmp_cache_hash_func(pc)] = tb;
@@ -219,12 +238,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *env)
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
     tb = env->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
-    if (unlikely(!tb || tb->pc != pc || tb->cs_base != cs_base || tb->flags != flags || env->tb_cache_disabled)) {
-        tb = tb_find_slow(env, pc, cs_base, flags, 0);
-    } else if (tb->was_cut && tb->icount < max_icount) {
-        // force translation
-        tb_phys_invalidate(tb, -1);
-        tb = tb_find_slow(env, pc, cs_base, flags, 1);
+    if (unlikely(!tb || tb->pc != pc || tb->cs_base != cs_base || tb->flags != flags || env->tb_cache_disabled)
+            || (tb->was_cut && tb->icount < max_icount) || (tb->icount > max_icount)) {
+        tb = tb_find_slow(env, pc, cs_base, flags);
     }
     return tb;
 }
