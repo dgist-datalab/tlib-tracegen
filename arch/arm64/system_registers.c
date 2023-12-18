@@ -2101,6 +2101,9 @@ void add_implementation_defined_registers(CPUState *env, uint32_t cpu_model_id)
     case ARM_CPUID_CORTEXA53:
         cp_regs_add(env, cortex_a53_regs, ARM_CP_ARRAY_COUNT(cortex_a53_regs));
         break;
+    case ARM_CPUID_CORTEXA55:
+        // currently no custom registers
+        break;
     case ARM_CPUID_CORTEXA75:
         cp_regs_add(env, cortex_a75_a76_a78_common_regs, ARM_CP_ARRAY_COUNT(cortex_a75_a76_a78_common_regs));
         break;
@@ -2126,6 +2129,9 @@ uint32_t get_implementation_defined_registers_count(uint32_t cpu_model_id)
     switch (cpu_model_id) {
     case ARM_CPUID_CORTEXA53:
         return ARM_CP_ARRAY_COUNT(cortex_a53_regs);
+    case ARM_CPUID_CORTEXA55:
+        // currently no custom registers
+        return 0;
     case ARM_CPUID_CORTEXA75:
         return ARM_CP_ARRAY_COUNT(cortex_a75_a76_a78_common_regs);
     case ARM_CPUID_CORTEXA76:

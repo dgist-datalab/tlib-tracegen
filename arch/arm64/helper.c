@@ -103,7 +103,8 @@ void tlib_arch_dispose()
 
 void cpu_init_v8_2(CPUState *env, uint32_t id)
 {
-    assert(id == ARM_CPUID_CORTEXA75
+    assert(id == ARM_CPUID_CORTEXA55
+        || id == ARM_CPUID_CORTEXA75
         || id == ARM_CPUID_CORTEXA76
         || id == ARM_CPUID_CORTEXA78);
 
@@ -437,6 +438,7 @@ static void cpu_init_core_config(CPUState *env, uint32_t id)
     case ARM_CPUID_CORTEXA53:
         cpu_init_a53(env, id);
         break;
+    case ARM_CPUID_CORTEXA55:
     case ARM_CPUID_CORTEXA75:
     case ARM_CPUID_CORTEXA76:
     case ARM_CPUID_CORTEXA78:
