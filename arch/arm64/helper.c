@@ -101,7 +101,7 @@ void tlib_arch_dispose()
 
 #include "cpu_names.h"
 
-void cpu_init_a75_a76_a78(CPUState *env, uint32_t id)
+void cpu_init_v8_2(CPUState *env, uint32_t id)
 {
     assert(id == ARM_CPUID_CORTEXA75
         || id == ARM_CPUID_CORTEXA76
@@ -438,7 +438,7 @@ static void cpu_init_core_config(CPUState *env, uint32_t id)
     case ARM_CPUID_CORTEXA75:
     case ARM_CPUID_CORTEXA76:
     case ARM_CPUID_CORTEXA78:
-        cpu_init_a75_a76_a78(env, id);
+        cpu_init_v8_2(env, id);
         break;
     case ARM_CPUID_CORTEXR52:
         cpu_init_r52(env, id);
