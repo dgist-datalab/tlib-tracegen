@@ -191,6 +191,8 @@ void cpu_init_v8_2(CPUState *env, uint32_t id)
 
 void cpu_init_a53(CPUState *env, uint32_t id)
 {
+    assert(id == ARM_CPUID_CORTEXA53);
+
     set_feature(env, ARM_FEATURE_AARCH64);
     set_feature(env, ARM_FEATURE_V8);
     set_feature(env, ARM_FEATURE_NEON);
