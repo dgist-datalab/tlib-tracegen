@@ -279,8 +279,10 @@ void tlib_reset()
     if (unlikely(cpu->cpu_wfi_state_change_hook_present)) {
         if (cpu->was_not_working) {
             // CPU left WFI on reset
+            // Clean flag, to prevent an edge case, where the CPU is Reset from WFI hook
+            // resulting in infinite recursion
+            cpu->was_not_working = false;
             tlib_on_wfi_state_change(false);
-            // was_not_working will be cleared by `cpu_reset`
         }
     }
     cpu_reset(cpu);
