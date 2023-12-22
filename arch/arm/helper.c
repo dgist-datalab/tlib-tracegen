@@ -285,18 +285,6 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_THUMB2);
         set_feature(env, ARM_FEATURE_THUMB_DIV);
         break;
-    case ARM_CPUID_CORTEXM23:
-        set_feature(env, ARM_FEATURE_V8);
-        set_feature(env, ARM_FEATURE_V7);
-        set_feature(env, ARM_FEATURE_V6);
-        set_feature(env, ARM_FEATURE_V5);
-        set_feature(env, ARM_FEATURE_V4T);
-
-        set_feature(env, ARM_FEATURE_MPU);
-
-        set_feature(env, ARM_FEATURE_THUMB_DIV);
-        set_feature(env, ARM_FEATURE_THUMB2);
-        break;
     case ARM_CPUID_CORTEXM4:
         // TODO: This should not be present on M4 processors,
         //       but some of our samples break without it.
@@ -336,6 +324,18 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_THUMB2);
         break;
     case ARM_CPUID_CORTEXM3:
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_THUMB2);
+        break;
+    case ARM_CPUID_CORTEXM23:
+        set_feature(env, ARM_FEATURE_V8);
         set_feature(env, ARM_FEATURE_V7);
         set_feature(env, ARM_FEATURE_V6);
         set_feature(env, ARM_FEATURE_V5);
@@ -571,22 +571,27 @@ struct arm_cpu_t {
 };
 
 static const struct arm_cpu_t arm_cpu_names[] = {
-    { ARM_CPUID_ARM7TDMI, "arm7tdmi" },
-    { ARM_CPUID_ARM926, "arm926" }, { ARM_CPUID_ARM946, "arm946" }, { ARM_CPUID_ARM1026, "arm1026" },
-    { ARM_CPUID_ARM1136, "arm1136" }, { ARM_CPUID_ARM1136_R2, "arm1136-r2" }, { ARM_CPUID_ARM1176, "arm1176" },
+    { ARM_CPUID_ARM7TDMI,  "arm7tdmi" },   { ARM_CPUID_ARM926,      "arm926" },     { ARM_CPUID_ARM946,     "arm946" },
+    { ARM_CPUID_ARM1026,   "arm1026" },    { ARM_CPUID_ARM1136,     "arm1136" },    { ARM_CPUID_ARM1136_R2, "arm1136-r2" },
+    { ARM_CPUID_ARM1176,   "arm1176" },    { ARM_CPUID_ARM11MPCORE, "arm11mpcore" },
+    
     // TODO: M0+ shouldn't be the same as M3. It doesn't support hardware division.
-    { ARM_CPUID_ARM11MPCORE, "arm11mpcore" }, { ARM_CPUID_CORTEXM0, "cortex-m0" }, { ARM_CPUID_CORTEXM3, "cortex-m0+" },
-    { ARM_CPUID_CORTEXM3, "cortex-m1" }, { ARM_CPUID_CORTEXM3, "cortex-m3" }, { ARM_CPUID_CORTEXM4, "cortex-m4" },
+    { ARM_CPUID_CORTEXM0,  "cortex-m0" },  { ARM_CPUID_CORTEXM3,    "cortex-m0+" }, { ARM_CPUID_CORTEXM3,   "cortex-m1" },
+    { ARM_CPUID_CORTEXM23, "cortex-m23" }, { ARM_CPUID_CORTEXM3,    "cortex-m3" },  { ARM_CPUID_CORTEXM33,  "cortex-m33" },
     // TODO: M4F should be separate from M4.
-    { ARM_CPUID_CORTEXM7, "cortex-m4f" }, { ARM_CPUID_CORTEXM7, "cortex-m7" }, { ARM_CPUID_CORTEXA8, "cortex-a8" },
-    { ARM_CPUID_CORTEXA9, "cortex-a9" }, { ARM_CPUID_CORTEXA15, "cortex-a15" }, { ARM_CPUID_TI925T, "ti925t" },
-    { ARM_CPUID_PXA250, "pxa250" }, { ARM_CPUID_SA1100,    "sa1100" }, { ARM_CPUID_SA1110,    "sa1110" },
-    { ARM_CPUID_PXA255, "pxa255" }, { ARM_CPUID_PXA260, "pxa260" }, { ARM_CPUID_PXA261, "pxa261" },
-    { ARM_CPUID_PXA262, "pxa262" }, { ARM_CPUID_PXA270, "pxa270" }, { ARM_CPUID_PXA270_A0, "pxa270-a0" },
-    { ARM_CPUID_PXA270_A1, "pxa270-a1" }, { ARM_CPUID_PXA270_B0, "pxa270-b0" }, { ARM_CPUID_PXA270_B1, "pxa270-b1" },
-    { ARM_CPUID_PXA270_C0, "pxa270-c0" }, { ARM_CPUID_PXA270_C5, "pxa270-c5" }, { ARM_CPUID_CORTEXM33, "cortex-m33" },
-    { ARM_CPUID_CORTEXR5, "cortex-r5" }, { ARM_CPUID_CORTEXR5F, "cortex-r5f" }, { ARM_CPUID_CORTEXR8, "cortex-r8" },
-    { ARM_CPUID_CORTEXM23, "cortex-m23" }, {ARM_CPUID_CORTEXM85, "cortex-m85"}, { ARM_CPUID_ANY, "any" }, { 0, NULL }
+    { ARM_CPUID_CORTEXM4,  "cortex-m4" },  { ARM_CPUID_CORTEXM7,    "cortex-m4f" }, { ARM_CPUID_CORTEXM7,   "cortex-m7" },
+    { ARM_CPUID_CORTEXM85, "cortex-m85"},
+
+    { ARM_CPUID_CORTEXR5,  "cortex-r5" },  { ARM_CPUID_CORTEXR5F,   "cortex-r5f" }, { ARM_CPUID_CORTEXR8,   "cortex-r8" },
+
+    { ARM_CPUID_CORTEXA8,  "cortex-a8" },  { ARM_CPUID_CORTEXA9,    "cortex-a9" },  { ARM_CPUID_CORTEXA15,  "cortex-a15" },
+
+    { ARM_CPUID_TI925T,    "ti925t" },     { ARM_CPUID_PXA250,      "pxa250" },     { ARM_CPUID_SA1100,     "sa1100" },
+    { ARM_CPUID_SA1110,    "sa1110" },     { ARM_CPUID_PXA255,      "pxa255" },     { ARM_CPUID_PXA260,     "pxa260" },
+    { ARM_CPUID_PXA261,    "pxa261" },     { ARM_CPUID_PXA262,      "pxa262" },     { ARM_CPUID_PXA270,     "pxa270" },
+    { ARM_CPUID_PXA270_A0, "pxa270-a0" },  { ARM_CPUID_PXA270_A1,   "pxa270-a1" },  { ARM_CPUID_PXA270_B0,  "pxa270-b0" },
+    { ARM_CPUID_PXA270_B1, "pxa270-b1" },  { ARM_CPUID_PXA270_C0,   "pxa270-c0" },  { ARM_CPUID_PXA270_C5,  "pxa270-c5" },
+    { ARM_CPUID_ANY,       "any" },        { 0, NULL }
 };
 
 /* return 0 if not found */
