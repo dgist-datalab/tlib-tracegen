@@ -265,14 +265,14 @@ static inline void log_unhandled_sysreg_write(const char *sysreg_name)
     log_unhandled_sysreg_access(sysreg_name, true);
 }
 
-static inline bool try_set_array_entry_to_system_register_name(void **array_entry, void *value)
+static inline bool try_set_array_entry_to_system_register(void **array_entry, void *value)
 {
     tlib_assert(value != NULL && array_entry != NULL);
     ARMCPRegInfo *reg_info = (ARMCPRegInfo *)value;
 
     // The value can be a system instruction and should be excluded.
     if (is_system_register(reg_info)) {
-        *array_entry = (void*)reg_info->name;
+        *array_entry = value;
         return true;
     }
     return false;

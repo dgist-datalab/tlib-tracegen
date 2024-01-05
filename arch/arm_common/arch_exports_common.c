@@ -35,7 +35,7 @@ uint32_t tlib_check_system_register_access(const char *name, bool is_write)
 }
 EXC_INT_2(uint32_t, tlib_check_system_register_access, const char *, name, bool, is_write)
 
-uint32_t tlib_create_system_register_names_array(char ***array)
+uint32_t tlib_create_system_registers_array(char ***array)
 {
     TTable *ttable =
 #if defined(TARGET_ARM64)
@@ -45,9 +45,9 @@ uint32_t tlib_create_system_register_names_array(char ***array)
 #else
   #error "This file can only be compiled for either TARGET_ARM or TARGET_ARM64."
 #endif
-    return ttable_create_values_array(ttable, (void ***)array, try_set_array_entry_to_system_register_name);
+    return ttable_create_values_array(ttable, (void ***)array, try_set_array_entry_to_system_register);
 }
-EXC_INT_1(uint32_t, tlib_create_system_register_names_array, char ***, array)
+EXC_INT_1(uint32_t, tlib_create_system_registers_array, char ***, array)
 
 uint64_t tlib_get_system_register(const char *name, bool log_unhandled_access)
 {
