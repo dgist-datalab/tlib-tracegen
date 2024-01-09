@@ -308,6 +308,19 @@ void tlib_unwind()
     longjmp(unwind_state.envs[unwind_state.env_idx], 1);
 }
 
+__attribute__((weak))
+void cpu_on_leaving_reset_state(CPUState *env)
+{
+    // Empty function for architectures which don't have the function implemented.
+}
+
+void tlib_on_leaving_reset_state()
+{
+    cpu_on_leaving_reset_state(cpu);
+}
+
+EXC_VOID_0(tlib_on_leaving_reset_state)
+
 int32_t tlib_execute(uint32_t max_insns)
 {
     if (cpu->instructions_count_value != 0) {
