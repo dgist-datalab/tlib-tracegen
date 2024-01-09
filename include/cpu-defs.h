@@ -157,6 +157,7 @@ typedef struct ExtMmuRange
     uint8_t type;
     uint8_t priv;
     bool active;
+    bool range_end_inclusive;
 } ExtMmuRange;
 
 #define MAX_IO_ACCESS_REGIONS_COUNT 1024

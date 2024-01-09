@@ -1219,7 +1219,9 @@ int get_external_mmu_phys_addr(CPUState *env, uint32_t address, int access_type,
             break;
         } else if ((mmu_window[window_index].type & access_type_mask) &&
                    (address >= mmu_window[window_index].range_start) &&
-                   (address < mmu_window[window_index].range_end)) {
+                   (mmu_window[window_index].range_end_inclusive ?
+                        (address <= mmu_window[window_index].range_end) :
+                        (address < mmu_window[window_index].range_end))) {
             found = true;
             break;
         }

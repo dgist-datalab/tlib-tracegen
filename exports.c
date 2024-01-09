@@ -782,7 +782,7 @@ if(index > MAX_EXTERNAL_MMU_RANGES)                                             
 }
 
 #define ASSERT_ALIGNED_TO_PAGE_SIZE(addr) \
-if(addr & (~TARGET_PAGE_MASK)) tlib_abortf("MMU ranges must be aligned to the page size (0x%lx), the address 0x%lx is not.", TARGET_PAGE_SIZE, addr);
+if(((target_ulong)addr) & (~TARGET_PAGE_MASK)) tlib_abortf("MMU ranges must be aligned to the page size (0x%lx), the address 0x%lx is not.", TARGET_PAGE_SIZE, addr);
 
 #define ASSERT_NO_OVERLAP(value, window_type)                                                                                                                \
 for(int window_index = 0; window_index < MAX_EXTERNAL_MMU_RANGES; window_index++)                                                                            \
@@ -850,17 +850,24 @@ void tlib_set_mmu_window_start(uint32_t index, uint64_t addr_start)
 }
 EXC_VOID_2(tlib_set_mmu_window_start, uint32_t, index, uint64_t, addr_start)
 
-void tlib_set_mmu_window_end(uint32_t index, uint64_t addr_end)
+void tlib_set_mmu_window_end(uint32_t index, uint64_t addr_end, uint32_t range_end_inclusive)
 {
     ASSERT_EXTERNAL_MMU_ENABLED
     ASSERT_WINDOW_ACTIVE(index)
-    ASSERT_ALIGNED_TO_PAGE_SIZE(addr_end)
+    ASSERT_ALIGNED_TO_PAGE_SIZE(range_end_inclusive ? addr_end + 1 : addr_end)
 #ifdef DEBUG
     ASSERT_NO_OVERLAP(addr_end, cpu->external_mmu_window[index].type)
 #endif
+    /* This is not necessary for the MMU to function properly, but it makes it easier to debug when we are using the same convention where possible.
+     Only the window that contains the last page of address space will be inclusive at all times */
+    if(addr_end != TARGET_ULONG_MAX && range_end_inclusive) {
+        addr_end += 1;
+        range_end_inclusive = 0;
+    }
     cpu->external_mmu_window[index].range_end = addr_end;
+    cpu->external_mmu_window[index].range_end_inclusive = !!range_end_inclusive;
 }
-EXC_VOID_2(tlib_set_mmu_window_end, uint32_t, index, uint64_t, addr_end)
+EXC_VOID_3(tlib_set_mmu_window_end, uint32_t, index, uint64_t, addr_end, uint32_t, range_end_inclusive)
 
 void tlib_set_window_privileges(uint32_t index, int32_t privileges)
 {

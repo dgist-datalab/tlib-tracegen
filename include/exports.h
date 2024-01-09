@@ -84,7 +84,7 @@ int32_t tlib_acquire_mmu_window(uint32_t type);
 
 void tlib_set_mmu_window_start(uint32_t index, uint64_t addr_start);
 
-void tlib_set_mmu_window_end(uint32_t index, uint64_t addr_end);
+void tlib_set_mmu_window_end(uint32_t index, uint64_t addr_end, uint32_t range_end_inclusive);
 
 void tlib_set_window_privileges(uint32_t index, int32_t privileges);
 
