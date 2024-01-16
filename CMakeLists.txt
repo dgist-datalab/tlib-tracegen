@@ -113,6 +113,12 @@ ExternalProject_Add (tcglib
         -DTLIB_PROFILING_BUILD:BOOL=${TLIB_PROFILING_BUILD}
     INSTALL_COMMAND "")
 
+set(SOFTFLOAT_SPECIALIZED_ARCHITECTURE "8086")
+if("${TARGET_ACTUAL_ARCH}" STREQUAL "riscv" OR "${TARGET_ACTUAL_ARCH}" STREQUAL "riscv64")
+    set(SOFTLOAT_SPECIALIZED_ARCHITECTURE "RISCV")
+endif()
+add_subdirectory (softfloat-3 EXCLUDE_FROM_ALL)
+
 string (TOUPPER "${HOST_ARCH}" HOST_ARCH_U)
 string (TOUPPER "${TARGET_ACTUAL_ARCH}" TARGET_ACTUAL_ARCH_U)
 
@@ -191,6 +197,7 @@ target_link_libraries (tlib
     $<$<C_COMPILER_ID:GNU>:-zdefs>  # Error for undefined symbols is a default for Clang
 
     ${MATH_LIB_LINK_ARG}
+    softfloat-3
     pthread
     ${CMAKE_CURRENT_BINARY_DIR}/tcg/src/tcglib-build/libtcg.a
     )
