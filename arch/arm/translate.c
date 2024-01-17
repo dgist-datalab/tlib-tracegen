@@ -9565,8 +9565,10 @@ static int disas_thumb2_insn(CPUState *env, DisasContext *s, uint16_t insn_hw1)
                 goto illegal_op;
             }
             if (rs == 15) {
-                /* Stack pop - loading PC form stack */
-                gen_bx(s, tmp, STACK_FRAME_POP);
+                /* Stack pop - loading PC form stack
+                 * Local jump - SP is not used
+                 */
+                gen_bx(s, tmp, rn == 13 ? STACK_FRAME_POP : STACK_FRAME_NO_CHANGE);
             } else {
                 store_reg(s, rs, tmp);
             }
