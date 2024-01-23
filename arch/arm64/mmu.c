@@ -106,7 +106,7 @@ void handle_mmu_fault_v8(CPUState *env, target_ulong address, int access_type, u
 
         // The state has to be restored before calling 'raise_exception'. Otherwise, 'env->exception.syndrome'
         // set in 'raise_exception' gets overwritten in 'restore_state_to_opc'.
-        cpu_restore_state_and_restore_instructions_count(env, env->current_tb, return_address);
+        cpu_restore_state_and_restore_instructions_count(env, env->current_tb, return_address, true);
     }
 
     // Both always end with longjmp to the main cpu loop so they never return.

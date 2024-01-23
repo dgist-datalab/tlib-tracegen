@@ -1069,7 +1069,7 @@ void interrupt_current_translation_block(CPUState *env, int exeception_type)
 
     tb = tb_find_pc((uintptr_t)global_retaddr);
     if (tb != 0) {
-        executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, (uintptr_t)global_retaddr);
+        executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, (uintptr_t)global_retaddr, exeception_type != EXCP_WATCHPOINT);
     }
 
     cpu_get_tb_cpu_state(cpu, &pc, &cs_base, &cpu_flags);

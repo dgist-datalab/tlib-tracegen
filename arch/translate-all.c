@@ -379,9 +379,12 @@ int cpu_restore_state_from_tb(CPUState *env, TranslationBlock *tb, uintptr_t sea
     return i;
 }
 
-int cpu_restore_state_and_restore_instructions_count(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc)
+int cpu_restore_state_and_restore_instructions_count(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc, bool include_last_instruction)
 {
     int executed_instructions = cpu_restore_state_from_tb(env, tb, searched_pc);
+    if(executed_instructions > 0 && !include_last_instruction) {
+        executed_instructions--;
+    }
     if (executed_instructions != -1 && tb->instructions_count_dirty) {
         cpu->instructions_count_value -= (tb->icount - executed_instructions);
         cpu->instructions_count_total_value -= (tb->icount - executed_instructions);
@@ -400,7 +403,7 @@ void cpu_restore_state(CPUState *env, void *retaddr) {
     if (tb) {
       /* the PC is inside the translated code. It means that we have
          a virtual CPU fault */
-      cpu_restore_state_and_restore_instructions_count(env, tb, pc);
+      cpu_restore_state_and_restore_instructions_count(env, tb, pc, true);
     }
   }
 }

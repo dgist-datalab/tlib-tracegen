@@ -3647,7 +3647,7 @@ int tlb_fill(CPUState *env1, target_ulong addr, int access_type, int mmu_idx, vo
             if (likely(tb)) {
                 /* the PC is inside the translated code. It means that we have
                    a virtual CPU fault */
-                cpu_restore_state_and_restore_instructions_count(env, tb, pc);
+                cpu_restore_state_and_restore_instructions_count(env, tb, pc, true);
             }
         }
         helper_raise_exception_err(env->exception_index, env->error_code);
