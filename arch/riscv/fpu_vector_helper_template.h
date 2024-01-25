@@ -40,6 +40,13 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                      \
     }                                                                                                   \
     switch (eew) {                                                                                      \
+    case 16:                                                                                            \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                        \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                  \
+            return;                                                                                     \
+        }                                                                                               \
+        imm = unbox_float(RISCV_HALF_PRECISION, env, imm);                                              \
+        break;                                                                                          \
     case 32:                                                                                            \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                                   \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                  \
@@ -60,6 +67,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
     for (int ei = env->vstart; ei < env->vl; ++ei) {                                                    \
         TEST_MASK(ei)                                                                                   \
         switch (eew) {                                                                                  \
+        case 16:                                                                                        \
+            ((float16 *)V(vd))[ei] = glue(HELPER, _h)(env, ((float16 *)V(vs2))[ei], imm, env->frm);     \
+            break;                                                                                      \
         case 32:                                                                                        \
             ((float32 *)V(vd))[ei] = glue(HELPER, _s)(env, ((float32 *)V(vs2))[ei], imm, env->frm);     \
             break;                                                                                      \
@@ -78,6 +88,12 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                          \
     }                                                                                                                       \
     switch (eew) {                                                                                                          \
+    case 16:                                                                                                                \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                                            \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                      \
+            return;                                                                                                         \
+        }                                                                                                                   \
+        break;                                                                                                              \
     case 32:                                                                                                                \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                                                       \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                      \
@@ -97,6 +113,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
     for (int ei = env->vstart; ei < env->vl; ++ei) {                                                                        \
         TEST_MASK(ei)                                                                                                       \
         switch (eew) {                                                                                                      \
+        case 16:                                                                                                            \
+            ((float16 *)V(vd))[ei] = glue(HELPER, _h)(env, ((float16 *)V(vs2))[ei], ((float16 *)V(vs1))[ei], env->frm);     \
+            break;                                                                                                          \
         case 32:                                                                                                            \
             ((float32 *)V(vd))[ei] = glue(HELPER, _s)(env, ((float32 *)V(vs2))[ei], ((float32 *)V(vs1))[ei], env->frm);     \
             break;                                                                                                          \
@@ -230,6 +249,13 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                          \
     }                                                                                                                                       \
     switch (eew) {                                                                                                                          \
+    case 16:                                                                                                                                \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                                                            \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                      \
+            return;                                                                                                                         \
+        }                                                                                                                                   \
+        imm = unbox_float(RISCV_HALF_PRECISION, env, imm);                                                                                  \
+        break;                                                                                                                              \
     case 32:                                                                                                                                \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                                                                       \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                      \
@@ -250,6 +276,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
     for (int ei = env->vstart; ei < env->vl; ++ei) {                                                                                        \
         TEST_MASK(ei)                                                                                                                       \
         switch (eew) {                                                                                                                      \
+        case 16:                                                                                                                            \
+            ((float16 *)V(vd))[ei] = glue(HELPER, _h)(env, ((float16 *)V(vd))[ei], ((float16 *)V(vs2))[ei], imm, env->frm);                 \
+            break;                                                                                                                          \
         case 32:                                                                                                                            \
             ((float32 *)V(vd))[ei] = glue(HELPER, _s)(env, ((float32 *)V(vd))[ei], ((float32 *)V(vs2))[ei], imm, env->frm);                 \
             break;                                                                                                                          \
@@ -268,6 +297,12 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                                  \
     }                                                                                                                                               \
     switch (eew) {                                                                                                                                  \
+    case 16:                                                                                                                                        \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                                                                    \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                              \
+            return;                                                                                                                                 \
+        }                                                                                                                                           \
+        break;                                                                                                                                      \
     case 32:                                                                                                                                        \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                                                                               \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                                              \
@@ -287,6 +322,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
     for (int ei = env->vstart; ei < env->vl; ++ei) {                                                                                                \
         TEST_MASK(ei)                                                                                                                               \
         switch (eew) {                                                                                                                              \
+        case 16:                                                                                                                                    \
+            ((float16 *)V(vd))[ei] = glue(HELPER, _h)(env, ((float16 *)V(vd))[ei], ((float16 *)V(vs2))[ei], ((float16 *)V(vs1))[ei], env->frm);     \
+            break;                                                                                                                                  \
         case 32:                                                                                                                                    \
             ((float32 *)V(vd))[ei] = glue(HELPER, _s)(env, ((float32 *)V(vd))[ei], ((float32 *)V(vs2))[ei], ((float32 *)V(vs1))[ei], env->frm);     \
             break;                                                                                                                                  \
@@ -388,6 +426,13 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                              \
     }                                                                                           \
     switch (eew) {                                                                              \
+    case 16:                                                                                    \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                          \
+            return;                                                                             \
+        }                                                                                       \
+        imm = unbox_float(RISCV_HALF_PRECISION, env, imm);                                      \
+        break;                                                                                  \
     case 32:                                                                                    \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                           \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                          \
@@ -410,6 +455,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         VFMOP_LOOP_PREFIX();                                                                    \
         if(MS_TEST_MASK()) {                                                                    \
             switch (eew) {                                                                      \
+            case 16:                                                                            \
+                value |= glue(HELPER, _h)(env, ((float16 *)V(vs2))[ei], imm) << (ei & 0x7);     \
+                break;                                                                          \
             case 32:                                                                            \
                 value |= glue(HELPER, _s)(env, ((float32 *)V(vs2))[ei], imm) << (ei & 0x7);     \
                 break;                                                                          \
@@ -430,6 +478,12 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                                  \
     }                                                                                                               \
     switch (eew) {                                                                                                  \
+    case 16:                                                                                                        \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                                                    \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                              \
+            return;                                                                                                 \
+        }                                                                                                           \
+        break;                                                                                                      \
     case 32:                                                                                                        \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                                               \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                                              \
@@ -451,6 +505,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         VFMOP_LOOP_PREFIX();                                                                                        \
         if(MS_TEST_MASK()) {                                                                                        \
             switch (eew) {                                                                                          \
+            case 16:                                                                                                \
+                value |= glue(HELPER, _h)(env, ((float16 *)V(vs2))[ei], ((float16 *)V(vs1))[ei]) << (ei & 0x7);     \
+                break;                                                                                              \
             case 32:                                                                                                \
                 value |= glue(HELPER, _s)(env, ((float32 *)V(vs2))[ei], ((float32 *)V(vs1))[ei]) << (ei & 0x7);     \
                 break;                                                                                              \
@@ -472,6 +529,12 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                      \
     }                                                                                   \
     switch (eew) {                                                                      \
+    case 16:                                                                            \
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {                        \
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                  \
+            return;                                                                     \
+        }                                                                               \
+        break;                                                                          \
     case 32:                                                                            \
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {                                   \
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);                  \
@@ -491,6 +554,9 @@ void glue(glue(helper_, NAME), POSTFIX)(CPUState *env, uint32_t vd, uint32_t vs2
     for (int ei = env->vstart; ei < env->vl; ++ei) {                                    \
         TEST_MASK(ei)                                                                   \
         switch (eew) {                                                                  \
+        case 16:                                                                        \
+            ((float16 *)V(vd))[ei] = glue(HELPER, _h)(env, ((float16 *)V(vs2))[ei]);    \
+            break;                                                                      \
         case 32:                                                                        \
             ((float32 *)V(vd))[ei] = glue(HELPER, _s)(env, ((float32 *)V(vs2))[ei]);    \
             break;                                                                      \
@@ -777,6 +843,12 @@ void glue(helper_vfslide1up, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2, f
     }
     const target_ulong eew = env->vsew;
     switch (eew) {
+    case 16:
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+            return;
+        }
+        break;
     case 32:
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
@@ -804,6 +876,9 @@ void glue(helper_vfslide1up, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2, f
 #endif
     ) {
         switch (eew) {
+        case 16:
+            ((float16 *)V(vd))[0] = unbox_float(RISCV_HALF_PRECISION, env, imm);
+            break;
         case 32:
             ((float32 *)V(vd))[0] = unbox_float(RISCV_SINGLE_PRECISION, env, imm);
             break;
@@ -818,6 +893,9 @@ void glue(helper_vfslide1up, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2, f
     for (int ei = (env->vstart ? env->vstart : 1); ei < env->vl; ++ei) {
         TEST_MASK(ei)
         switch (eew) {
+        case 16:
+            ((float16 *)V(vd))[ei] = ((float16 *)V(vs2))[ei - 1];
+            break;
         case 32:
             ((float32 *)V(vd))[ei] = ((float32 *)V(vs2))[ei - 1];
             break;
@@ -838,6 +916,12 @@ void glue(helper_vfslide1down, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2,
     }
     const target_ulong eew = env->vsew;
     switch (eew) {
+    case 16:
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+            return;
+        }
+        break;
     case 32:
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
@@ -863,6 +947,9 @@ void glue(helper_vfslide1down, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2,
     for (int ei = env->vstart; ei < src_max; ++ei) {
         TEST_MASK(ei)
         switch (eew) {
+        case 16:
+            ((float16 *)V(vd))[ei] = ((float16 *)V(vs2))[ei + 1];
+            break;
         case 32:
             ((float32 *)V(vd))[ei] = ((float32 *)V(vs2))[ei + 1];
             break;
@@ -878,6 +965,9 @@ void glue(helper_vfslide1down, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2,
     if(V(0)[src_max >> 3] & (1 << (src_max & 0x7))) {
 #endif
         switch (eew) {
+        case 16:
+            ((float16 *)V(vd))[src_max] = unbox_float(RISCV_HALF_PRECISION, env, imm);
+            break;
         case 32:
             ((float32 *)V(vd))[src_max] = unbox_float(RISCV_SINGLE_PRECISION, env, imm);
             break;
@@ -898,6 +988,7 @@ VFOP_VVX(vfadd_vf, helper_fadd)
 VFOP_VVV(vfsub_vv, helper_fsub)
 VFOP_VVX(vfsub_vf, helper_fsub)
 
+#define VFOP_RSUB_h(ENV, A, B, FRM) helper_fsub_h(ENV, B, A, FRM)
 #define VFOP_RSUB_s(ENV, A, B, FRM) helper_fsub_s(ENV, B, A, FRM)
 #define VFOP_RSUB_d(ENV, A, B, FRM) helper_fsub_d(ENV, B, A, FRM)
 VFOP_VVX(vfrsub_vf, VFOP_RSUB)
@@ -920,6 +1011,7 @@ VFOP_VVX(vfmul_vf, helper_fmul)
 VFOP_VVV(vfdiv_vv, helper_fdiv)
 VFOP_VVX(vfdiv_vf, helper_fdiv)
 
+#define VFOP_FRDIV_h(ENV, A, B, FRM) helper_fdiv_h(ENV, B, A, FRM)
 #define VFOP_FRDIV_s(ENV, A, B, FRM) helper_fdiv_s(ENV, B, A, FRM)
 #define VFOP_FRDIV_d(ENV, A, B, FRM) helper_fdiv_d(ENV, B, A, FRM)
 VFOP_VVX(vfrdiv_vf, VFOP_FRDIV)
@@ -927,41 +1019,49 @@ VFOP_VVX(vfrdiv_vf, VFOP_FRDIV)
 VFOP_WVX(vfwmul_vf, helper_fmul)
 VFOP_WVV(vfwmul_vv, helper_fmul)
 
+#define VFOP_MACC_h(ENV, DEST, OP1, OP2, FRM) helper_fmadd_h(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_MACC_s(ENV, DEST, OP1, OP2, FRM) helper_fmadd_s(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_MACC_d(ENV, DEST, OP1, OP2, FRM) helper_fmadd_d(ENV, OP1, OP2, DEST, FRM)
 VF3OP_VVX(vfmacc_vf, VFOP_MACC)
 VF3OP_VVV(vfmacc_vv, VFOP_MACC)
 
+#define VFOP_NMACC_h(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_h(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_NMACC_s(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_s(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_NMACC_d(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_d(ENV, OP1, OP2, DEST, FRM)
 VF3OP_VVX(vfnmacc_vf, VFOP_NMACC)
 VF3OP_VVV(vfnmacc_vv, VFOP_NMACC)
 
+#define VFOP_MSAC_h(ENV, DEST, OP1, OP2, FRM) helper_fmsub_h(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_MSAC_s(ENV, DEST, OP1, OP2, FRM) helper_fmsub_s(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_MSAC_d(ENV, DEST, OP1, OP2, FRM) helper_fmsub_d(ENV, OP1, OP2, DEST, FRM)
 VF3OP_VVX(vfmsac_vf, VFOP_MSAC)
 VF3OP_VVV(vfmsac_vv, VFOP_MSAC)
 
+#define VFOP_NMSAC_h(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_h(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_NMSAC_s(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_s(ENV, OP1, OP2, DEST, FRM)
 #define VFOP_NMSAC_d(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_d(ENV, OP1, OP2, DEST, FRM)
 VF3OP_VVX(vfnmsac_vf, VFOP_NMSAC)
 VF3OP_VVV(vfnmsac_vv, VFOP_NMSAC)
 
+#define VFOP_MADD_h(ENV, DEST, OP1, OP2, FRM) helper_fmadd_h(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_MADD_s(ENV, DEST, OP1, OP2, FRM) helper_fmadd_s(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_MADD_d(ENV, DEST, OP1, OP2, FRM) helper_fmadd_d(ENV, OP2, DEST, OP1, FRM)
 VF3OP_VVX(vfmadd_vf, VFOP_MADD)
 VF3OP_VVV(vfmadd_vv, VFOP_MADD)
 
+#define VFOP_NMADD_h(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_h(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_NMADD_s(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_s(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_NMADD_d(ENV, DEST, OP1, OP2, FRM) helper_fnmadd_d(ENV, OP2, DEST, OP1, FRM)
 VF3OP_VVX(vfnmadd_vf, VFOP_NMADD)
 VF3OP_VVV(vfnmadd_vv, VFOP_NMADD)
 
+#define VFOP_MSUB_h(ENV, DEST, OP1, OP2, FRM) helper_fmsub_h(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_MSUB_s(ENV, DEST, OP1, OP2, FRM) helper_fmsub_s(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_MSUB_d(ENV, DEST, OP1, OP2, FRM) helper_fmsub_d(ENV, OP2, DEST, OP1, FRM)
 VF3OP_VVX(vfmsub_vf, VFOP_MSUB)
 VF3OP_VVV(vfmsub_vv, VFOP_MSUB)
 
+#define VFOP_NMSUB_h(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_h(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_NMSUB_s(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_s(ENV, OP2, DEST, OP1, FRM)
 #define VFOP_NMSUB_d(ENV, DEST, OP1, OP2, FRM) helper_fnmsub_d(ENV, OP2, DEST, OP1, FRM)
 VF3OP_VVX(vfnmsub_vf, VFOP_NMSUB)
@@ -979,26 +1079,31 @@ VF3OP_WVV(vfwmsac_vv, VFOP_MSAC)
 VF3OP_WVX(vfwnmsac_vf, VFOP_NMSAC)
 VF3OP_WVV(vfwnmsac_vv, VFOP_NMSAC)
 
+#define VFOP_FMIN_h(ENV, A, B, FRM) helper_fmin_h(ENV, A, B)
 #define VFOP_FMIN_s(ENV, A, B, FRM) helper_fmin_s(ENV, A, B)
 #define VFOP_FMIN_d(ENV, A, B, FRM) helper_fmin_d(ENV, A, B)
 VFOP_VVV(vfmin_vv, VFOP_FMIN)
 VFOP_VVX(vfmin_vf, VFOP_FMIN)
 
+#define VFOP_FMAX_h(ENV, A, B, FRM) helper_fmax_h(ENV, A, B)
 #define VFOP_FMAX_s(ENV, A, B, FRM) helper_fmax_s(ENV, A, B)
 #define VFOP_FMAX_d(ENV, A, B, FRM) helper_fmax_d(ENV, A, B)
 VFOP_VVV(vfmax_vv, VFOP_FMAX)
 VFOP_VVX(vfmax_vf, VFOP_FMAX)
 
+#define VFOP_FSGNJ_h(ENV, A, B, FRM) ((A & ~INT16_MIN) | (B & INT16_MIN))
 #define VFOP_FSGNJ_s(ENV, A, B, FRM) ((A & ~INT32_MIN) | (B & INT32_MIN))
 #define VFOP_FSGNJ_d(ENV, A, B, FRM) ((A & ~INT64_MIN) | (B & INT64_MIN))
 VFOP_VVV(vfsgnj_vv, VFOP_FSGNJ)
 VFOP_VVX(vfsgnj_vf, VFOP_FSGNJ)
 
+#define VFOP_FSGNJN_h(ENV, A, B, FRM) ((A & ~INT16_MIN) | (~B & INT16_MIN))
 #define VFOP_FSGNJN_s(ENV, A, B, FRM) ((A & ~INT32_MIN) | (~B & INT32_MIN))
 #define VFOP_FSGNJN_d(ENV, A, B, FRM) ((A & ~INT64_MIN) | (~B & INT64_MIN))
 VFOP_VVV(vfsgnjn_vv, VFOP_FSGNJN)
 VFOP_VVX(vfsgnjn_vf, VFOP_FSGNJN)
 
+#define VFOP_FSGNJX_h(ENV, A, B, FRM) (A ^ (B & INT16_MIN))
 #define VFOP_FSGNJX_s(ENV, A, B, FRM) (A ^ (B & INT32_MIN))
 #define VFOP_FSGNJX_d(ENV, A, B, FRM) (A ^ (B & INT64_MIN))
 VFOP_VVV(vfsgnjx_vv, VFOP_FSGNJX)
@@ -1019,40 +1124,49 @@ VFMOP_VVX(vfle_vf, helper_fle)
 VFMOP_VVX(vfgt_vf, helper_fgt)
 VFMOP_VVX(vfge_vf, helper_fge)
 
+#define VFOP_RSQRT7_h(ENV, OP1) 0; tlib_abort("RSQRT7 isn't supported for half precision floating point yet.")
 #define VFOP_RSQRT7_s(ENV, OP1) f32_rsqrte7(ENV, OP1)
 #define VFOP_RSQRT7_d(ENV, OP1) f64_rsqrte7(ENV, OP1)
 VFOP_VV(vfrsqrt7_v, VFOP_RSQRT7)
 
+#define VFOP_REC7_h(ENV, OP1) 0; tlib_abort("REC7 isn't supported for half precision floating point yet.")
 #define VFOP_REC7_s(ENV, OP1) f32_recip7(ENV, OP1)
 #define VFOP_REC7_d(ENV, OP1) f64_recip7(ENV, OP1)
 VFOP_VV(vfrec7_v, VFOP_REC7)
 
+#define VFOP_SQRT_h(ENV, OP1) helper_fsqrt_h(ENV, OP1, env->frm)
 #define VFOP_SQRT_s(ENV, OP1) helper_fsqrt_s(ENV, OP1, env->frm)
 #define VFOP_SQRT_d(ENV, OP1) helper_fsqrt_d(ENV, OP1, env->frm)
 VFOP_VV(vfsqrt_v, VFOP_SQRT)
 
 VFOP_VV(vfclass_v, helper_fclass)
 
+#define VFOP_FCVT_XUF_h(ENV, OP1) helper_fcvt_wu_h(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_XUF_s(ENV, OP1) helper_fcvt_wu_s(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_XUF_d(ENV, OP1) helper_fcvt_lu_d(ENV, OP1, ENV->frm)
 VFOP_VV(vfcvt_xuf_v, VFOP_FCVT_XUF)
 
+#define VFOP_FCVT_XF_h(ENV, OP1) helper_fcvt_w_h(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_XF_s(ENV, OP1) helper_fcvt_w_s(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_XF_d(ENV, OP1) helper_fcvt_l_d(ENV, OP1, ENV->frm)
 VFOP_VV(vfcvt_xf_v, VFOP_FCVT_XF)
 
+#define VFOP_FCVT_RTZ_XUF_h(ENV, OP1) helper_fcvt_wu_h(ENV, OP1, riscv_float_round_to_zero)
 #define VFOP_FCVT_RTZ_XUF_s(ENV, OP1) helper_fcvt_wu_s(ENV, OP1, riscv_float_round_to_zero)
 #define VFOP_FCVT_RTZ_XUF_d(ENV, OP1) helper_fcvt_lu_d(ENV, OP1, riscv_float_round_to_zero)
 VFOP_VV(vfcvt_rtz_xuf_v, VFOP_FCVT_RTZ_XUF)
 
+#define VFOP_FCVT_RTZ_XF_h(ENV, OP1) helper_fcvt_w_h(ENV, OP1, riscv_float_round_to_zero)
 #define VFOP_FCVT_RTZ_XF_s(ENV, OP1) helper_fcvt_w_s(ENV, OP1, riscv_float_round_to_zero)
 #define VFOP_FCVT_RTZ_XF_d(ENV, OP1) helper_fcvt_l_d(ENV, OP1, riscv_float_round_to_zero)
 VFOP_VV(vfcvt_rtz_xf_v, VFOP_FCVT_RTZ_XF)
 
+#define VFOP_FCVT_FXU_h(ENV, OP1) helper_fcvt_h_wu(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_FXU_s(ENV, OP1) helper_fcvt_s_wu(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_FXU_d(ENV, OP1) helper_fcvt_d_lu(ENV, OP1, ENV->frm)
 VFOP_VV(vfcvt_fxu_v, VFOP_FCVT_FXU)
 
+#define VFOP_FCVT_FX_h(ENV, OP1) helper_fcvt_h_w(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_FX_s(ENV, OP1) helper_fcvt_s_w(ENV, OP1, ENV->frm)
 #define VFOP_FCVT_FX_d(ENV, OP1) helper_fcvt_d_l(ENV, OP1, ENV->frm)
 VFOP_VV(vfcvt_fx_v, VFOP_FCVT_FX)

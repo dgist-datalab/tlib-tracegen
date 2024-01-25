@@ -193,6 +193,12 @@ void helper_vfmerge_vfm(CPUState *env, uint32_t vd, uint32_t vs2, uint64_t f1)
     }
     const target_ulong eew = env->vsew;
     switch (eew) {
+    case 16:
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+            return;
+        }
+        break;
     case 32:
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
@@ -212,6 +218,9 @@ void helper_vfmerge_vfm(CPUState *env, uint32_t vd, uint32_t vs2, uint64_t f1)
     for (int ei = 0; ei < env->vl; ++ei) {
         uint8_t mask = !(V(0)[ei >> 3] & (1 << (ei & 0x7)));
         switch (eew) {
+        case 16:
+            ((uint16_t *)V(vd))[ei] = mask ? ((uint16_t *)V(vs2))[ei] : f1;
+            break;
         case 32:
             ((uint32_t *)V(vd))[ei] = mask ? ((uint32_t *)V(vs2))[ei] : f1;
             break;

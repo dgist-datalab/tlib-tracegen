@@ -1001,6 +1001,16 @@ target_ulong helper_flt_h(CPUState *env, uint64_t frs1, uint64_t frs2)
     return frs1;
 }
 
+target_ulong helper_fge_h(CPUState *env, uint64_t frs1, uint64_t frs2)
+{
+    return helper_fle_h(env, frs2, frs1);
+}
+
+target_ulong helper_fgt_h(CPUState *env, uint64_t frs1, uint64_t frs2)
+{
+    return helper_flt_h(env, frs2, frs1);
+}
+
 target_ulong helper_feq_h(CPUState *env, uint64_t frs1, uint64_t frs2)
 {
     require_fp;
@@ -1168,6 +1178,13 @@ void helper_vfmv_vf(CPUState *env, uint32_t vd, uint64_t f1)
     }
     const target_ulong eew = env->vsew;
     switch (eew) {
+    case 16:
+        if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH)) {
+            raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+            return;
+        }
+        f1 = unbox_float(RISCV_HALF_PRECISION, env, f1);
+        break;
     case 32:
         if (!riscv_has_ext(env, RISCV_FEATURE_RVF)) {
             raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
@@ -1187,6 +1204,9 @@ void helper_vfmv_vf(CPUState *env, uint32_t vd, uint64_t f1)
     }
     for (int ei = 0; ei < env->vl; ++ei) {
         switch (eew) {
+        case 16:
+            ((uint16_t *)V(vd))[ei] = f1;
+            break;
         case 32:
             ((uint32_t *)V(vd))[ei] = f1;
             break;
@@ -1203,6 +1223,14 @@ void helper_vfmv_fs(CPUState *env, int32_t vd, int32_t vs2)
     const target_ulong eew = env->vsew;
     switch(eew)
     {
+        case 16:
+           if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH))
+           {
+               raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+               break;
+           }
+           env->fpr[vd] = box_float(RISCV_HALF_PRECISION, ((uint16_t *)V(vs2))[0]);
+           break;
         case 32:
            if (!riscv_has_ext(env, RISCV_FEATURE_RVF))
            {
@@ -1235,6 +1263,14 @@ void helper_vfmv_sf(CPUState *env, uint32_t vd, float64 rs1)
     }
     switch(env->vsew)
     {
+        case 16:
+           if (!riscv_has_additional_ext(env, RISCV_FEATURE_ZFH))
+           {
+               raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
+               break;
+           }
+           ((int16_t *)V(vd))[0] = unbox_float(RISCV_HALF_PRECISION, env, rs1);
+           break;
         case 32:
            if (!riscv_has_ext(env, RISCV_FEATURE_RVF))
            {
