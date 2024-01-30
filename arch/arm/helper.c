@@ -1601,13 +1601,11 @@ static int get_phys_addr_mpu(CPUState *env, uint32_t address, int access_type, i
     case 6:
         *prot = PAGE_READ | PAGE_EXEC;
         break;
+#ifdef TARGET_PROTO_ARM_M
     case 7:
-        if (env->cp15.c0_cpuid == ARM_CPUID_CORTEXM3) {
-            *prot |= PAGE_READ | PAGE_EXEC;
-        } else {
-            break;
-        }
+        *prot |= PAGE_READ | PAGE_EXEC;
         break;
+#endif
     default:
         /* Bad permission.  */
         break;
