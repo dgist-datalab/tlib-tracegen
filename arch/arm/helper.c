@@ -286,6 +286,19 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         // cortex-m7?
         set_feature(env, ARM_FEATURE_VFP4);
         break;
+    case ARM_CPUID_CORTEXM0:
+        // TODO: Those should not be present on M0 processors,
+        //       but some of our samples break without them.
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_THUMB2);
+        break;
 #endif
     case ARM_CPUID_ANY: /* For userspace emulation.  */
         set_feature(env, ARM_FEATURE_V4T);
@@ -501,7 +514,8 @@ static const struct arm_cpu_t arm_cpu_names[] = {
     { ARM_CPUID_ARM7TDMI, "arm7tdmi" },
     { ARM_CPUID_ARM926, "arm926" }, { ARM_CPUID_ARM946, "arm946" }, { ARM_CPUID_ARM1026, "arm1026" },
     { ARM_CPUID_ARM1136, "arm1136" }, { ARM_CPUID_ARM1136_R2, "arm1136-r2" }, { ARM_CPUID_ARM1176, "arm1176" },
-    { ARM_CPUID_ARM11MPCORE, "arm11mpcore" }, { ARM_CPUID_CORTEXM3, "cortex-m0" }, { ARM_CPUID_CORTEXM3, "cortex-m0+" },
+    // TODO: M0+ shouldn't be the same as M3. It doesn't support hardware division.
+    { ARM_CPUID_ARM11MPCORE, "arm11mpcore" }, { ARM_CPUID_CORTEXM0, "cortex-m0" }, { ARM_CPUID_CORTEXM3, "cortex-m0+" },
     { ARM_CPUID_CORTEXM3, "cortex-m1" }, { ARM_CPUID_CORTEXM3, "cortex-m3" }, { ARM_CPUID_CORTEXM3, "cortex-m4" },
     { ARM_CPUID_CORTEXM3, "cortex-m4f" }, { ARM_CPUID_CORTEXM3, "cortex-m7" }, { ARM_CPUID_CORTEXA8, "cortex-a8" },
     { ARM_CPUID_CORTEXA9, "cortex-a9" }, { ARM_CPUID_CORTEXA15, "cortex-a15" }, { ARM_CPUID_TI925T, "ti925t" },
