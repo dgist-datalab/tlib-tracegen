@@ -258,6 +258,26 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_VFP4);
         /* fallthrough */
         break;
+    case ARM_CPUID_CORTEXM7:
+        // TODO: This should not be present on M7 processors,
+        //       but some of our samples break without it.
+        set_feature(env, ARM_FEATURE_VFP_FP16);
+
+        // TODO: Add DSP once it's available
+        set_feature(env, ARM_FEATURE_VFP4);
+        set_feature(env, ARM_FEATURE_VFP3);
+        set_feature(env, ARM_FEATURE_VFP);
+
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_THUMB2);
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        break;
     case ARM_CPUID_CORTEXM23:
         set_feature(env, ARM_FEATURE_ARM_DIV);
         set_feature(env, ARM_FEATURE_MPU);
@@ -540,7 +560,7 @@ static const struct arm_cpu_t arm_cpu_names[] = {
     { ARM_CPUID_ARM11MPCORE, "arm11mpcore" }, { ARM_CPUID_CORTEXM0, "cortex-m0" }, { ARM_CPUID_CORTEXM3, "cortex-m0+" },
     { ARM_CPUID_CORTEXM3, "cortex-m1" }, { ARM_CPUID_CORTEXM3, "cortex-m3" }, { ARM_CPUID_CORTEXM4, "cortex-m4" },
     // TODO: M4F should be separate from M4.
-    { ARM_CPUID_CORTEXM4, "cortex-m4f" }, { ARM_CPUID_CORTEXM3, "cortex-m7" }, { ARM_CPUID_CORTEXA8, "cortex-a8" },
+    { ARM_CPUID_CORTEXM7, "cortex-m4f" }, { ARM_CPUID_CORTEXM7, "cortex-m7" }, { ARM_CPUID_CORTEXA8, "cortex-a8" },
     { ARM_CPUID_CORTEXA9, "cortex-a9" }, { ARM_CPUID_CORTEXA15, "cortex-a15" }, { ARM_CPUID_TI925T, "ti925t" },
     { ARM_CPUID_PXA250, "pxa250" }, { ARM_CPUID_SA1100,    "sa1100" }, { ARM_CPUID_SA1110,    "sa1110" },
     { ARM_CPUID_PXA255, "pxa255" }, { ARM_CPUID_PXA260, "pxa260" }, { ARM_CPUID_PXA261, "pxa261" },
