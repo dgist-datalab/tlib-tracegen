@@ -248,15 +248,22 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         break;
 #ifdef TARGET_PROTO_ARM_M
     case ARM_CPUID_CORTEXM85:
-        // We don't yet implement the DSP (although this is available in our arm64), ARMV8.1M and the VFP5.
-        // They should be added when available
-        set_feature(env, ARM_FEATURE_THUMB2);
-        set_feature(env, ARM_FEATURE_THUMB_DIV);
-        set_feature(env, ARM_FEATURE_VFP);
-        set_feature(env, ARM_FEATURE_VFP3);
+        // TODO: Add DSP once it's available
         set_feature(env, ARM_FEATURE_VFP_FP16);
         set_feature(env, ARM_FEATURE_VFP4);
-        /* fallthrough */
+        set_feature(env, ARM_FEATURE_VFP3);
+        set_feature(env, ARM_FEATURE_VFP);
+
+        set_feature(env, ARM_FEATURE_V8);
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_THUMB2);
         break;
     case ARM_CPUID_CORTEXM7:
         // TODO: This should not be present on M7 processors,
@@ -279,13 +286,16 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_THUMB_DIV);
         break;
     case ARM_CPUID_CORTEXM23:
-        set_feature(env, ARM_FEATURE_ARM_DIV);
-        set_feature(env, ARM_FEATURE_MPU);
-        set_feature(env, ARM_FEATURE_V4T);
-        set_feature(env, ARM_FEATURE_V5);
-        set_feature(env, ARM_FEATURE_V6);
-        set_feature(env, ARM_FEATURE_V7);
         set_feature(env, ARM_FEATURE_V8);
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_THUMB2);
         break;
     case ARM_CPUID_CORTEXM4:
         // TODO: This should not be present on M4 processors,
@@ -310,23 +320,31 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_THUMB2);
         break;
     case ARM_CPUID_CORTEXM33:
+        set_feature(env, ARM_FEATURE_VFP4);
+        set_feature(env, ARM_FEATURE_VFP3);
+        set_feature(env, ARM_FEATURE_VFP);
+
         set_feature(env, ARM_FEATURE_V8);
-        /* fallthrough */
-    case ARM_CPUID_CORTEXM3:
-        set_feature(env, ARM_FEATURE_V4T);
-        set_feature(env, ARM_FEATURE_V5);
-        set_feature(env, ARM_FEATURE_V6);
-        set_feature(env, ARM_FEATURE_THUMB2);
         set_feature(env, ARM_FEATURE_V7);
-        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
         set_feature(env, ARM_FEATURE_MPU);
 
-        // TODO cortex-m4, check if all should be on
-        set_feature(env, ARM_FEATURE_VFP);
-        set_feature(env, ARM_FEATURE_VFP3);
-        set_feature(env, ARM_FEATURE_VFP_FP16);
-        // cortex-m7?
-        set_feature(env, ARM_FEATURE_VFP4);
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_THUMB2);
+        break;
+    case ARM_CPUID_CORTEXM3:
+        set_feature(env, ARM_FEATURE_V7);
+        set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V5);
+        set_feature(env, ARM_FEATURE_V4T);
+
+        set_feature(env, ARM_FEATURE_MPU);
+
+        set_feature(env, ARM_FEATURE_THUMB_DIV);
+        set_feature(env, ARM_FEATURE_THUMB2);
         break;
     case ARM_CPUID_CORTEXM0:
         // TODO: Those should not be present on M0 processors,
