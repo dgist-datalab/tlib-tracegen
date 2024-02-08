@@ -1823,7 +1823,7 @@ static uint32_t ldl_phys_aligned(target_phys_addr_t addr)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        val = tswap32(tlib_read_double_word(addr));
+        val = tlib_read_double_word(addr);
     } else {
         /* RAM case */
         ptr = get_ram_ptr(pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
@@ -1870,7 +1870,7 @@ static uint64_t ldq_phys_aligned(target_phys_addr_t addr)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        val = tswap64(tlib_read_quad_word(addr));
+        val = tlib_read_quad_word(addr);
     } else {
         /* RAM case */
         ptr = get_ram_ptr(pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
@@ -1926,7 +1926,7 @@ uint32_t lduw_phys(target_phys_addr_t addr)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        val = tswap16(tlib_read_word(addr));
+        val = tlib_read_word(addr);
     } else {
         /* RAM case */
         ptr = get_ram_ptr(pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
@@ -1960,7 +1960,7 @@ void stl_phys_notdirty(target_phys_addr_t addr, uint32_t val)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        tlib_write_double_word(addr, tswap32(val));
+        tlib_write_double_word(addr, val);
     } else {
         uintptr_t addr1 = (pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
         ptr = get_ram_ptr(addr1);
@@ -1995,7 +1995,7 @@ void stq_phys_notdirty(target_phys_addr_t addr, uint64_t val)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        tlib_write_quad_word(addr, tswap64(val));
+        tlib_write_quad_word(addr, val);
     } else {
         ptr = get_ram_ptr(pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
         stq_p(ptr, val);
@@ -2020,7 +2020,7 @@ static void stl_phys_aligned(target_phys_addr_t addr, uint32_t val)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        tlib_write_double_word(addr, tswap32(val));
+        tlib_write_double_word(addr, val);
     } else {
         uintptr_t addr1;
         addr1 = (pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
@@ -2043,7 +2043,6 @@ void stl_phys(target_phys_addr_t addr, uint32_t val)
         return;
     }
 
-    val = tswap32(val);
     cpu_physical_memory_write(addr, &val, 4);
 }
 
@@ -2077,7 +2076,7 @@ void stw_phys(target_phys_addr_t addr, uint32_t val)
         if (p) {
             addr = (addr & ~TARGET_PAGE_MASK) + p->region_offset;
         }
-        tlib_write_word(addr, tswap16(val));
+        tlib_write_word(addr, val);
     } else {
         uintptr_t addr1;
         addr1 = (pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
@@ -2094,7 +2093,6 @@ void stw_phys(target_phys_addr_t addr, uint32_t val)
 /* XXX: optimize */
 void stq_phys(target_phys_addr_t addr, uint64_t val)
 {
-    val = tswap64(val);
     cpu_physical_memory_write(addr, &val, 8);
 }
 

@@ -84,11 +84,11 @@ static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr, targe
 #if SHIFT == 0
     res = tlib_read_byte(physaddr);
 #elif SHIFT == 1
-    res = tswap16(tlib_read_word(physaddr));
+    res = tlib_read_word(physaddr);
 #elif SHIFT == 2
-    res = tswap32(tlib_read_double_word(physaddr));
+    res = tlib_read_double_word(physaddr);
 #else
-    res = tswap64(tlib_read_quad_word(physaddr));
+    res = tlib_read_quad_word(physaddr);
 #endif /* SHIFT > 2 */
     return res;
 }
@@ -293,11 +293,11 @@ static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr, DATA_TYPE
 #if SHIFT == 0
     tlib_write_byte(physaddr, val);
 #elif SHIFT == 1
-    tlib_write_word(physaddr, tswap16(val));
+    tlib_write_word(physaddr, val);
 #elif SHIFT == 2
-    tlib_write_double_word(physaddr, tswap32(val));
+    tlib_write_double_word(physaddr, val);
 #else
-    tlib_write_quad_word(physaddr, tswap64(val));
+    tlib_write_quad_word(physaddr, val);
 #endif /* SHIFT > 2 */
 }
 
