@@ -37,50 +37,6 @@
 
 #include "softfloat-2.h"
 
-#if defined(HOST_WORDS_BIGENDIAN) != defined(TARGET_WORDS_BIGENDIAN)
-#define BSWAP_NEEDED
-#endif
-
-#ifdef BSWAP_NEEDED
-
-static inline uint16_t tswap16(uint16_t s)
-{
-    return bswap16(s);
-}
-
-static inline uint32_t tswap32(uint32_t s)
-{
-    return bswap32(s);
-}
-
-static inline uint64_t tswap64(uint64_t s)
-{
-    return bswap64(s);
-}
-
-#else
-
-static inline uint16_t tswap16(uint16_t s)
-{
-    return s;
-}
-
-static inline uint32_t tswap32(uint32_t s)
-{
-    return s;
-}
-
-static inline uint64_t tswap64(uint64_t s)
-{
-    return s;
-}
-
-#endif
-
-#if TARGET_LONG_SIZE != 4
-#define tswapl(s) tswap64(s)
-#endif
-
 typedef union {
     float32 f;
     uint32_t l;
