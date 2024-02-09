@@ -5,10 +5,6 @@
 static inline void ensure_locked_by_me(struct CPUState *env)
 {
 #if DEBUG
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        return;
-    }
-
     if (env->atomic_memory_state->locking_cpu_id != env->id) {
         tlib_abort("Tried to release global memory lock by the cpu that does not own it!");
     }
@@ -167,10 +163,6 @@ void acquire_global_memory_lock(struct CPUState *env)
         // no atomic_memory_state so no need for synchronization
         return;
     }
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // there is no need for synchronization
-        return;
-    }
 
     pthread_mutex_lock(&env->atomic_memory_state->global_mutex);
     if (env->atomic_memory_state->locking_cpu_id != env->id) {
@@ -189,10 +181,6 @@ void release_global_memory_lock(struct CPUState *env)
         // no atomic_memory_state so no need for synchronization
         return;
     }
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // there is no need for synchronization
-        return;
-    }
 
     pthread_mutex_lock(&env->atomic_memory_state->global_mutex);
     ensure_locked_by_me(env);
@@ -206,11 +194,6 @@ void release_global_memory_lock(struct CPUState *env)
 
 void clear_global_memory_lock(struct CPUState *env)
 {
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // there is no need for synchronization
-        return;
-    }
-
     pthread_mutex_lock(&env->atomic_memory_state->global_mutex);
     ensure_locked_by_me(env);
     env->atomic_memory_state->locking_cpu_id = NO_CPU_ID;
@@ -222,11 +205,6 @@ void clear_global_memory_lock(struct CPUState *env)
 // ! this function should be called when holding the mutex !
 void reserve_address(struct CPUState *env, target_phys_addr_t address)
 {
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // if there is just one cpu, return ok status
-        return;
-    }
-
     reserve_address_inner(cpu, address, 0);
 }
 
@@ -244,10 +222,6 @@ void register_address_access(struct CPUState *env, target_phys_addr_t address)
 {
     if (env->atomic_memory_state == NULL) {
         // no atomic_memory_state so no registration needed
-        return;
-    }
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // this is not need when we have only one cpu
         return;
     }
 
