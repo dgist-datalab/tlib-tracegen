@@ -108,9 +108,9 @@ void HELPER(release_global_memory_lock)(CPUState * env)
     release_global_memory_lock(env);
 }
 
-void HELPER(reserve_address)(CPUState * env, ram_addr_t address)
+void HELPER(reserve_address)(CPUState * env, ram_addr_t address, uint32_t manual_free)
 {
-    reserve_address(env, address);
+    reserve_address(env, address, (uint8_t)manual_free);
 }
 
 target_ulong HELPER(check_address_reservation)(CPUState * env, ram_addr_t address)
@@ -121,21 +121,6 @@ target_ulong HELPER(check_address_reservation)(CPUState * env, ram_addr_t addres
 void HELPER(cancel_reservation)(CPUState * env)
 {
     cancel_reservation(env);
-}
-
-void HELPER(reserve_address_always)(CPUState * env, ram_addr_t address)
-{
-    reserve_address_always(env, address);
-}
-
-target_ulong HELPER(check_address_reservation_always)(CPUState * env, ram_addr_t address)
-{
-    return check_address_reservation_always(env, address);
-}
-
-void HELPER(cancel_reservation_always)(CPUState * env)
-{
-    cancel_reservation_always(env);
 }
 
 void HELPER(var_log)(target_ulong v)

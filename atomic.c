@@ -126,25 +126,6 @@ static inline void free_reservation(struct CPUState *env, address_reservation_t 
     env->atomic_memory_state->reservations_count--;
 }
 
-// If manual_free is true then the performed reservation will only be able to be cancelled explicitly,
-// by calling `cancel_reservation` or by perfroming a different reservation on a CPU that already had
-// had a reserved address.
-static void reserve_address_inner(struct CPUState *env, target_phys_addr_t address, uint8_t manual_free)
-{
-    address_reservation_t *reservation;
-
-    ensure_locked_by_me(env);
-
-    reservation = find_reservation_by_cpu(env);
-    if (reservation != NULL) {
-        if (reservation->address == address) {
-            return;
-        }
-        // cancel the previous reservation and set a new one
-        free_reservation(env, reservation, 1);
-    }
-    make_reservation(env, address, manual_free);
-}
 
 void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id)
 {
@@ -201,19 +182,29 @@ void clear_global_memory_lock(struct CPUState *env)
 }
 
 // ! this function should be called when holding the mutex !
-void reserve_address(struct CPUState *env, target_phys_addr_t address)
+// If manual_free is true then the performed reservation will only be able to be cancelled explicitly,
+// by calling `cancel_reservation` or by perfroming a different reservation on a CPU that already had
+// had a reserved address.
+void reserve_address(struct CPUState *env, target_phys_addr_t address, uint8_t manual_free)
 {
-    reserve_address_inner(cpu, address, 0);
+    ensure_locked_by_me(env);
+
+    address_reservation_t *reservation = find_reservation_by_cpu(env);
+    if (reservation != NULL) {
+        if (reservation->address == address) {
+            return;
+        }
+        // cancel the previous reservation and set a new one
+        free_reservation(env, reservation, 1);
+    }
+    make_reservation(env, address, manual_free);
 }
 
 uint32_t check_address_reservation(struct CPUState *env, target_phys_addr_t address)
 {
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // if there is just one cpu, return ok status
-        return 0;
-    }
-
-    return check_address_reservation_always(cpu, address);
+    ensure_locked_by_me(env);
+    address_reservation_t *reservation = find_reservation_by_cpu(env);
+    return (reservation == NULL || reservation->address != address);
 }
 
 void register_address_access(struct CPUState *env, target_phys_addr_t address)
@@ -235,30 +226,6 @@ void register_address_access(struct CPUState *env, target_phys_addr_t address)
 }
 
 void cancel_reservation(struct CPUState *env)
-{
-    if (env->atomic_memory_state->number_of_registered_cpus == 1) {
-        // this is not need when we have only one cpu
-        return;
-    }
-
-    cancel_reservation_always(env);
-}
-
-// Functions with the _always suffix, will run no matter the amount of registered CPU cores
-
-void reserve_address_always(struct CPUState *env, target_phys_addr_t address)
-{
-    reserve_address_inner(env, address, 1);
-}
-
-uint32_t check_address_reservation_always(struct CPUState *env, target_phys_addr_t address)
-{
-    ensure_locked_by_me(env);
-    address_reservation_t *reservation = find_reservation_by_cpu(env);
-    return (reservation == NULL || reservation->address != address);
-}
-
-void cancel_reservation_always(struct CPUState *env)
 {
     ensure_locked_by_me(env);
 

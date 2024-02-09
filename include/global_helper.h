@@ -17,12 +17,8 @@ DEF_HELPER_1(tlb_flush, void, env)
 
 DEF_HELPER_1(acquire_global_memory_lock, void, env)
 DEF_HELPER_1(release_global_memory_lock, void, env)
-DEF_HELPER_2(reserve_address, void, env, uintptr)
+DEF_HELPER_3(reserve_address, void, env, uintptr, i32)
 DEF_HELPER_2(check_address_reservation, tl, env, uintptr)
 DEF_HELPER_1(cancel_reservation, void, env)
-
-DEF_HELPER_2(reserve_address_always, void, env, uintptr)
-DEF_HELPER_2(check_address_reservation_always, tl, env, uintptr)
-DEF_HELPER_1(cancel_reservation_always, void, env)
 
 #include "def-helper.h"

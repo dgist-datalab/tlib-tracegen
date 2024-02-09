@@ -1888,7 +1888,7 @@ static void gen_atomic(CPUState *env, DisasContext *dc, uint32_t opc, int rd, in
 
     switch (opc) {
     case OPC_RISC_LR_W:
-        gen_helper_reserve_address(cpu_env, source1);
+        gen_helper_reserve_address(cpu_env, source1, tcg_const_i32(0));
         tcg_gen_qemu_ld32s(dat, source1, dc->base.mem_idx);
         break;
     case OPC_RISC_SC_W:

@@ -6893,14 +6893,14 @@ static void gen_load_exclusive(DisasContext *s, int rt, int rt2, TCGv addr, int 
         store_reg(s, rt2, tmp);
     }
 
-    gen_helper_reserve_address_always(cpu_env, addr);
+    gen_helper_reserve_address(cpu_env, addr, tcg_const_i32(1));
     gen_helper_release_global_memory_lock(cpu_env);
 }
 
 static void gen_clrex(DisasContext *s)
 {
     gen_helper_acquire_global_memory_lock(cpu_env);
-    gen_helper_cancel_reservation_always(cpu_env);
+    gen_helper_cancel_reservation(cpu_env);
     gen_helper_release_global_memory_lock(cpu_env);
 }
 
@@ -6922,7 +6922,7 @@ static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2, TCGv a
     gen_helper_acquire_global_memory_lock(cpu_env);
 
     TCGv_i32 has_reservation = tcg_temp_new_i32();
-    gen_helper_check_address_reservation_always(has_reservation, cpu_env, addr);
+    gen_helper_check_address_reservation(has_reservation, cpu_env, addr);
     tcg_gen_brcondi_i32(TCG_COND_NE, has_reservation, 0, fail_label);
     tcg_temp_free_i32(has_reservation);
 
@@ -6976,7 +6976,7 @@ static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2, TCGv a
     tcg_gen_movi_i32(cpu_R[rd], 1);
     gen_set_label(done_label);
 
-    gen_helper_cancel_reservation_always(cpu_env);
+    gen_helper_cancel_reservation(cpu_env);
     gen_helper_release_global_memory_lock(cpu_env);
 }
 
