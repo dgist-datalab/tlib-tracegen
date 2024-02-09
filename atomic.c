@@ -34,7 +34,6 @@ static void initialize_atomic_memory_state(atomic_memory_state_t *sm)
         pthread_cond_init(&sm->global_cond, NULL);
         sm->locking_cpu_id = NO_CPU_ID;
         sm->entries_count = 0;
-        sm->number_of_registered_cpus = 0;
 
         sm->is_mutex_initialized = 1;
     }
@@ -154,7 +153,6 @@ void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id)
     }
 
     initialize_atomic_memory_state(sm);
-    sm->number_of_registered_cpus++;
 }
 
 void acquire_global_memory_lock(struct CPUState *env)
