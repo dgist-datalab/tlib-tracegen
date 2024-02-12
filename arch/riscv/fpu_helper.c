@@ -1237,8 +1237,7 @@ void helper_vfmv_fs(CPUState *env, int32_t vd, int32_t vs2)
                raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
                break;
            }
-           uint64_t nanbox_mask =  ((uint64_t) -1) << 32;
-           env->fpr[vd] = (uint64_t)((uint32_t *)V(vs2))[0] | nanbox_mask;
+           env->fpr[vd] = box_float(RISCV_SINGLE_PRECISION, ((uint32_t *)V(vs2))[0]);
            break;
         case 64:
            if (!riscv_has_ext(env, RISCV_FEATURE_RVD))
