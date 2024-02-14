@@ -257,6 +257,7 @@ case_EXCP_SWI_SVC:
         offset = 4;
         break;
     case EXCP_IRQ:
+    case EXCP_VIRQ:
         new_mode = ARM_CPU_MODE_IRQ;
         addr += 0x18;
         /* Disable IRQ and imprecise data aborts.  */
@@ -264,6 +265,7 @@ case_EXCP_SWI_SVC:
         offset = 4;
         break;
     case EXCP_FIQ:
+    case EXCP_VFIQ:
         new_mode = ARM_CPU_MODE_FIQ;
         addr += 0x1c;
         /* Disable FIQ, IRQ and imprecise data aborts.  */

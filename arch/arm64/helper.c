@@ -826,6 +826,20 @@ bool fiq_masked(CPUState *env, uint32_t target_el, bool superpriority, bool igno
 uint32_t aarch32_interrupt_masked(CPUState *env, uint64_t scr_el3, uint64_t hcr_el2, uint32_t current_el, int exception_index)
 {
     bool el3_enabled = arm_feature(env, ARM_FEATURE_EL3);
+    bool el2_enabled = arm_feature(env, ARM_FEATURE_EL2);
+
+    // Special handling for masking virtual interrupts
+    if (exception_index == EXCP_VIRQ || exception_index == EXCP_VFIQ) {
+        if (!el2_enabled || current_el > 1) {
+            return 1;
+        }
+
+        if (exception_index == EXCP_VIRQ) {
+            return env->daif & CPSR_I;
+        } else {
+            return env->daif & CPSR_F;
+        }
+    }
 
     uint32_t ignore = 0;
     if (el3_enabled && check_scr_el3_mask(scr_el3, 0, -1, -1, -1, -1, -1)) {
@@ -1060,22 +1074,28 @@ uint32_t get_aarch32_interrupt_target_el(CPUState *env, uint64_t scr_el3, uint64
 
 int process_interrupt_v8a_aarch32(int interrupt_request, CPUState *env, uint64_t scr_el3, uint64_t hcr_el2)
 {
+    int exception_index = -1;
+    if (interrupt_request & CPU_INTERRUPT_HARD) {
+        exception_index = EXCP_IRQ;
+    } else if (interrupt_request & CPU_INTERRUPT_FIQ) {
+        exception_index = EXCP_FIQ;
+    } else if (interrupt_request & CPU_INTERRUPT_VIRQ) {
+        exception_index = EXCP_VIRQ;
+    } else if (interrupt_request & CPU_INTERRUPT_VFIQ) {
+        exception_index = EXCP_VFIQ;
+    } else {
+        tlib_abortf("Unexpected interrupt request 0x%x", interrupt_request);
+        return 1;
+    }
+
     uint32_t current_el = arm_current_el(env);
-    uint32_t target_el = get_aarch32_interrupt_target_el(env, scr_el3, hcr_el2, current_el);
+    uint32_t target_el = ((exception_index == EXCP_VIRQ) || (exception_index == EXCP_VFIQ))
+        ? 1
+        : get_aarch32_interrupt_target_el(env, scr_el3, hcr_el2, current_el);
 
     tlib_assert(current_el <= 3);
     if (target_el == 0) {
         tlib_abortf("process_interrupt: invalid target_el!");
-    }
-
-    int exception_index = -1;
-    if (interrupt_request & CPU_INTERRUPT_HARD) {
-        exception_index =  EXCP_IRQ;
-    } else if (interrupt_request & CPU_INTERRUPT_FIQ) {
-        exception_index =  EXCP_FIQ;
-    } else {
-        tlib_abortf("Virtual exceptions not implemented!");
-        return 1;
     }
 
     if (aarch32_interrupt_masked(env, scr_el3, hcr_el2, current_el, exception_index)) {
