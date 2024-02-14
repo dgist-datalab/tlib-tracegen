@@ -361,7 +361,7 @@ void HELPER(wfi)(CPUARMState *env, uint32_t insn_len)
             env->regs[15] -= insn_len;
         }
 
-        raise_exception(env, EXCP_UDEF, syn_wfx(1, 0xe, 0, insn_len == 2),
+        raise_exception(env, EXCP_HYP_TRAP, syn_wfx(1, 0xe, 0, insn_len == 2),
                         target_el);
     }
 

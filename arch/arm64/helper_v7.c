@@ -272,6 +272,11 @@ case_EXCP_SWI_SVC:
         mask = CPSR_A | CPSR_I | CPSR_F;
         offset = 4;
         break;
+    case EXCP_HYP_TRAP:
+        new_mode = ARM_CPU_MODE_HYP;
+        addr += 0x14;
+        mask = CPSR_I;
+        break;
     default:
         cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
         return; /* Never happens.  Keep compiler happy.  */
