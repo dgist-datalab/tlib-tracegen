@@ -63,6 +63,8 @@ void switch_mode(CPUState *env, int mode)
     env->regs[13] = env->banked_r13[i];
     env->regs[14] = env->banked_r14[r14_bank_number(mode)];
     env->spsr = env->banked_spsr[i];
+
+    tlib_on_execution_mode_changed(arm_cpu_mode_to_el(env, mode), arm_is_secure(env));
 }
 
 static bool is_target_mode_valid(CPUState *env, uint32_t current_mode, uint32_t target_mode, CPSRWriteType write_type)
