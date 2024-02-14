@@ -606,8 +606,8 @@ ARMCPRegInfo aarch32_registers[] = {
     ARM32_CP_REG_DEFINE(HCR,              15,   4,   1,   1,   0,   2, RW, FIELD(cp15.hcr_el2), RESETVALUE(0x2)) // Hyp Configuration Register
     ARM32_CP_REG_DEFINE(HCR2,             15,   4,   1,   1,   4,   2, RW)  // Hyp Configuration Register 2
     ARM32_CP_REG_DEFINE(HDCR,             15,   4,   1,   1,   1,   2, RW, FIELD(cp15.mdcr_el2), RESETVALUE(0x4))  // Hyp Debug Control Register
-    ARM32_CP_REG_DEFINE(HDFAR,            15,   4,   6,   0,   0,   2, RW)  // Hyp Data Fault Address Register
-    ARM32_CP_REG_DEFINE(HIFAR,            15,   4,   6,   0,   2,   2, RW)  // Hyp Instruction F ault Address Register
+    ARM32_CP_REG_DEFINE(HDFAR,            15,   4,   6,   0,   0,   2, RW, FIELD(cp15.dfar_s))  // Hyp Data Fault Address Register
+    ARM32_CP_REG_DEFINE(HIFAR,            15,   4,   6,   0,   2,   2, RW, FIELD(cp15.ifar_s))  // Hyp Instruction F ault Address Register
     ARM32_CP_REG_DEFINE(HMAIR0,           15,   4,  10,   2,   0,   2, RW, FIELD(cp15.hmair0))  // Hyp Memory Attribute Indirection Register 0
     ARM32_CP_REG_DEFINE(HMAIR1,           15,   4,  10,   2,   1,   2, RW, FIELD(cp15.hmair1))  // Hyp Memory Attribute Indirection Register 1
     // The params are:  name              cp, op1, crn, crm, op2, el, extra_type, ...
@@ -617,7 +617,7 @@ ARMCPRegInfo aarch32_registers[] = {
     ARM32_CP_REG_DEFINE(HSR,              15,   4,   5,   2,   0,   2, RW, FIELD(cp15.hsr))  // Hyp Syndrome Register
     ARM32_CP_REG_DEFINE(HSTR,             15,   4,   1,   1,   3,   2, RW, FIELD(cp15.hstr_el2))  // Hyp System Trap Register
     ARM32_CP_REG_DEFINE(HTCR,             15,   4,   2,   0,   2,   2, RW)  // Hyp Translation Control Register
-    ARM32_CP_REG_DEFINE(HTPIDR,           15,   4,  13,   0,   2,   2, RW)  // Hyp Software Thread ID Register
+    ARM32_CP_REG_DEFINE(HTPIDR,           15,   4,  13,   0,   2,   2, RW | ARM_CP_TLB_FLUSH, FIELD(cp15.tpidr_el[2]))  // Hyp Software Thread ID Register
     ARM32_CP_REG_DEFINE(HTRFCR,           15,   4,   1,   2,   1,   2, RW)  // Hyp Trace Filter Control Register
     ARM32_CP_REG_DEFINE(HVBAR,            15,   4,  12,   0,   0,   2, RW, FIELD(cp15.hvbar))  // Hyp Vector Base Address Register
     // For every 32-bit ICC_* register except ICC_MCTLR, ICC_MGRPEN1 and ICC_MSRE there's also an eqivalent ICV_* register with the same encoding.
@@ -648,53 +648,53 @@ ARMCPRegInfo aarch32_registers[] = {
     ARM32_CP_REG_DEFINE(ICC_PMR,          15,   0,   4,   6,   0,   1, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Interrupt Priority Mask Register
     ARM32_CP_REG_DEFINE(ICC_RPR,          15,   0,  12,  11,   3,   1, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Running Priority Register
     ARM32_CP_REG_DEFINE(ICC_SRE,          15,   0,  12,  12,   5,   1, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller System Register Enable register
-    ARM32_CP_REG_DEFINE(ICH_AP0R0,        15,   4,  12,   8,   0,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 0 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP0R1,        15,   4,  12,   8,   1,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 0 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP0R2,        15,   4,  12,   8,   2,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 0 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP0R3,        15,   4,  12,   8,   3,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 0 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP1R0,        15,   4,  12,   9,   0,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 1 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP1R1,        15,   4,  12,   9,   1,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 1 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP1R2,        15,   4,  12,   9,   2,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 1 Registers
-    ARM32_CP_REG_DEFINE(ICH_AP1R3,        15,   4,  12,   9,   3,   2, RW | GIC)  // Interrupt Controller Hyp Active Priorities Group 1 Registers
-    ARM32_CP_REG_DEFINE(ICH_EISR,         15,   4,  12,  11,   3,   2, RW | GIC)  // Interrupt Controller End of Interrupt Status Register
-    ARM32_CP_REG_DEFINE(ICH_ELRSR,        15,   4,  12,  11,   5,   2, RW | GIC)  // Interrupt Controller Empty List Register Status Register
-    ARM32_CP_REG_DEFINE(ICH_HCR,          15,   4,  12,  11,   0,   2, RW | GIC)  // Interrupt Controller Hyp Control Register
-    ARM32_CP_REG_DEFINE(ICH_LR0,          15,   4,  12,  12,   0,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR1,          15,   4,  12,  12,   1,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR2,          15,   4,  12,  12,   2,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR3,          15,   4,  12,  12,   3,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR4,          15,   4,  12,  12,   4,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR5,          15,   4,  12,  12,   5,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR6,          15,   4,  12,  12,   6,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR7,          15,   4,  12,  12,   7,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR8,          15,   4,  12,  13,   0,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR9,          15,   4,  12,  13,   1,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR10,         15,   4,  12,  13,   2,   2, RW | GIC)  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_AP0R0,        15,   4,  12,   8,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 0 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP0R1,        15,   4,  12,   8,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 0 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP0R2,        15,   4,  12,   8,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 0 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP0R3,        15,   4,  12,   8,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 0 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP1R0,        15,   4,  12,   9,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 1 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP1R1,        15,   4,  12,   9,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 1 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP1R2,        15,   4,  12,   9,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 1 Registers
+    ARM32_CP_REG_DEFINE(ICH_AP1R3,        15,   4,  12,   9,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Active Priorities Group 1 Registers
+    ARM32_CP_REG_DEFINE(ICH_EISR,         15,   4,  12,  11,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller End of Interrupt Status Register
+    ARM32_CP_REG_DEFINE(ICH_ELRSR,        15,   4,  12,  11,   5,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Empty List Register Status Register
+    ARM32_CP_REG_DEFINE(ICH_HCR,          15,   4,  12,  11,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Hyp Control Register
+    ARM32_CP_REG_DEFINE(ICH_LR0,          15,   4,  12,  12,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR1,          15,   4,  12,  12,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR2,          15,   4,  12,  12,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR3,          15,   4,  12,  12,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR4,          15,   4,  12,  12,   4,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR5,          15,   4,  12,  12,   5,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR6,          15,   4,  12,  12,   6,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR7,          15,   4,  12,  12,   7,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR8,          15,   4,  12,  13,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR9,          15,   4,  12,  13,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR10,         15,   4,  12,  13,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
     // The params are:  name              cp, op1, crn, crm, op2, el, extra_type, ...
-    ARM32_CP_REG_DEFINE(ICH_LR11,         15,   4,  12,  13,   3,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR12,         15,   4,  12,  13,   4,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR13,         15,   4,  12,  13,   5,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR14,         15,   4,  12,  13,   6,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LR15,         15,   4,  12,  13,   7,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC0,         15,   4,  12,  14,   0,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC1,         15,   4,  12,  14,   1,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC2,         15,   4,  12,  14,   2,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC3,         15,   4,  12,  14,   3,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC4,         15,   4,  12,  14,   4,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC5,         15,   4,  12,  14,   5,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC6,         15,   4,  12,  14,   6,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC7,         15,   4,  12,  14,   7,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC8,         15,   4,  12,  15,   0,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC9,         15,   4,  12,  15,   1,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC10,        15,   4,  12,  15,   2,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC11,        15,   4,  12,  15,   3,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC12,        15,   4,  12,  15,   4,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC13,        15,   4,  12,  15,   5,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC14,        15,   4,  12,  15,   6,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_LRC15,        15,   4,  12,  15,   7,   2, RW | GIC)  // Interrupt Controller List Registers
-    ARM32_CP_REG_DEFINE(ICH_MISR,         15,   4,  12,  11,   2,   2, RW | GIC)  // Interrupt Controller Maintenance Interrupt State Register
-    ARM32_CP_REG_DEFINE(ICH_VMCR,         15,   4,  12,  11,   7,   2, RW | GIC)  // Interrupt Controller Virtual Machine Control Register
-    ARM32_CP_REG_DEFINE(ICH_VTR,          15,   4,  12,  11,   1,   2, RW | GIC)  // Interrupt Controller VGIC Type Register
+    ARM32_CP_REG_DEFINE(ICH_LR11,         15,   4,  12,  13,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR12,         15,   4,  12,  13,   4,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR13,         15,   4,  12,  13,   5,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR14,         15,   4,  12,  13,   6,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LR15,         15,   4,  12,  13,   7,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC0,         15,   4,  12,  14,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC1,         15,   4,  12,  14,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC2,         15,   4,  12,  14,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC3,         15,   4,  12,  14,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC4,         15,   4,  12,  14,   4,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC5,         15,   4,  12,  14,   5,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC6,         15,   4,  12,  14,   6,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC7,         15,   4,  12,  14,   7,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC8,         15,   4,  12,  15,   0,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC9,         15,   4,  12,  15,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC10,        15,   4,  12,  15,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC11,        15,   4,  12,  15,   3,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC12,        15,   4,  12,  15,   4,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC13,        15,   4,  12,  15,   5,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC14,        15,   4,  12,  15,   6,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_LRC15,        15,   4,  12,  15,   7,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller List Registers
+    ARM32_CP_REG_DEFINE(ICH_MISR,         15,   4,  12,  11,   2,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Maintenance Interrupt State Register
+    ARM32_CP_REG_DEFINE(ICH_VMCR,         15,   4,  12,  11,   7,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller Virtual Machine Control Register
+    ARM32_CP_REG_DEFINE(ICH_VTR,          15,   4,  12,  11,   1,   2, RW | GIC, RW_FNS(interrupt_cpu_interface))  // Interrupt Controller VGIC Type Register
     ARM32_CP_REG_DEFINE(ID_AFR0,          15,   0,   0,   1,   3,   1, RW, READFN(id_afr0))  // Auxiliary Feature Register 0
     ARM32_CP_REG_DEFINE(ID_DFR0,          15,   0,   0,   1,   2,   1, RW, READFN(id_dfr0))  // Debug Feature Register 0
     ARM32_CP_REG_DEFINE(ID_DFR1,          15,   0,   0,   3,   5,   1, RW, READFN(id_dfr1))  // Debug Feature Register 1
@@ -1257,36 +1257,36 @@ ARMCPRegInfo aarch64_registers[] = {
     ARM64_CP_REG_DEFINE(ICC_SRE_EL1,             3,   0,  12,  12,   5,  1, RW | GIC, RW_FNS(interrupt_cpu_interface))
     ARM64_CP_REG_DEFINE(ICC_SRE_EL2,             3,   4,  12,   9,   5,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
     ARM64_CP_REG_DEFINE(ICC_SRE_EL3,             3,   6,  12,  12,   5,  3, RW | GIC, RW_FNS(interrupt_cpu_interface))
-    ARM64_CP_REG_DEFINE(ICH_AP0R0_EL2,           3,   4,  12,   8,   0,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP0R1_EL2,           3,   4,  12,   8,   1,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP0R2_EL2,           3,   4,  12,   8,   2,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP0R3_EL2,           3,   4,  12,   8,   3,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP1R0_EL2,           3,   4,  12,   9,   0,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP1R1_EL2,           3,   4,  12,   9,   1,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP1R2_EL2,           3,   4,  12,   9,   2,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_AP1R3_EL2,           3,   4,  12,   9,   3,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_EISR_EL2,            3,   4,  12,  11,   3,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_ELRSR_EL2,           3,   4,  12,  11,   5,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_HCR_EL2,             3,   4,  12,  11,   0,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR0_EL2,             3,   4,  12,  12,   0,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR1_EL2,             3,   4,  12,  12,   1,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR2_EL2,             3,   4,  12,  12,   2,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR3_EL2,             3,   4,  12,  12,   3,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR4_EL2,             3,   4,  12,  12,   4,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR5_EL2,             3,   4,  12,  12,   5,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR6_EL2,             3,   4,  12,  12,   6,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR7_EL2,             3,   4,  12,  12,   7,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR8_EL2,             3,   4,  12,  13,   0,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR9_EL2,             3,   4,  12,  13,   1,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR10_EL2,            3,   4,  12,  13,   2,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR11_EL2,            3,   4,  12,  13,   3,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR12_EL2,            3,   4,  12,  13,   4,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR13_EL2,            3,   4,  12,  13,   5,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR14_EL2,            3,   4,  12,  13,   6,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_LR15_EL2,            3,   4,  12,  13,   7,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_MISR_EL2,            3,   4,  12,  11,   2,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_VMCR_EL2,            3,   4,  12,  11,   7,  2, RW | GIC)
-    ARM64_CP_REG_DEFINE(ICH_VTR_EL2,             3,   4,  12,  11,   1,  2, RW | GIC)
+    ARM64_CP_REG_DEFINE(ICH_AP0R0_EL2,           3,   4,  12,   8,   0,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP0R1_EL2,           3,   4,  12,   8,   1,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP0R2_EL2,           3,   4,  12,   8,   2,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP0R3_EL2,           3,   4,  12,   8,   3,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP1R0_EL2,           3,   4,  12,   9,   0,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP1R1_EL2,           3,   4,  12,   9,   1,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP1R2_EL2,           3,   4,  12,   9,   2,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_AP1R3_EL2,           3,   4,  12,   9,   3,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_EISR_EL2,            3,   4,  12,  11,   3,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_ELRSR_EL2,           3,   4,  12,  11,   5,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_HCR_EL2,             3,   4,  12,  11,   0,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR0_EL2,             3,   4,  12,  12,   0,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR1_EL2,             3,   4,  12,  12,   1,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR2_EL2,             3,   4,  12,  12,   2,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR3_EL2,             3,   4,  12,  12,   3,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR4_EL2,             3,   4,  12,  12,   4,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR5_EL2,             3,   4,  12,  12,   5,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR6_EL2,             3,   4,  12,  12,   6,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR7_EL2,             3,   4,  12,  12,   7,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR8_EL2,             3,   4,  12,  13,   0,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR9_EL2,             3,   4,  12,  13,   1,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR10_EL2,            3,   4,  12,  13,   2,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR11_EL2,            3,   4,  12,  13,   3,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR12_EL2,            3,   4,  12,  13,   4,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR13_EL2,            3,   4,  12,  13,   5,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR14_EL2,            3,   4,  12,  13,   6,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_LR15_EL2,            3,   4,  12,  13,   7,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_MISR_EL2,            3,   4,  12,  11,   2,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_VMCR_EL2,            3,   4,  12,  11,   7,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
+    ARM64_CP_REG_DEFINE(ICH_VTR_EL2,             3,   4,  12,  11,   1,  2, RW | GIC, RW_FNS(interrupt_cpu_interface))
     ARM64_CP_REG_DEFINE(ID_AA64AFR0_EL1,         3,   0,   0,   5,   4,  1, RO, READFN(id_aa64afr0_el1))
     ARM64_CP_REG_DEFINE(ID_AA64AFR1_EL1,         3,   0,   0,   5,   5,  1, RO, READFN(id_aa64afr1_el1))
     ARM64_CP_REG_DEFINE(ID_AA64DFR0_EL1,         3,   0,   0,   5,   0,  1, RO, READFN(id_aa64dfr0_el1))
