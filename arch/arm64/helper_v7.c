@@ -272,11 +272,29 @@ case_EXCP_SWI_SVC:
         mask = CPSR_A | CPSR_I | CPSR_F;
         offset = 4;
         break;
-    case EXCP_HYP_TRAP:
+    case EXCP_HYP_TRAP: {
         new_mode = ARM_CPU_MODE_HYP;
         addr += 0x14;
         mask = CPSR_I;
+        offset = 4;
+        uint32_t ec = env->exception.syndrome >> SYN_EC_SHIFT;
+        // For Data Aborts, set the proper Syndrome Register Transfer
+        if (ec == 0x24) {
+            uint32_t prev_pc = env->regs[15] - 4;
+            // Check whether the CPU is currently in thumb mode or whether the previous PC has LSB set,
+            // which indicates we used to be in Thumb mode
+            if (env->thumb || (prev_pc & 1)) {
+                tlib_printf(LOG_LEVEL_WARNING, "CPU in Thumb mode. The instruction syndrome will not be set");
+                // Clear the ISV bit to say that the ISS is invalid
+                env->exception.syndrome &= ~(SYN_DATA_ABORT_ISV);
+                break;
+            }
+            uint32_t *prev_pc_ptr = get_ram_ptr(prev_pc);
+            uint32_t rt = (*prev_pc_ptr >> 12) & 0xf;
+            env->exception.syndrome |= rt << 16;
+        }
         break;
+    }
     default:
         cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
         return; /* Never happens.  Keep compiler happy.  */
@@ -570,7 +588,7 @@ check_permissions:
 // There is no need to respect the cacheability and shareability settings - we handle it all as shareable and cacheable anyway,
 // with all the necessary restrictions and precautions.
 int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, uint32_t current_el, uintptr_t return_address, bool suppress_faults, 
-                         target_ulong *phys_ptr, int *prot, target_ulong *page_size)
+                         target_ulong *phys_ptr, int *prot, target_ulong *page_size, int access_width)
 {
     tlib_assert(current_el <= 2);
     int fault_type = TRANSLATION_FAULT;
@@ -581,8 +599,11 @@ int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, u
     *phys_ptr = address;
 
     if ((access_type == ACCESS_INST_FETCH) && ((address & 0x1) != 0)) {
-        fault_type = ALIGNMENT_FAULT;
-        goto do_fault;
+        if (!suppress_faults) {
+            env->exception.target_el = current_el == 2 ? 2 : 1;
+            set_mmu_fault_registers(access_type, address, ALIGNMENT_FAULT);
+        }
+        return TRANSLATE_FAIL;
     }
 
     uint64_t hcr = arm_hcr_el2_eff(env);
@@ -596,7 +617,11 @@ int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, u
     if (has_el1_stage) {
         stage_result = pmsav8_translate_stage(env, address, current_el, access_type, &fault_type, &el1_stage_prot, false);
         if (!stage_result) {
-            goto do_fault;
+            if (!suppress_faults) {
+                env->exception.target_el = 1;
+                set_mmu_fault_registers(access_type, address, fault_type);
+            }
+            return TRANSLATE_FAIL;
         }
     } else if (unlikely(current_el == 1)) {
         // Being in EL1 when HCR.TGE is set is an illegal state,
@@ -614,16 +639,43 @@ int get_phys_addr_pmsav8(CPUState *env, target_ulong address, int access_type, u
         return TRANSLATE_SUCCESS;
     }
 
-do_fault:
     if (!suppress_faults) {
-        set_mmu_fault_registers(access_type, address, fault_type);
-        env->exception.target_el = current_el == 2 ? 2 : 1;
+        env->exception.target_el = 2;
+        if (current_el == 2) {
+            set_mmu_fault_registers(access_type, address, fault_type);
+        } else {
+            env->exception_index = EXCP_HYP_TRAP;
+            int access_size = 0;
+            switch (access_width) {
+                case 1:
+                    access_size = 0;
+                    break;
+                case 2:
+                    access_size = 1;
+                    break;
+                default:
+                    // For any other access_width set the size to word.
+                    access_size = 2;
+                    break;
+            }
+            if (access_type == ACCESS_INST_FETCH) {
+                env->cp15.ifar_s = address;
+                env->exception.syndrome = SYN_EC_INSTRUCTION_ABORT_LOWER_EL << SYN_EC_SHIFT; // Exception class - Prefetch Abort routed to Hyp
+            } else {
+                env->cp15.dfar_s = address;
+                env->exception.syndrome = (SYN_EC_DATA_ABORT_LOWER_EL << SYN_EC_SHIFT)       // Exception class - Data Abort routed to Hyp
+                    | SYN_DATA_ABORT_ISV
+                    | (access_size << 22)                                                    // Syndrome access size
+                    | (access_type == ACCESS_DATA_STORE ? (1 << 6) : 0)
+                    | fault_type;
+            }
+        }
     }
     return TRANSLATE_FAIL;
 }
 
 inline int get_phys_addr(CPUState *env, target_ulong address, int access_type, int mmu_idx, uintptr_t return_address,
-                         bool suppress_faults, target_ulong *phys_ptr, int *prot, target_ulong *page_size)
+                         bool suppress_faults, target_ulong *phys_ptr, int *prot, target_ulong *page_size, int access_width)
 {
     if (unlikely(cpu->external_mmu_enabled)) {
         return get_external_mmu_phys_addr(env, address, access_type, (target_phys_addr_t *)phys_ptr, prot, suppress_faults);
@@ -634,7 +686,7 @@ inline int get_phys_addr(CPUState *env, target_ulong address, int access_type, i
 
     // get_phys_addr_pmsav8 handles disabled MPU itself
     if (arm_feature(env, ARM_FEATURE_PMSA) && arm_feature(env, ARM_FEATURE_V8)) {
-        return get_phys_addr_pmsav8(env, address, access_type, el, return_address, suppress_faults, phys_ptr, prot, page_size);
+        return get_phys_addr_pmsav8(env, address, access_type, el, return_address, suppress_faults, phys_ptr, prot, page_size, access_width);
     }
 
     if ((arm_sctlr_eff(env, el) & SCTLR_M) == 0) {
@@ -663,7 +715,7 @@ target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
     uintptr_t return_address = 0;
     bool suppress_faults = true;
 
-    int result = get_phys_addr(env, addr, access_type, mmu_idx, return_address, suppress_faults, &phys_addr, &prot, &page_size);
+    int result = get_phys_addr(env, addr, access_type, mmu_idx, return_address, suppress_faults, &phys_addr, &prot, &page_size, 1);
     if (result != TRANSLATE_SUCCESS) {
         return -1;
     }
@@ -673,14 +725,14 @@ target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
 
 // The name of the function is a little misleading. It doesn't handle MMU faults as much as TLB misses.
 int cpu_handle_mmu_fault(CPUState *env, target_ulong address, int access_type, int mmu_idx, uintptr_t return_address,
-                         bool suppress_faults)
+                         bool suppress_faults, int access_width)
 {
     target_ulong phys_addr = 0;
     target_ulong page_size = 0;
     int prot = 0;
     int ret;
 
-    ret = get_phys_addr(env, address, access_type, mmu_idx, return_address, suppress_faults, &phys_addr, &prot, &page_size);
+    ret = get_phys_addr(env, address, access_type, mmu_idx, return_address, suppress_faults, &phys_addr, &prot, &page_size, access_width);
     if (ret == TRANSLATE_SUCCESS) {
         /* Map a single [sub]page.  */
         phys_addr &= TARGET_PAGE_MASK;
@@ -701,7 +753,7 @@ int tlb_fill(CPUState *env1, target_ulong addr, int access_type, int mmu_idx, vo
 
     saved_env = env;
     env = env1;
-    ret = cpu_handle_mmu_fault(env, addr, access_type, mmu_idx, (uintptr_t)retaddr, no_page_fault);
+    ret = cpu_handle_mmu_fault(env, addr, access_type, mmu_idx, (uintptr_t)retaddr, no_page_fault, access_width);
 
     // Unless fault handling is suppressed with 'no_page_fault', we will never get back here
     // in case of a fault with MMU (only). Faults are handled directly in that function.
