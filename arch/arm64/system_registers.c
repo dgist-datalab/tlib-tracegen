@@ -313,6 +313,14 @@ RW_FUNCTIONS_EL1_ACCESSING_EL2_IF_E2H_SET(64, ttbr1_el1,        env->cp15.ttbr1_
 RW_FUNCTIONS_EL1_ACCESSING_EL2_IF_E2H_SET(64, vbar_el1,         env->cp15.vbar_el)
 RW_FUNCTIONS_EL1_ACCESSING_EL2_IF_E2H_SET(64, zcr_el1,          env->vfp.zcr_el)
 
+WRITE_FUNCTION(64, ats1, {
+    if (arm_feature(env, ARM_FEATURE_PMSA)) {
+        env->cp15.par_ns = value;
+    } else {
+        tlib_printf(LOG_LEVEL_WARNING, "%s register is only implemented for CPUs with the PMSA feature", info->name);
+    }
+});
+
 /* PMSAv8 accessors */
 #define PRSELR_REGION_MASK 0xFF
 #define RW_FUNCTIONS_PMSAv8(width) \
@@ -880,9 +888,9 @@ ARMCPRegInfo aarch32_instructions[] = {
     ARM32_CP_REG_DEFINE(ATS12NSOPW,       15,   0,   7,   8,   5,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Write
     ARM32_CP_REG_DEFINE(ATS12NSOUR,       15,   0,   7,   8,   6,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Read
     ARM32_CP_REG_DEFINE(ATS12NSOUW,       15,   0,   7,   8,   7,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Write
-    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read
+    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, RW | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Read
     ARM32_CP_REG_DEFINE(ATS1CPRP,         15,   0,   7,   9,   0,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read PAN
-    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write
+    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, RW | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Write
     ARM32_CP_REG_DEFINE(ATS1CPWP,         15,   0,   7,   9,   1,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write PAN
     ARM32_CP_REG_DEFINE(ATS1CUR,          15,   0,   7,   8,   2,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Read
     ARM32_CP_REG_DEFINE(ATS1CUW,          15,   0,   7,   8,   3,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Write
