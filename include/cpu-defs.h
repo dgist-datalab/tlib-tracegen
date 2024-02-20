@@ -160,6 +160,12 @@ typedef struct ExtMmuRange
     bool range_end_inclusive;
 } ExtMmuRange;
 
+enum block_interrupt_cause {
+    TB_INTERRUPT_NONE = 0,
+    TB_INTERRUPT_INCLUDE_LAST_INSTRUCTION = 1,
+    TB_INTERRUPT_EXCLUDE_LAST_INSTRUCTION = 2,
+};
+
 #define MAX_IO_ACCESS_REGIONS_COUNT 1024
 
 #define CPU_TEMP_BUF_NLONGS 128

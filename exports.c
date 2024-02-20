@@ -68,8 +68,21 @@ static void init_tcg()
 void tlib_try_interrupt_translation_block(void)
 {
     if (likely(cpu) && unlikely(cpu->tb_interrupt_request_from_callback)) {
-        cpu->tb_interrupt_request_from_callback = 0;
-        interrupt_current_translation_block(cpu, EXCP_WATCHPOINT);
+        int excp = -1;
+        switch(cpu->tb_interrupt_request_from_callback)
+        {
+            case TB_INTERRUPT_INCLUDE_LAST_INSTRUCTION:
+                excp = MMU_EXTERNAL_FAULT;
+                break;
+            case TB_INTERRUPT_EXCLUDE_LAST_INSTRUCTION:
+                excp = EXCP_WATCHPOINT;
+                break;
+            default:
+                tlib_abort("");
+                break;
+        }
+        cpu->tb_interrupt_request_from_callback = TB_INTERRUPT_NONE;
+        interrupt_current_translation_block(cpu, excp);
     }
 }
 
@@ -334,12 +347,12 @@ extern void *global_retaddr;
 
 // This function should only be called from at most one level of C -> C# calls, otherwise
 // when the outermost C# method returns the frames of the inner ones will be longjmped over.
-void tlib_request_translation_block_interrupt()
+void tlib_request_translation_block_interrupt(int shouldSubstractInstruction)
 {
-    env->tb_interrupt_request_from_callback = 1;
+    env->tb_interrupt_request_from_callback = shouldSubstractInstruction ? TB_INTERRUPT_EXCLUDE_LAST_INSTRUCTION : TB_INTERRUPT_INCLUDE_LAST_INSTRUCTION;
 }
 
-EXC_VOID_0(tlib_request_translation_block_interrupt)
+EXC_VOID_1(tlib_request_translation_block_interrupt, int, shouldSubstractInstruction)
 
 void tlib_set_return_request()
 {
