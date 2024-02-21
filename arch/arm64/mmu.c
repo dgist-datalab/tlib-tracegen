@@ -124,6 +124,7 @@ int get_phys_addr_v8(CPUState *env, target_ulong address, int access_type, int m
 {
     ARMMMUIdx arm_mmu_idx = core_to_aa64_mmu_idx(mmu_idx);
     uint32_t current_el = arm_mmu_idx_to_el(arm_mmu_idx);
+    uint32_t tcr_ips_offset = (current_el == 1) ? 32 : 16;
 
     uint64_t tcr = arm_tcr(env, current_el);
     uint64_t ttbr = 0;
@@ -173,7 +174,7 @@ int get_phys_addr_v8(CPUState *env, target_ulong address, int access_type, int m
         }
     }
 
-    ips = (tcr >> 32) & 0x7;
+    ips = extract64(tcr, tcr_ips_offset, 3);
 
 #if DEBUG
     tlib_printf(LOG_LEVEL_NOISY, "%s: vaddr=0x%" PRIx64 " attbr=0x%" PRIx64 ", tsz=%d, tg=%d, page_size_shift=%d", __func__,
