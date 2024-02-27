@@ -124,7 +124,9 @@ int get_phys_addr_v8(CPUState *env, target_ulong address, int access_type, int m
 {
     ARMMMUIdx arm_mmu_idx = core_to_aa64_mmu_idx(mmu_idx);
     uint32_t current_el = arm_mmu_idx_to_el(arm_mmu_idx);
-    uint32_t tcr_ips_offset = (current_el == 1) ? 32 : 16;
+    // We need to get the real EL here (not the one in which we started translating)
+    // Otherwise we can get an invalid EL after exception return
+    uint32_t tcr_ips_offset = (address_translation_el(env, current_el) == 1) ? 32 : 16;
 
     uint64_t tcr = arm_tcr(env, current_el);
     uint64_t ttbr = 0;
