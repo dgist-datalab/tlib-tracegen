@@ -57,6 +57,9 @@
 
 #define ARCH(x) do { if (!ENABLE_ARCH_##x) goto illegal_op; } while(0)
 
+#define TRANS_STATUS_SUCCESS        0
+#define TRANS_STATUS_ILLEGAL_INSN   1
+
 /* We reuse the same 64-bit temporaries for efficiency.  */
 static TCGv_i64 cpu_V0, cpu_V1, cpu_M0;
 static TCGv_i32 cpu_R[16];
@@ -8438,6 +8441,8 @@ gen_thumb2_data_op(DisasContext *s, int op, int conds, uint32_t shifter_out, TCG
     return 0;
 }
 
+#include "translate_lob.h"
+
 /* Translate a 32-bit thumb instruction.  Returns nonzero if the instruction
    is not legal.  */
 static int disas_thumb2_insn(CPUState *env, DisasContext *s, uint16_t insn_hw1)
@@ -9108,7 +9113,16 @@ static int disas_thumb2_insn(CPUState *env, DisasContext *s, uint16_t insn_hw1)
         }
         break;
     case 8: case 9: case 10: case 11:
-        if (insn & (1 << 15)) {
+        if (is_insn_wls(insn)) {
+            ARCH(8);
+            return trans_wls(s, insn);
+        } else if (is_insn_dls(insn)) {
+            ARCH(8);
+            return trans_dls(s, insn);
+        } else if (is_insn_le(insn)) {
+            ARCH(8);
+            return trans_le(s, insn);
+        } else if (insn & (1 << 15)) {
             /* Branches, misc control.  */
             if (insn & 0x5000) {
                 /* Unconditional branch.  */
