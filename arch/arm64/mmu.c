@@ -219,8 +219,8 @@ int get_phys_addr_v8(CPUState *env, target_ulong address, int access_type, int m
 
             table_addr = extract64(desc, page_size_shift, ips_bits[ips] - page_size_shift) << page_size_shift;
 #if DEBUG
-            tlib_printf(LOG_LEVEL_DEBUG, "%s: page_size_shift: %u ips: %u ips_bit: %d EL: %d addr EL: %d", __func__,
-                        page_size_shift, ips, ips_bits[ips], current_el, address_translation_el(env, current_el));
+            tlib_printf(LOG_LEVEL_NOISY, "%s: page_size_shift=%u, ips=%u, ips_bit=%d, EL=%d, addr_EL=%d, e2h=%d", __func__,
+                        page_size_shift, ips, ips_bits[ips], current_el, address_translation_el(env, current_el), (arm_hcr_el2_eff(env) & HCR_E2H) > 0);
 #endif
             break;
         default:
