@@ -78,7 +78,7 @@ void tlib_try_interrupt_translation_block(void)
                 excp = EXCP_WATCHPOINT;
                 break;
             default:
-                tlib_abort("");
+                tlib_abort("Unhandled translation block interrupt condition. Aborting!");
                 break;
         }
         cpu->tb_interrupt_request_from_callback = TB_INTERRUPT_NONE;
