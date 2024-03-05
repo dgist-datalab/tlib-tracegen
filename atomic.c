@@ -183,7 +183,7 @@ void clear_global_memory_lock(struct CPUState *env)
 
 // ! this function should be called when holding the mutex !
 // If manual_free is true then the performed reservation will only be able to be cancelled explicitly,
-// by calling `cancel_reservation` or by perfroming a different reservation on a CPU that already had
+// by calling `cancel_reservation` or by performing a different reservation on a CPU that already had
 // had a reserved address.
 void reserve_address(struct CPUState *env, target_phys_addr_t address, uint8_t manual_free)
 {
