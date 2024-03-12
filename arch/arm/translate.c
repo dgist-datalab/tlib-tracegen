@@ -6541,7 +6541,7 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
                     tmp64 = tcg_const_i64(ri->resetvalue);
                 } else if (ri->readfn) {
                     tmp64 = tcg_temp_new_i64();
-                    TCGv_ptr ptr = tcg_const_ptr((int64_t)ri);
+                    TCGv_ptr ptr = tcg_const_ptr((tcg_target_long)ri);
                     gen_helper_get_cp_reg64(tmp64, cpu_env, ptr);
                     tcg_temp_free_ptr(ptr);
                 } else if (ri->fieldoffset != 0) {
@@ -6564,7 +6564,7 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
                     tmp = tcg_const_i32(ri->resetvalue);
                 } else if (ri->readfn) {
                     tmp = tcg_temp_new_i32();
-                    TCGv_ptr ptr = tcg_const_ptr((int64_t)ri);
+                    TCGv_ptr ptr = tcg_const_ptr((tcg_target_long)ri);
                     gen_helper_get_cp_reg(tmp, cpu_env, ptr);
                     tcg_temp_free_ptr(ptr);
                 } else if (ri->fieldoffset != 0) {
@@ -6601,7 +6601,7 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
                 tcg_temp_free_i32(tmplo);
                 tcg_temp_free_i32(tmphi);
                 if (ri->writefn) {
-                    TCGv_ptr ptr = tcg_const_ptr((int64_t)ri);
+                    TCGv_ptr ptr = tcg_const_ptr((tcg_target_long)ri);
                     gen_helper_set_cp_reg64(cpu_env, ptr, tmp64);
                     tcg_temp_free_ptr(ptr);
                 } else if (ri->fieldoffset != 0) {
@@ -6615,7 +6615,7 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
             } else {
                 TCGv_i32 tmp = load_reg(s, rt);
                 if (ri->writefn) {
-                    TCGv_ptr ptr = tcg_const_ptr((int64_t)ri);
+                    TCGv_ptr ptr = tcg_const_ptr((tcg_target_long)ri);
                     gen_helper_set_cp_reg(cpu_env, ptr, tmp);
                     tcg_temp_free_ptr(ptr);
                     tcg_temp_free_i32(tmp);
