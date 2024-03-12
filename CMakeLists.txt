@@ -55,7 +55,7 @@ set (TARGET_WORD_SIZE "32" CACHE STRING "Target word size")
 message(STATUS "Target is: ${TARGET_WORD_SIZE}-bit ${TARGET_ARCH}")
 
 set_property (CACHE HOST_ARCH PROPERTY STRINGS i386 arm)
-set_property (CACHE TARGET_ARCH PROPERTY STRINGS i386 arm arm-m arm64 sparc ppc riscv xtensa)
+set_property (CACHE TARGET_ARCH PROPERTY STRINGS i386 arm arm-m arm64 sparc ppc ppc64 riscv riscv64 xtensa)
 
 if(NOT HOST_ARCH)
     message (FATAL_ERROR "Host architecture not set")
@@ -75,6 +75,13 @@ string (TOLOWER "${TARGET_ARCH}" TARGET_ACTUAL_ARCH)
 if("${TARGET_ACTUAL_ARCH}" STREQUAL "arm-m")
     set (TARGET_ACTUAL_ARCH "arm")
     set (ARM_M_DEF -DTARGET_PROTO_ARM_M=1)
+endif()
+
+if("${TARGET_ACTUAL_ARCH}" STREQUAL "ppc64")
+    set (TARGET_ACTUAL_ARCH "ppc")
+endif()
+if("${TARGET_ACTUAL_ARCH}" STREQUAL "riscv64")
+    set (TARGET_ACTUAL_ARCH "riscv")
 endif()
 
 set(TARGET_INSN_START_EXTRA_WORDS 0)
