@@ -177,8 +177,13 @@ static inline void pmsav8_unmark_overlapping_regions(CPUARMState *env, pmsav8_re
     }
 }
 
-static inline void set_pmsav8_region(CPUState *env, enum pmsav8_register_type type, int region_index, uint32_t value)
+static inline void set_pmsav8_region(CPUState *env, enum pmsav8_register_type type, unsigned int region_index, uint32_t value)
 {
+    if (region_index >= MAX_MPU_REGIONS) {
+        // Writing a value outside of the valid range is UNPREDICTABLE.
+        // We opt for just ignoring it
+        return;
+    }
     bool is_hyper = (type == HYPER_BASE_ADDRESS) || (type == HYPER_LIMIT_ADDRESS);
     pmsav8_region *regions = is_hyper ? &env->pmsav8.hregions[0] : &env->pmsav8.regions[0];
     pmsav8_region *region = &regions[region_index];
@@ -208,8 +213,13 @@ static inline void set_pmsav8_region(CPUState *env, enum pmsav8_register_type ty
     tlb_flush(env, 1, true);
 }
 
-static inline uint32_t get_pmsav8_region(CPUState *env, enum pmsav8_register_type type, int region_index)
+static inline uint32_t get_pmsav8_region(CPUState *env, enum pmsav8_register_type type, unsigned int region_index)
 {
+    if (region_index >= MAX_MPU_REGIONS) {
+        // Reading a value outside of the valid range is UNPREDICTABLE.
+        // We opt for just returning 0
+        return 0;
+    }
     bool is_hyper = (type == HYPER_BASE_ADDRESS) || (type == HYPER_LIMIT_ADDRESS);
     pmsav8_region *region = is_hyper ? &env->pmsav8.hregions[region_index] : &env->pmsav8.regions[region_index];
 
