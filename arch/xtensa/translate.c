@@ -1740,19 +1740,13 @@ static void translate_ldst(DisasContext *dc, const OpcodeArg arg[],
     }
     if (par[2]) {
         if (par[1]) {
-            assert(dc->base.tb->cflags == 0);
-            /* tcg_gen_mb does nothing for cflags=0 we use (CF_PARALLEL unset).
             tcg_gen_mb(TCG_BAR_STRL | TCG_MO_ALL);
-            */
         }
         tcg_gen_qemu_st_tl(arg[0].in, addr, dc->cring, par[0]);
     } else {
         tcg_gen_qemu_ld_tl(arg[0].out, addr, dc->cring, par[0]);
         if (par[1]) {
-            assert(dc->base.tb->cflags == 0);
-            /* tcg_gen_mb does nothing for cflags=0 we use (CF_PARALLEL unset).
             tcg_gen_mb(TCG_BAR_LDAQ | TCG_MO_ALL);
-            */
         }
     }
     tcg_temp_free(addr);
@@ -1873,10 +1867,7 @@ static void translate_mac16(DisasContext *dc, const OpcodeArg arg[],
 static void translate_memw(DisasContext *dc, const OpcodeArg arg[],
                            const uint32_t par[])
 {
-    assert(dc->base.tb->cflags == 0);
-    /* tcg_gen_mb does nothing for cflags=0 we use (CF_PARALLEL unset).
     tcg_gen_mb(TCG_BAR_SC | TCG_MO_ALL);
-    */
 }
 
 static void translate_smin(DisasContext *dc, const OpcodeArg arg[],

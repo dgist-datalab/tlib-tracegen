@@ -260,7 +260,6 @@ FUNC_STUB(wswap64)
 
 /* translate-a64.c */
 
-typedef int TCGBar;
 typedef int TCGOp;
 typedef struct
 {

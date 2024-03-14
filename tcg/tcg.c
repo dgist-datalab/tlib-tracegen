@@ -239,6 +239,11 @@ void tcg_attach(tcg_t *c)
     tcg->gen_insn_data = gen_insn_data;
 }
 
+void tcg_context_attach_number_of_registered_cpus(uint32_t *pointer)
+{
+    tcg->ctx->number_of_registered_cpus = pointer;
+}
+
 void tcg_context_init()
 {
     TCGContext *s = tcg->ctx;

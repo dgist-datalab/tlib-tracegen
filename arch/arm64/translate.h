@@ -455,8 +455,3 @@ uint64_t asimd_imm_const(uint32_t imm, int cmode, int op);
         s->is_nonstreaming = true;                                \
         return dc_isar_feature(FEAT, s) && FUNC(s, __VA_ARGS__);  \
     }
-
-static inline void tcg_gen_mb(TCGBar bar)
-{
-    gen_helper_memory_barrier_assert(cpu_env);
-}

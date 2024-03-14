@@ -513,6 +513,7 @@ struct TCGContext {
     int helpers_sorted;
     /* sets whether we should use the tlb in accesses */
     uint8_t use_tlb;
+    uint32_t *number_of_registered_cpus;
 };
 
 extern uint16_t *gen_opc_ptr;
@@ -577,6 +578,12 @@ static inline void *tcg_malloc(int size)
     }
 }
 
+static inline bool tcg_context_are_multiple_cpus_registered()
+{
+    return tcg->ctx->number_of_registered_cpus != NULL && *tcg->ctx->number_of_registered_cpus > 1;
+}
+
+void tcg_context_attach_number_of_registered_cpus(uint32_t *pointer);
 void tcg_context_init();
 void tcg_context_use_tlb(int value);
 void tcg_dispose();

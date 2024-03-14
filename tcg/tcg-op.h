@@ -26,6 +26,7 @@
 #include <inttypes.h>
 
 #include "tcg-memop.h"
+#include "tcg-mo.h"
 #include "tcg.h"
 #include "additional.h"
 
@@ -2862,6 +2863,28 @@ static inline unsigned get_alignment_bits(TCGMemOp memop)
     return a;
 }
 
+static inline void tcg_gen_mb(TCGBar mb_type)
+{
+    if (unlikely(tcg_context_are_multiple_cpus_registered())) {
+        tcg_gen_op1i(INDEX_op_mb, mb_type);
+    }
+}
+
+static inline void tcg_gen_req_mo(TCGBar type)
+{
+// No define means guest architecture gives no memory ordering guarantees.
+// Otherwise, if guest guarantees are stronger than the target ones, e.g.
+// i386 simulated on Arm host, memory barrier will be generated for each
+// memory access in multicore setups.
+#ifdef TCG_GUEST_DEFAULT_MO
+    type &= TCG_GUEST_DEFAULT_MO;
+    type &= ~TCG_TARGET_DEFAULT_MO;
+    if (type) {
+        tcg_gen_mb(type | TCG_BAR_SC);
+    }
+#endif
+}
+
 static inline TCGMemOp tcg_canonicalize_memop(TCGMemOp op, bool is64, bool st)
 {
     unsigned a_bits = get_alignment_bits(op);
@@ -2895,8 +2918,7 @@ static inline TCGMemOp tcg_canonicalize_memop(TCGMemOp op, bool is64, bool st)
 static inline void tcg_gen_qemu_ld_i32(TCGv_i32 val, TCGv addr, TCGArg idx, TCGMemOp memop)
 {
     TCGMemOp orig_memop;
-    // TODO: Port memory barrier for the parallel load/store safety.
-    // tcg_gen_req_mo(TCG_MO_LD_LD | TCG_MO_ST_LD);
+    tcg_gen_req_mo(TCG_MO_LD_LD | TCG_MO_ST_LD);
     memop = tcg_canonicalize_memop(memop, 0, 0);
     orig_memop = memop;
     if (!TCG_TARGET_HAS_MEMORY_BSWAP && (memop & MO_BSWAP)) {
@@ -2929,8 +2951,7 @@ static inline void tcg_gen_qemu_ld_i32(TCGv_i32 val, TCGv addr, TCGArg idx, TCGM
 static inline void tcg_gen_qemu_st_i32(TCGv_i32 val, TCGv_i32 addr, TCGArg idx, TCGMemOp memop)
 {
     TCGv_i32 swap = -1;
-    // TODO: Port memory barrier for the parallel load/store safety.
-    //tcg_gen_req_mo(TCG_MO_LD_ST | TCG_MO_ST_ST);
+    tcg_gen_req_mo(TCG_MO_LD_ST | TCG_MO_ST_ST);
     memop = tcg_canonicalize_memop(memop, 0, 1);
     if (!TCG_TARGET_HAS_MEMORY_BSWAP && (memop & MO_BSWAP)) {
         swap = tcg_temp_new_i32();
@@ -2969,8 +2990,7 @@ static inline void tcg_gen_qemu_ld_i64(TCGv_i64 val, TCGv addr, TCGArg idx, TCGM
         return;
     }
 #endif
-    // TODO: Port memory barrier for the parallel load/store safety.
-    //tcg_gen_req_mo(TCG_MO_LD_LD | TCG_MO_ST_LD);
+    tcg_gen_req_mo(TCG_MO_LD_LD | TCG_MO_ST_LD);
     memop = tcg_canonicalize_memop(memop, 1, 0);
     orig_memop = memop;
     if (!TCG_TARGET_HAS_MEMORY_BSWAP && (memop & MO_BSWAP)) {
@@ -3015,8 +3035,7 @@ static inline void tcg_gen_qemu_st_i64(TCGv_i64 val, TCGv addr, TCGArg idx, TCGM
     }
 #endif
 
-    // TODO: Port memory barrier for the parallel load/store safety.
-    //tcg_gen_req_mo(TCG_MO_LD_ST | TCG_MO_ST_ST);
+    tcg_gen_req_mo(TCG_MO_LD_ST | TCG_MO_ST_ST);
     memop = tcg_canonicalize_memop(memop, 1, 1);
 
     if (!TCG_TARGET_HAS_MEMORY_BSWAP && (memop & MO_BSWAP)) {

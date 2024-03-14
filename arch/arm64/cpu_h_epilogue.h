@@ -87,17 +87,6 @@
 #define MO_LEUQ         MO_LEQ
 #define MO_UQ           MO_Q
 
-// TODO: 'tcg_gen_mb' and these constants need to be implemented if parallel
-//       execution gets added in the future. 'TCG_MO_*' and 'TCG_BAR_*'
-//       constants are only passed to 'tcg_gen_mb'.
-#define TCG_BAR_LDAQ 0
-#define TCG_BAR_SC   0
-#define TCG_BAR_STRL 0
-#define TCG_MO_ALL   0
-#define TCG_MO_LD_LD 0
-#define TCG_MO_LD_ST 0
-#define TCG_MO_ST_ST 0
-
 enum fprounding {
     FPROUNDING_TIEEVEN,
     FPROUNDING_POSINF,

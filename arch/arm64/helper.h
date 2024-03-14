@@ -12,7 +12,6 @@ DEF_HELPER_1(rbit, i32, i32)
 DEF_HELPER_2(usad8, i32, i32, i32)
 DEF_HELPER_3(sel_flags, i32, i32, i32, i32)
 
-DEF_HELPER_1(memory_barrier_assert, void, env)
 DEF_HELPER_2(exception_bkpt_insn, void, env, i32)
 DEF_HELPER_2(sysreg_tlb_flush, void, env, ptr)
 

@@ -24,6 +24,8 @@
 #pragma once
 #define TCG_TARGET_I386 1
 
+#define TCG_TARGET_DEFAULT_MO (TCG_MO_ALL & ~TCG_MO_ST_LD)
+
 //#define TCG_TARGET_WORDS_BIGENDIAN
 
 #if TCG_TARGET_REG_BITS == 64

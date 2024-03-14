@@ -1,6 +1,7 @@
 #include "atomic.h"
 #include "cpu.h"
 #include "pthread.h"
+#include "tcg.h"
 
 // We only need to lock if there are multiple CPUs registered in the `atomic_memory_state`.
 // Reservations should be made regardless of it; atomic instructions need them even with a single CPU.
@@ -152,6 +153,8 @@ void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id)
 
     initialize_atomic_memory_state(sm);
     sm->number_of_registered_cpus++;
+
+    tcg_context_attach_number_of_registered_cpus(&sm->number_of_registered_cpus);
 }
 
 void acquire_global_memory_lock(struct CPUState *env)

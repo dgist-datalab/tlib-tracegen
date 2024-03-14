@@ -23,6 +23,7 @@
 #include "syndrome.h"
 #include "system_registers.h"
 #include "tb-helper.h"
+#include "tcg-mo.h"
 #include "tcg-op-atomic.h"
 #include "tcg-op-gvec.h"
 #include "translate-a64.h"

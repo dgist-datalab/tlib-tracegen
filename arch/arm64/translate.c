@@ -29,6 +29,7 @@
 #include "syndrome.h"
 #include "system_registers.h"
 
+#include "tcg-mo.h"
 #include "tcg-op-atomic.h"
 #include "tcg-op-gvec.h"
 

@@ -48,6 +48,8 @@ DEF(br, 0, 0, 1, TCG_OPF_BB_END | TCG_OPF_SIDE_EFFECTS)
 # define IMPL64 TCG_OPF_64BIT
 #endif
 
+DEF(mb, 0, 0, 1, 0)
+
 DEF(mov_i32, 1, 1, 0, 0)
 DEF(movi_i32, 1, 0, 1, 0)
 DEF(setcond_i32, 1, 2, 1, 0)

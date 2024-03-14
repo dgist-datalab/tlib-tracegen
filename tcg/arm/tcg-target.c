@@ -252,6 +252,11 @@ enum arm_data_opc_e {
     ARITH_MVN = 0xf,
 };
 
+typedef enum {
+    INSN_DMB_ISH   = 0xf57ff05b,
+    INSN_DMB_MCR   = 0xee070fba,
+} ARMInsn;
+
 #define TO_CPSR(opc) \
   ((opc == ARITH_CMP || opc == ARITH_CMN || opc == ARITH_TST) << 20)
 
@@ -789,6 +794,17 @@ static inline void tcg_out_goto_label(TCGContext *s, int cond, int label_index)
     }
 }
 
+static inline void tcg_out_mb(TCGContext *s, TCGArg a0)
+{
+    if (use_armv7_instructions) {
+        tcg_out32(s, INSN_DMB_ISH);
+    } else if (use_armv6_instructions) {
+        tcg_out32(s, INSN_DMB_MCR);
+    } else {
+        tcg_abort();
+    }
+}
+
 #define TLB_SHIFT (CPU_TLB_ENTRY_BITS + CPU_TLB_BITS)
 
 static inline void tcg_out_qemu_ld(TCGContext *s, const TCGArg *args, int opc)
@@ -1193,7 +1209,9 @@ static inline void tcg_out_op(TCGContext *s, TCGOpcode opc, const TCGArg *args, 
     case INDEX_op_br:
         tcg_out_goto_label(s, COND_AL, args[0]);
         break;
-
+    case INDEX_op_mb:
+        tcg_out_mb(s, args[0]);
+        break;
     case INDEX_op_ld8u_i32:
         tcg_out_ld8u(s, COND_AL, args[0], args[1], args[2]);
         break;
@@ -1406,6 +1424,7 @@ static const TCGTargetOpDef arm_op_defs[] = {
     { INDEX_op_call, { "ri" } },
     { INDEX_op_jmp, { "ri" } },
     { INDEX_op_br, { } },
+    { INDEX_op_mb, { } },
 
     { INDEX_op_mov_i32, { "r", "r" } },
     { INDEX_op_movi_i32, { "r" } },
