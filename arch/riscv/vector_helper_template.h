@@ -20,14 +20,16 @@
 
 #ifdef MASKED
 #define POSTFIX _m
-#define TEST_MASK(ei)                               \
-if (!(V(0)[(ei) >> 3] & (1 << ((ei) & 0x7)))) {     \
-    continue;                                       \
-}
+#define IS_ELEMENT_ACTIVE(ei) (V(0)[(ei) >> 3] & (1 << ((ei) & 0x7)))
 #else
 #define POSTFIX
-#define TEST_MASK(ei)
+#define IS_ELEMENT_ACTIVE(ei) (true)
 #endif
+
+#define TEST_MASK(ei)           \
+if (!IS_ELEMENT_ACTIVE(ei)) {   \
+    continue;                   \
+}
 
 #if DATA_SIZE == 8
 #define BITS               64
@@ -190,16 +192,19 @@ static inline DATA_STYPE glue(rem_, BITS)(DATA_STYPE dividend, DATA_STYPE diviso
 
 void glue(glue(helper_vle, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_t rs1, uint32_t nf)
 {
+    // This implementation handles both vle*.v and vlseg*.v instructions.
     const target_ulong emul = EMUL(SHIFT);
+    const target_ulong nfields = nf + 1;
     if (emul == RESERVED_EMUL || V_IDX_INVALID_EMUL(vd, emul) || V_INVALID_NF(vd, nf, emul)) {
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
     }
     target_ulong src_addr = env->gpr[rs1];
     for (int ei = env->vstart; ei < env->vl; ++ei) {
-        TEST_MASK(ei)
-        env->vstart = ei;
-        for (int fi = 0; fi <= nf; ++fi) {
-            ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei] = glue(ld, USUFFIX)(src_addr + ei * DATA_SIZE);
+        for (int fi = 0; fi < nfields; ++fi) {
+            if (IS_ELEMENT_ACTIVE(ei)) {
+                ((DATA_TYPE *)V(vd + (fi << emul)))[ei] = glue(ld, USUFFIX)(src_addr);
+            }
+            src_addr += sizeof(DATA_TYPE);
         }
     }
 }
@@ -207,55 +212,51 @@ void glue(glue(helper_vle, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_t 
 void glue(glue(glue(helper_vle, BITS), ff), POSTFIX)(CPUState *env, uint32_t vd, uint32_t rs1, uint32_t nf)
 {
     const target_ulong emul = EMUL(SHIFT);
+    const target_ulong nfields = nf + 1;
     if (emul == RESERVED_EMUL || V_IDX_INVALID_EMUL(vd, emul) || V_INVALID_NF(vd, nf, emul)) {
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
     }
-    if(env->vl == 0) {
-        return;
-    }
+
     target_ulong src_addr = env->gpr[rs1];
-    int ei = env->vstart;
-    if (ei == 0
-#ifdef MASKED
-        && (V(0)[0] & 1)
-#endif
-    ) {
-        DATA_TYPE value = glue(ld, USUFFIX)(src_addr + ei * DATA_SIZE);
-        for (int fi = 0; fi <= nf; ++fi) {
-            ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei] = value;
-        }
-        ++ei;
-    }
-    int memory_access_fail = 0;
-    for (; ei < env->vl; ++ei) {
-        TEST_MASK(ei)
-        DATA_TYPE value = glue(glue(ld, USUFFIX), _graceful)(src_addr + ei * DATA_SIZE, &memory_access_fail);
-        if (memory_access_fail) {
-            env->vl = ei;
-            env->exception_index = 0;
-            break;
-        }
-        for (int fi = 0; fi <= nf; ++fi) {
-            ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei] = value;
+    for (int ei = env->vstart; ei < env->vl; ++ei) {
+        for (int fi = 0; fi < nfields; ++fi) {
+            if (IS_ELEMENT_ACTIVE(ei)) {
+                DATA_TYPE *destination = &(((DATA_TYPE *)V(vd + (fi << emul)))[ei]);
+                if (ei == 0) {
+                    *destination = glue(ld, USUFFIX)(src_addr);
+                } else {
+                    int memory_access_fail = 0;
+                    *destination = glue(glue(ld, USUFFIX), _graceful)(src_addr , &memory_access_fail);
+                    if (memory_access_fail) {
+                        env->vl = ei;
+                        env->exception_index = 0;
+                        break;
+                    }
+                }
+            }
+            src_addr += sizeof(DATA_TYPE);
         }
     }
 }
 
 void glue(glue(helper_vlse, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_t rs1, uint32_t rs2, uint32_t nf)
 {
+    // This implementation handles both vlse*.v and vlsseg*.v instructions.
     const target_ulong emul = EMUL(SHIFT);
+    const target_ulong nfields = nf + 1;
     if (emul == RESERVED_EMUL || V_IDX_INVALID_EMUL(vd, emul) || V_INVALID_NF(vd, nf, emul)) {
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
     }
+
     target_ulong src_addr = env->gpr[rs1];
     target_long offset = env->gpr[rs2];
     for (int ei = env->vstart; ei < env->vl; ++ei) {
-        TEST_MASK(ei)
-        env->vstart = ei;
-        DATA_TYPE data = glue(ld, USUFFIX)(src_addr + ei * offset);
-        for (int fi = 0; fi <= nf; ++fi) {
-            ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei] = data;
+        if (IS_ELEMENT_ACTIVE(ei)) {
+            for (int fi = 0; fi < nfields; ++fi) {
+                ((DATA_TYPE *)V(vd + (fi << emul)))[ei] = glue(ld, USUFFIX)(src_addr + fi * sizeof(DATA_TYPE));
+            }
         }
+        src_addr += offset;
     }
 }
 
@@ -302,34 +303,41 @@ void glue(glue(helper_vlxei, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_
 
 void glue(glue(helper_vse, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_t rs1, uint32_t nf)
 {
+    // This implementation handles both vse*.v and vsseg*.v instructions.
     const target_ulong emul = EMUL(SHIFT);
+    const target_ulong nfields = nf + 1;
     if (emul == RESERVED_EMUL || V_IDX_INVALID_EMUL(vd, emul) || V_INVALID_NF(vd, nf, emul)) {
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
     }
-    target_ulong src_addr = env->gpr[rs1];
+
+    target_ulong dest_addr = env->gpr[rs1];
     for (int ei = env->vstart; ei < env->vl; ++ei) {
-        TEST_MASK(ei)
-        env->vstart = ei;
-        for (int fi = 0; fi <= nf; ++fi) {
-            glue(st, SUFFIX)(src_addr + ei * DATA_SIZE + (fi << SHIFT), ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei]);
+        for (int fi = 0; fi < nfields; ++fi) {
+            if (IS_ELEMENT_ACTIVE(ei)) {
+                glue(st, SUFFIX)(dest_addr, ((DATA_TYPE *)V(vd + (fi << emul)))[ei]);
+            }
+            dest_addr += sizeof(DATA_TYPE);
         }
     }
 }
 
 void glue(glue(helper_vsse, BITS), POSTFIX)(CPUState *env, uint32_t vd, uint32_t rs1, uint32_t rs2, uint32_t nf)
 {
+    // This implementation handles both vsse*.v and vssseg*.v instructions.
     const target_ulong emul = EMUL(SHIFT);
+    const target_ulong nfields = nf + 1;
     if (emul == RESERVED_EMUL || V_IDX_INVALID_EMUL(vd, emul) || V_INVALID_NF(vd, nf, emul)) {
         raise_exception_and_sync_pc(env, RISCV_EXCP_ILLEGAL_INST);
     }
-    target_ulong src_addr = env->gpr[rs1];
+    target_ulong dest_addr = env->gpr[rs1];
     target_long offset = env->gpr[rs2];
     for (int ei = env->vstart; ei < env->vl; ++ei) {
-        TEST_MASK(ei)
-        env->vstart = ei;
-        for (int fi = 0; fi <= nf; ++fi) {
-            glue(st, SUFFIX)(src_addr + ei * offset + (fi << SHIFT), ((DATA_TYPE *)V(vd + (fi << SHIFT)))[ei]);
+        if (IS_ELEMENT_ACTIVE(ei)) {
+            for (int fi = 0; fi < nfields; ++fi) {
+                glue(st, SUFFIX)(dest_addr + fi * sizeof(DATA_TYPE), ((DATA_TYPE *)V(vd + (fi << emul)))[ei]);
+            }
         }
+        dest_addr += offset;
     }
 }
 
@@ -3161,7 +3169,7 @@ void glue(helper_vid, POSTFIX)(CPUState *env, uint32_t vd, int32_t vs2)
 
 #endif
 
-
+#undef IS_ELEMENT_ACTIVE
 #undef TEST_MASK
 #undef MS_MASK
 #undef MS_TEST_MASK
