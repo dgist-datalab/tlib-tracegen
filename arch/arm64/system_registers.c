@@ -274,11 +274,51 @@ static inline bool is_generic_timer_cntp_cntv_register(uint8_t op0, uint8_t op1,
     return op0 == 3 && op1 == 3 && crn == 14 && (crm == 2 || crm == 3) && op2 <= 2;
 }
 
-static inline uint32_t encode_as_aarch64_register(CPUState *env, const ARMCPRegInfo *info)
+static inline uint32_t encode_as_aarch64_register(uint8_t op0, uint8_t op1, uint8_t crn, uint8_t crm, uint8_t op2)
 {
-    // if the function is used to encode aarch32 register in the same way
-    // as aarch64 register, we have to set op0 artificialy.
-    uint8_t op0 = (env->aarch64) ? info->op0 : 0x3;
+    return (op0 << CP_REG_ARM64_SYSREG_OP0_SHIFT) |
+        (op1 << CP_REG_ARM64_SYSREG_OP1_SHIFT) |
+        (crn << CP_REG_ARM64_SYSREG_CRN_SHIFT) |
+        (crm << CP_REG_ARM64_SYSREG_CRM_SHIFT) |
+        (op2 << CP_REG_ARM64_SYSREG_OP2_SHIFT);
+}
+
+static inline uint32_t encode_gic_register(CPUState *env, const ARMCPRegInfo *info)
+{
+    // This function is used for accessing GIC registers
+    tlib_assert(info->type & ARM_CP_GIC);
+    // There's no op0 in AArch32 instructions. It's the same for all GIC registers on AArch64.
+    uint8_t op0 = !is_a64(env) ? 0x3 : info->op0;
+    uint8_t op1 = info->op1;
+    uint8_t crn = info->crn;
+    uint8_t crm = info->crm;
+    uint8_t op2 = info->op2;
+
+    // Encoding adjustments for GIC registers accessed from AArch32. It's very similar to AArch64.
+    if (!is_a64(env)) {
+        // Adjustments are needed for 64-bit GIC registers accessed with AArch32 MCRR/MRRC instructions
+        // which are only identified by op1 and crm. On AArch32 all of them have crm=12. On AArch64 all of
+        // them have op0=3, op1=0, crn=12, crm=11. The remaining ones are:
+        // * ICC_ASGI1R (AArch32: op1=1; AArch64: op2=6)
+        // * ICC_SGI0R  (AArch32: op1=2; AArch64: op2=7)
+        // * ICC_SGI1R  (AArch32: op1=0; AArch64: op2=5)
+        if (unlikely(info->type & ARM_CP_64BIT) && info->type & ARM_CP_GIC) {
+            tlib_assert(crm == 12 && op1 <= 2);
+            op1 = 0;
+            crn = 12;
+            crm = 11;
+            op2 = 5 + info->op1;
+        }
+    }
+    return encode_as_aarch64_register(op0, op1, crn, crm, op2);
+}
+
+static inline uint32_t encode_aarch64_generic_timer_register(CPUState *env, const ARMCPRegInfo *info)
+{
+    // This function is used for accessing Generic Timer registers on AArch64
+    tlib_assert(info->type & ARM_CP_64BIT && info->type & ARM_CP_GTIMER);
+    // There's no op0 in AArch32 instructions
+    uint8_t op0 = !is_a64(env) ? 0x3 : info->op0;
     uint8_t op1 = info->op1;
     uint8_t crn = info->crn;
     uint8_t crm = info->crm;
@@ -296,12 +336,7 @@ static inline uint32_t encode_as_aarch64_register(CPUState *env, const ARMCPRegI
         // Equivalent CNTP_*->CNTHP_* and CNTV_*->CNTHV_* register opcodes only differ in op1 which is 4 instead of 3.
         op1 = 4;
     }
-
-    return (op0 << CP_REG_ARM64_SYSREG_OP0_SHIFT) |
-        (op1 << CP_REG_ARM64_SYSREG_OP1_SHIFT) |
-        (crn << CP_REG_ARM64_SYSREG_CRN_SHIFT) |
-        (crm << CP_REG_ARM64_SYSREG_CRM_SHIFT) |
-        (op2 << CP_REG_ARM64_SYSREG_OP2_SHIFT);
+    return encode_as_aarch64_register(op0, op1, crn, crm, op2);
 }
 
 READ_FUNCTION(64, mpidr_el1, mpidr_el1_register(env))
@@ -310,8 +345,8 @@ RW_FUNCTIONS(64, fpcr,  vfp_get_fpcr(env), vfp_set_fpcr(env, value))
 RW_FUNCTIONS(64, fpsr,  vfp_get_fpsr(env), vfp_set_fpsr(env, value))
 
 RW_FUNCTIONS(64, generic_timer_aarch64,
-             tlib_read_system_register_generic_timer_64(encode_as_aarch64_register(env, info)),
-             tlib_write_system_register_generic_timer_64(encode_as_aarch64_register(env, info), value))
+             tlib_read_system_register_generic_timer_64(encode_aarch64_generic_timer_register(env, info)),
+             tlib_write_system_register_generic_timer_64(encode_aarch64_generic_timer_register(env, info), value))
 
 RW_FUNCTIONS(64, generic_timer_aarch32_32,
              tlib_read_system_register_generic_timer_32(encode_as_aarch32_32bit_register(info)),
@@ -321,9 +356,10 @@ RW_FUNCTIONS(64, generic_timer_aarch32_64,
              tlib_read_system_register_generic_timer_64(encode_as_aarch32_64bit_register(info)),
              tlib_write_system_register_generic_timer_64(encode_as_aarch32_64bit_register(info), value))
 
+// Handles AArch32 and AArch64 GIC system registers
 RW_FUNCTIONS(64, interrupt_cpu_interface,
-             tlib_read_system_register_interrupt_cpu_interface(encode_as_aarch64_register(env, info)),
-             tlib_write_system_register_interrupt_cpu_interface(encode_as_aarch64_register(env, info), value))
+             tlib_read_system_register_interrupt_cpu_interface(encode_gic_register(env, info)),
+             tlib_write_system_register_interrupt_cpu_interface(encode_gic_register(env, info), value))
 
 RW_FUNCTIONS(64, nzcv, nzcv_read(env), nzcv_write(env, value))
 
