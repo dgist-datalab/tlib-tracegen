@@ -264,6 +264,7 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
 
         set_feature(env, ARM_FEATURE_THUMB_DIV);
         set_feature(env, ARM_FEATURE_THUMB2);
+        set_feature(env, ARM_FEATURE_MVE);
         break;
     case ARM_CPUID_CORTEXM7:
         // TODO: This should not be present on M7 processors,

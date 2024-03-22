@@ -517,6 +517,7 @@ enum arm_features {
     ARM_FEATURE_GENERIC_TIMER,
     ARM_FEATURE_V8,      /* implies PMSAv8 MPU */
     ARM_FEATURE_PMSA,
+    ARM_FEATURE_MVE
 };
 
 static inline int arm_feature(const CPUState *env, int feature)

@@ -46,6 +46,7 @@
 #define ENABLE_ARCH_6T2              arm_feature(env, ARM_FEATURE_THUMB2)
 #define ENABLE_ARCH_7                arm_feature(env, ARM_FEATURE_V7)
 #define ENABLE_ARCH_8                arm_feature(env, ARM_FEATURE_V8)
+#define ENABLE_ARCH_MVE              arm_feature(env, ARM_FEATURE_MVE)
 
 // Masks for coprocessor instruction
 #define COPROCESSOR_INSTR_OP_OFFSET  (4)
