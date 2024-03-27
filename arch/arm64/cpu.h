@@ -933,7 +933,6 @@ typedef struct CPUState {
         uint32_t hprbar;
         uint32_t hprlar;
         pmsav8_region hregions[MAX_MPU_REGIONS];
-        uint32_t hprenr;
     } pmsav8;
 
     /* v8M SAU */

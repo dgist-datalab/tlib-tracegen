@@ -177,6 +177,22 @@ static inline void pmsav8_unmark_overlapping_regions(CPUARMState *env, pmsav8_re
     }
 }
 
+static inline void hyp_pmsav8_regions_bitmask_enable(CPUState *env, uint32_t bitmask) {
+    for (int i = 0; i < MAX_MPU_REGIONS; i += 1, bitmask >>= 1) {
+        env->pmsav8.hregions[i].enabled = bitmask & 1;
+    }
+}
+
+static inline uint32_t hyp_pmsav8_regions_bitmask_current(CPUState *env) {
+    uint32_t result = 0;
+
+    for (int i = MAX_MPU_REGIONS - 1; i >= 0; i -= 1) {
+        result = (result << 1) | (env->pmsav8.hregions[i].enabled ? 1 : 0);
+    }
+
+    return result;
+}
+
 static inline void set_pmsav8_region(CPUState *env, enum pmsav8_register_type type, unsigned int region_index, uint32_t value)
 {
     if (region_index >= MAX_MPU_REGIONS) {
@@ -379,6 +395,8 @@ RW_FUNCTIONS_PMSAv8_REGISTERS(64, 22)
 RW_FUNCTIONS_PMSAv8_REGISTERS(64, 23)
 
 RW_FUNCTIONS_PMSAv8(64)
+
+RW_FUNCTIONS(64, hprenr, hyp_pmsav8_regions_bitmask_current(env), hyp_pmsav8_regions_bitmask_enable(env, value))
 
 /* PSTATE accessors */
 
@@ -2004,7 +2022,7 @@ ARMCPRegInfo mpu_registers[] = {
     ARM32_CP_REG_DEFINE(HPRBAR,              15,   4,   6,   3,   0,  2, RW, RW_FNS(hprbar)) // Hyp Protection Region Base Address Register
     ARM32_CP_REG_DEFINE(HPRLAR,              15,   4,   6,   3,   1,  2, RW, RW_FNS(hprlar)) // Hyp Protection Region Limit Address Register
     ARM32_CP_REG_DEFINE(HPRSELR,             15,   4,   6,   2,   1,  2, RW, FIELD(pmsav8.hprselr)) // Hyp Protection Region Selection Register
-    ARM32_CP_REG_DEFINE(HPRENR,              15,   4,   6,   1,   1,  2, RW, FIELD(pmsav8.hprenr), RESETVALUE(0)) // Hyp MPU Region Enable Register
+    ARM32_CP_REG_DEFINE(HPRENR,              15,   4,   6,   1,   1,  2, RW, RW_FNS(hprenr)) // Hyp MPU Region Enable Register
     ARM32_CP_REG_DEFINE(HMPUIR,              15,   4,   0,   0,   4,  2, RO, READFN(hmpuir)) // Hyp MPU Type Register
     ARM32_CP_REG_DEFINE(MPUIR,               15,   0,   0,   0,   4,  1, RO, READFN(mpuir)) // MPU Type Register
 
