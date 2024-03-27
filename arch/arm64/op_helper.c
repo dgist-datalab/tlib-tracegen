@@ -625,8 +625,13 @@ uint32_t HELPER(mrs_banked)(CPUARMState *env, uint32_t tgtmode, uint32_t regno)
     msr_mrs_banked_exc_checks(env, tgtmode, regno);
 
     switch (regno) {
-    case 16: /* SPSRs */
-        return env->banked_spsr[bank_number(tgtmode)];
+    case 16: { /* SPSRs */
+        // For certain cores reading banked SPSR is possible from the target
+        // mode. Let's also read SPSR in such a situation. Whether that's
+        // allowed has been already tested in msr_mrs_banked_exc_checks.
+        int curmode = env->uncached_cpsr & CPSR_M;
+        return tgtmode == curmode ? env->spsr : env->banked_spsr[bank_number(tgtmode)];
+    }
     case 17: /* ELR_Hyp */
         return env->elr_el[2];
     case 13:
