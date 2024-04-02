@@ -501,7 +501,7 @@ static ARMCPRegInfo general_coprocessor_registers[] = {
     ARM32_CP_REG_DEFINE(MIDR,             15,   0,   0,   0,   0,   1,  RO, FIELD(cp15.c0_cpuid))                      // Main ID Register
     ARM32_CP_REG_DEFINE(CTR,              15,   0,   0,   0,   1,   1,  RO, FIELD(cp15.c0_cachetype))                  // Cache Type Register
 
-    ARM32_CP_REG_DEFINE(TCMCR,            15,   0,   0,   0,   2,   1,  RO, FIELD(cp15.c0_tcmtype))                    // TCMTR, TCM Type Register, TCM status
+    ARM32_CP_REG_DEFINE(TCMTR,            15,   0,   0,   0,   2,   1,  RO, FIELD(cp15.c0_tcmtype))                    // TCMTR, TCM Type Register, TCM status
     ARM32_CP_REG_DEFINE(TLBTR,            15,   0,   0,   0,   3,   1,  RO | CONST(0)) /* No lockable TLB entries.  */ // TLBTR, TLB Type Register
 
     // crm == 3..7, opc2 == 0..7
