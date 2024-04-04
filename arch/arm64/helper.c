@@ -824,249 +824,90 @@ uint32_t aarch32_interrupt_masked(CPUState *env, uint64_t scr_el3, uint64_t hcr_
 {
     bool el3_enabled = arm_feature(env, ARM_FEATURE_EL3);
     bool el2_enabled = arm_feature(env, ARM_FEATURE_EL2);
+    bool scr, hcr, cpsr;
+    int result;
 
-    // Special handling for masking virtual interrupts
-    if (exception_index == EXCP_VIRQ || exception_index == EXCP_VFIQ) {
-        if (!el2_enabled || current_el > 1) {
-            return 1;
-        }
+    switch (exception_index) {
+        case EXCP_VIRQ:
+            return current_el > 1 || !(hcr_el2 & HCR_IMO) || (env->daif & CPSR_I);
+        case EXCP_VFIQ:
+            return current_el > 1 || !(hcr_el2 & HCR_FMO) || (env->daif & CPSR_F);
+        case EXCP_IRQ:
+            hcr = el2_enabled && (hcr_el2 & HCR_IMO);
+            scr = el3_enabled && (scr_el3 & SCR_IRQ);
+            cpsr = env->daif & CPSR_I;
+            break;
+        case EXCP_FIQ:
+            scr = el3_enabled && (scr_el3 & SCR_FIQ);
+            hcr = (el2_enabled && (hcr_el2 & HCR_FMO)) || (scr && scr_el3 & SCR_FW);
+            cpsr = env->daif & CPSR_F;
+            break;
+        default:
+            tlib_abortf("Unexpected exception index: %x", exception_index);
+            __builtin_unreachable();
+    }
 
-        if (exception_index == EXCP_VIRQ) {
-            return env->daif & CPSR_I;
+    if (el3_enabled && !(scr_el3 & SCR_NS)) {
+        result = 0xB;
+    } else {
+        hcr = hcr || (el2_enabled && (hcr_el2 & HCR_TGE));
+        // Minimum current EL where interrupts can be masked
+        uint32_t min_el = scr ? 3 : 2;
+        if (hcr) {
+            result = current_el >= min_el ? 0xB : 0xA;
         } else {
-            return env->daif & CPSR_F;
+            result = 0xB;
         }
     }
 
-    uint32_t ignore = 0;
-    if (el3_enabled && check_scr_el3_mask(scr_el3, 0, -1, -1, -1, -1, -1)) {
-        switch (current_el) {
-        case 0:
-            ignore = 0xB;
-            break;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt masking!");
-            break;
-        case 2:
-            tlib_abortf("Invalid SCR or HCR for an EL2 interrupt masking!");
-            break;
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if ((el3_enabled && check_scr_el3_mask(scr_el3, 1, -1, -1, 0, 0, 0) && check_hcr_el2(hcr_el2, 0, 0, 0, 0, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 0, 0, 0, 0, -1, -1))) {
-        switch (current_el) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if ((el3_enabled && check_scr_el3_mask(scr_el3, 1, -1, -1, 0, 0, 0) && check_hcr_el2(hcr_el2, 0, 1, 1, 1, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 0, 1, 1, 1, -1, -1))) {
-        switch (current_el) {
-        case 0:
-        case 1:
-            ignore = 0xA;
-            break;
-        case 2:
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if ((el3_enabled && check_scr_el3_mask(scr_el3, 1, -1, -1, 0, 0, 0) && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1))) {
-        switch (current_el) {
-        case 0:
-            ignore = 0xA;
-            break;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt masking!");
-            break;
-        case 2:
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if (el3_enabled && check_scr_el3_mask(scr_el3, 1, 0, 0, 1, 1, 1) && check_hcr_el2(hcr_el2, 0, -1, -1, -1, -1, -1)) {
-        if (exception_index & EXCP_IRQ) {
-            tlib_abortf("Invalid SCR or HCR for an IRQ masking!");
-        }
-
-        switch (current_el) {
-        case 0:
-        case 1:
-            ignore = 0xA;
-            break;
-        case 2:
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if (el3_enabled && check_scr_el3_mask(scr_el3, 1, 0, 0, 1, 1, 1) && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1)) {
-        if (exception_index & EXCP_IRQ) {
-            tlib_abortf("Invalid SCR or HCR for an IRQ masking!");
-        }
-
-        switch (current_el) {
-        case 0:
-            ignore = 0xA;
-            break;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt masking!");
-            break;
-        case 2:
-            ignore = 0xA;
-            break;
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if (el3_enabled && check_scr_el3_mask(scr_el3, 1, 1, 1, 1, 1, 1) && check_hcr_el2(hcr_el2, 0, 0, 0, 0, -1, -1)) {
-        if (exception_index & EXCP_IRQ) {
-            tlib_abortf("Invalid SCR or HCR for an IRQ masking!");
-        }
-
-        switch (current_el) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if (el3_enabled && check_scr_el3_mask(scr_el3, 1, 1, 1, 1, 1, 1) && check_hcr_el2(hcr_el2, 0, 1, 1, 1, -1, -1)) {
-        if (exception_index & EXCP_IRQ) {
-            tlib_abortf("Invalid SCR or HCR for an IRQ masking!");
-        }
-
-        switch (current_el) {
-        case 0:
-        case 1:
-        case 2:
-            ignore = 0xA;
-            break;
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else if (el3_enabled && check_scr_el3_mask(scr_el3, 1, 1, 1, 1, 1, 1) && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1)) {
-        if (exception_index & EXCP_IRQ) {
-            tlib_abortf("Invalid SCR or HCR for an IRQ masking!");
-        }
-
-        switch (current_el) {
-        case 0:
-            ignore = 0xA;
-            break;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt masking!");
-            break;
-        case 2:
-            ignore = 0xA;
-            break;
-        case 3:
-            ignore = 0xB;
-            break;
-        }
-    } else {
-        tlib_abortf("Unexpected SCR or HCR register state in process_interrupt!");
-    }
-
-    tlib_assert(ignore == 0xA || ignore == 0xB);
-
-    // Ignore CPSR masks
-    if (ignore == 0xA) {
-        return 0;
-    }
-
-    // Use CPSR masks
-    if (exception_index == EXCP_IRQ) {
-        return env->daif & CPSR_I;
-    } else if (exception_index == EXCP_FIQ) {
-        return env->daif & CPSR_F;
-    } else {
-        tlib_abortf("Virtual exceptions not implemented!");
-        return 1;
+    switch (result) {
+        case 0xA:
+            return false;
+        case 0xB:
+            return cpsr;
+        default:
+            tlib_abortf("Entered unreachable code");
+            __builtin_unreachable();
     }
 }
 
-uint32_t get_aarch32_interrupt_target_el(CPUState *env, uint64_t scr_el3, uint64_t hcr_el2, uint32_t current_el)
+uint32_t get_aarch32_interrupt_target_el(CPUState *env, uint64_t scr_el3, uint64_t hcr_el2, uint32_t current_el, uint32_t exception_index)
 {
     bool el3_enabled = arm_feature(env, ARM_FEATURE_EL3);
+    bool el2_enabled = arm_feature(env, ARM_FEATURE_EL2);
+    bool hcr, scr;
 
-    if (el3_enabled && check_scr_el3(scr_el3, 0, -1, -1, -1, -1, -1)) {
-        switch (current_el) {
-        case 0:
+    switch (exception_index) {
+        case EXCP_VIRQ:
+        case EXCP_VFIQ:
             return 1;
-        case 1:
-            tlib_abortf("Invalid SCR for an EL1 interrupt!");
+        case EXCP_IRQ:
+            scr = el3_enabled && (scr_el3 & SCR_IRQ);
+            hcr = el2_enabled && (hcr_el2 & HCR_IMO);
             break;
-        case 2:
-            tlib_abortf("Invalid SCR for an EL2 interrupt!");
+        case EXCP_FIQ:
+            scr = el3_enabled && (scr_el3 & SCR_FIQ);
+            hcr = el2_enabled && (hcr_el2 & HCR_FMO);
             break;
-        case 3:
-            return 1;
-        }
-    } else if ((el3_enabled && check_scr_el3(scr_el3, 1, -1, 0, 0, 0, -1) && check_hcr_el2(hcr_el2, 0, 0, 0, 0, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 0, 0, 0, 0, -1, -1))) {
-        switch (current_el) {
-        case 0:
-        case 1:
-            return 1;
-        case 2:
-            return 2;
-        case 3:
-            return 1;
-        }
-    } else if ((el3_enabled && check_scr_el3(scr_el3, 1, -1, 0, 0, 0, -1) && check_hcr_el2(hcr_el2, 0, 1, 1, 1, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 0, 1, 1, 1, -1, -1))) {
-        switch (current_el) {
-        case 0:
-        case 1:
-        case 2:
-            return 2;
-        case 3:
-            return 1;
-        }
-    } else if ((el3_enabled && check_scr_el3(scr_el3, 1, -1, 0, 0, 0, -1) && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1))
-           || (!el3_enabled && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1))) {
-        switch (current_el) {
-        case 0:
-            return 2;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt!");
-            break;
-        case 2:
-            return 2;
-        case 3:
-            return 1;
-        }
-    } else if (el3_enabled && check_scr_el3(scr_el3, 1, -1, 1, 1, 1, -1) && check_hcr_el2(hcr_el2, 0, -1, -1, -1, -1, -1)) {
-        switch (current_el) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            return 3;
-        }
-    } else if (el3_enabled && check_scr_el3(scr_el3, 1, -1, 1, 1, 1, -1) && check_hcr_el2(hcr_el2, 1, -1, -1, -1, -1, -1)) {
-        switch (current_el) {
-        case 0:
-            return 3;
-        case 1:
-            tlib_abortf("Invalid SCR or HCR for an EL1 interrupt!");
-            break;
-        case 2:
-        case 3:
-            return 3;
-        }
+        default:
+            tlib_abortf("Unexpected exception index: %x", exception_index);
+            __builtin_unreachable();
     }
 
-    tlib_abortf("Unexpected SCR or HCR register state in process_interrupt!");
-    return 0;
+    if (el3_enabled && !(scr_el3 & SCR_NS)) {
+        return 1;
+    }
+    if (scr) {
+        return 3;
+    }
+    if (current_el == 3) {
+        return 1;
+    }
+    if (current_el == 2) {
+        return 2;
+    }
+
+    return hcr ? 2 : 1;
 }
 
 int process_interrupt_v8a_aarch32(int interrupt_request, CPUState *env, uint64_t scr_el3, uint64_t hcr_el2)
@@ -1086,9 +927,7 @@ int process_interrupt_v8a_aarch32(int interrupt_request, CPUState *env, uint64_t
     }
 
     uint32_t current_el = arm_current_el(env);
-    uint32_t target_el = ((exception_index == EXCP_VIRQ) || (exception_index == EXCP_VFIQ))
-        ? 1
-        : get_aarch32_interrupt_target_el(env, scr_el3, hcr_el2, current_el);
+    uint32_t target_el = get_aarch32_interrupt_target_el(env, scr_el3, hcr_el2, current_el, exception_index);
 
     tlib_assert(current_el <= 3);
     if (target_el == 0) {
