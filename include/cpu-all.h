@@ -641,3 +641,8 @@ uint64_t *get_reg_pointer_64(int reg);
 #if TARGET_LONG_BITS == 32
 uint32_t *get_reg_pointer_32(int reg);
 #endif
+
+static inline uint64_t instructions_to_cycles(CPUState *env, uint64_t instructions) {
+    double cycles_per_instruction = env->millicycles_per_instruction / 1000.0;
+    return (uint64_t)(instructions * cycles_per_instruction);
+}

@@ -228,7 +228,7 @@ enum block_interrupt_cause {
     /* indicates if the block_begin hook is registered */                     \
     int block_begin_hook_present;                                             \
     int cpu_wfi_state_change_hook_present;                                    \
-    uint32_t cycles_per_instruction;                                          \
+    uint32_t millicycles_per_instruction;                                     \
     int interrupt_begin_callback_enabled;                                     \
     int interrupt_end_callback_enabled;                                       \
     int32_t tlib_is_on_memory_access_enabled;                                 \

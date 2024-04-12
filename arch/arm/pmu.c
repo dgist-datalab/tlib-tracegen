@@ -364,12 +364,7 @@ void set_c9_pmintenclr(struct CPUState *env, uint64_t val)
 
 uint64_t get_c9_pmccntr(struct CPUState *env)
 {
-    /* This should return number of "clock cycles" or "clock cycles / 64"
-     * But for us we don't differentiate between instructions taking a different amount of clock cycles
-     * Neither we simulate delays or peripheral accesses in terms of clock cycles
-     * So we return executed instruction number instead
-     * Assuming that 1 instruction equals `env->cycles_per_instruction` CPU cycles
-     */
+    // Counting cycles is quite simplistic, see pmu_get_insn_cycle_value.
 
     /* The value stored inside cycle or instruction counter is in reality a snapshot
      * taken at the moment the counter is activated.
@@ -530,13 +525,12 @@ uint32_t pmu_get_insn_cycle_value(const pmu_counter *const counter)
         return counter->val;
     }
 
-    uint64_t remainder = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_remainder : 0;
-    uint64_t divisor = counter->measured_event_id == PMU_EVENT_CYCLES ? env->pmu.cycles_divisor : 1;
-    uint64_t cycles_per_insn = counter->measured_event_id == PMU_EVENT_CYCLES ? env->cycles_per_instruction : 1;
-    return counter->val +
-           ((((counter->has_snapshot) ? (env->instructions_count_total_value - counter->snapshot) : 0) + remainder) *
-            cycles_per_insn) /
-           divisor;
+    uint64_t value = counter->has_snapshot ? (env->instructions_count_total_value - counter->snapshot) : 0;
+    if(counter->measured_event_id == PMU_EVENT_CYCLES)
+    {
+        return counter->val + instructions_to_cycles(env, value + env->pmu.cycles_remainder) / env->pmu.cycles_divisor;
+    }
+    return counter->val + value;
 }
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -674,7 +668,7 @@ void HELPER(pmu_update_event_counters)(CPUState * env, int event_id, uint32_t am
 
         // After we updated all counters, update cycles remainder
         uint64_t old_remainder = env->pmu.cycles_remainder;
-        env->pmu.cycles_remainder = ((amount + old_remainder) * env->cycles_per_instruction) % env->pmu.cycles_divisor;
+        env->pmu.cycles_remainder = instructions_to_cycles(env, amount + old_remainder) % env->pmu.cycles_divisor;
     }
 
     if (event_id == PMU_EVENT_CYCLES || event_id == PMU_EVENT_INSTRUCTIONS_EXECUTED) {
@@ -689,7 +683,7 @@ void HELPER(pmu_count_instructions_cycles)(uint32_t icount)
     }
 
     bool will_overflow = false;
-    const uint64_t new_cycles_count = (icount + env->pmu.cycles_remainder) * env->cycles_per_instruction;
+    const uint64_t new_cycles_count = instructions_to_cycles(env, icount + env->pmu.cycles_remainder);
 
     if (((new_cycles_count / env->pmu.cycles_divisor) > env->pmu.cycles_overflow_nearest_limit) ||
         (icount > env->pmu.insns_overflow_nearest_limit)) {

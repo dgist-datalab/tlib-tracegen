@@ -197,19 +197,19 @@ uint32_t tlib_get_maximum_block_size()
 
 EXC_INT_0(uint32_t, tlib_get_maximum_block_size)
 
-void tlib_set_cycles_per_instruction(uint32_t count)
+void tlib_set_millicycles_per_instruction(uint32_t count)
 {
-    env->cycles_per_instruction = count;
+    env->millicycles_per_instruction = count;
 }
 
-EXC_VOID_1(tlib_set_cycles_per_instruction, uint32_t, count)
+EXC_VOID_1(tlib_set_millicycles_per_instruction, uint32_t, count)
 
-uint32_t tlib_get_cycles_per_instruction()
+uint32_t tlib_get_millicycles_per_instruction()
 {
-    return env->cycles_per_instruction;
+    return env->millicycles_per_instruction;
 }
 
-EXC_INT_0(uint32_t, tlib_get_cycles_per_instruction)
+EXC_INT_0(uint32_t, tlib_get_millicycles_per_instruction)
 
 int32_t tlib_init(char *cpu_name)
 {
