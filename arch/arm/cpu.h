@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "cpu-defs.h"
 #include "bit_helper.h" // extract32
+#include "tightly_coupled_memory.h"
 #include "ttable.h"
 #include "pmu.h"
 
@@ -96,8 +97,6 @@
 
 #define BACKGROUND_FAULT_STATUS_BITS        0b0000
 #define PERMISSION_FAULT_STATUS_BITS        0b1101
-
-#define MAX_TCM_REGIONS 4
 
 typedef struct DisasContext {
     DisasContextBase base;
