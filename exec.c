@@ -319,6 +319,7 @@ void unmap_page(target_phys_addr_t address)
         pd->region_offset = pd->phys_offset;
         pd->phys_offset = IO_MEM_UNASSIGNED;
     }
+    tlb_flush_page(cpu, address, /* from_generated: */ false);
 }
 
 static void tlb_protect_code(ram_addr_t ram_addr);
