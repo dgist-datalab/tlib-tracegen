@@ -102,3 +102,5 @@ uint32_t tlib_is_in_debug_mode(void);
 
 void tlib_clean_wfi_proc_state(void);
 void tlib_on_wfi_state_change(int32_t is_in_wfi);
+
+uint32_t tlib_is_memory_disabled(uint64_t start, uint64_t size);

@@ -118,3 +118,5 @@ DEFAULT_VOID_HANDLER2(void tlib_mass_broadcast_dirty, void* list_start ,int32_t 
 DEFAULT_PTR_HANDLER1(void *tlib_get_dirty_addresses_list, void *size)
 
 DEFAULT_VOID_HANDLER1(void tlib_on_wfi_state_change, int32_t is_in_wfi)
+
+DEFAULT_INT_HANDLER2(uint32_t tlib_is_memory_disabled, uint64_t start, uint64_t size)

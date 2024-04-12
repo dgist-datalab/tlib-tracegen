@@ -290,8 +290,13 @@ static inline tb_page_addr_t get_page_addr_code(CPUState *env1, target_ulong add
         }
     }
     pd = env1->tlb_table[mmu_idx][page_index].addr_code & ~TARGET_PAGE_MASK;
-    if (pd > IO_MEM_ROM && !(pd & IO_MEM_ROMD)) {
-        cpu_abort(env1, "Trying to execute code outside RAM or ROM at 0x" TARGET_FMT_lx "\n", addr);
+    if (unlikely(pd > IO_MEM_ROM && !(pd & IO_MEM_ROMD))) {
+        const char *reason = "outside RAM or ROM";
+
+        if (tlib_is_memory_disabled(addr & TARGET_PAGE_MASK, TARGET_PAGE_SIZE)) {
+            reason = "from disabled or locked memory";
+        }
+        cpu_abort(env1, "Trying to execute code %s at 0x" TARGET_FMT_lx "\n", reason, addr);
     }
     p = (void *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
     return ram_addr_from_host(p);
