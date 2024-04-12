@@ -55,17 +55,6 @@ static inline void cpu_physical_memory_write(target_phys_addr_t addr, const void
 {
     cpu_physical_memory_rw(addr, (void *)buf, len, 1);
 }
-struct CPUPhysMemoryClient;
-typedef struct CPUPhysMemoryClient CPUPhysMemoryClient;
-struct CPUPhysMemoryClient {
-    void (*set_memory)(struct CPUPhysMemoryClient *client, target_phys_addr_t start_addr, ram_addr_t size, ram_addr_t phys_offset,
-                       bool log_dirty);
-    int (*sync_dirty_bitmap)(struct CPUPhysMemoryClient *client, target_phys_addr_t start_addr, target_phys_addr_t end_addr);
-    int (*migration_log)(struct CPUPhysMemoryClient *client, int enable);
-    int (*log_start)(struct CPUPhysMemoryClient *client, target_phys_addr_t phys_addr, ram_addr_t size);
-    int (*log_stop)(struct CPUPhysMemoryClient *client, target_phys_addr_t phys_addr, ram_addr_t size);
-    QLIST_ENTRY(CPUPhysMemoryClient) list;
-};
 
 uint32_t ldub_phys(target_phys_addr_t addr);
 void stb_phys(target_phys_addr_t addr, uint32_t val);

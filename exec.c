@@ -1180,17 +1180,6 @@ void cpu_reset_interrupt(CPUState *env, int mask)
     clear_interrupt_pending(env, mask);
 }
 
-static QLIST_HEAD(memory_client_list, CPUPhysMemoryClient) memory_client_list
-    = QLIST_HEAD_INITIALIZER(memory_client_list);
-
-static void cpu_notify_set_memory(target_phys_addr_t start_addr, ram_addr_t size, ram_addr_t phys_offset, bool log_dirty)
-{
-    CPUPhysMemoryClient *client;
-    QLIST_FOREACH(client, &memory_client_list, list) {
-        client->set_memory(client, start_addr, size, phys_offset, log_dirty);
-    }
-}
-
 struct last_map {
     target_phys_addr_t start_addr;
     ram_addr_t size;
@@ -1594,7 +1583,6 @@ void cpu_register_physical_memory_log(target_phys_addr_t start_addr, ram_addr_t 
     PhysPageDesc *p;
 
     assert(size);
-    cpu_notify_set_memory(start_addr, size, phys_offset, log_dirty);
 
     if (phys_offset == IO_MEM_UNASSIGNED) {
         region_offset = start_addr;
