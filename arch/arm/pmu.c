@@ -460,10 +460,11 @@ uint32_t get_c9_pmxevcntr(struct CPUState *env)
     pmu_counter *const counter = pmu_get_counter(env->pmu.selected_counter_id);
     // *INDENT-OFF*
     if (pmu_is_insns_or_cycles_counter(counter)) {
+        uint32_t value = pmu_get_insn_cycle_value(counter);
         if (unlikely(env->pmu.extra_logs_enabled)) {
-            tlib_printf(LOG_LEVEL_DEBUG, "PMU counter %d reading value 0x%" PRIx32, env->pmu.selected_counter_id, pmu_get_insn_cycle_value(counter));
+            tlib_printf(LOG_LEVEL_DEBUG, "PMU counter %d reading value 0x%" PRIx32, env->pmu.selected_counter_id, value);
         }
-        return pmu_get_insn_cycle_value(counter);
+        return value;
     } else {
         if (counter->has_snapshot) {
             tlib_abortf("Snapshot detected for PMU counter %d. Lazy evaluation for event %d is not supported", counter->id, counter->measured_event_id);
