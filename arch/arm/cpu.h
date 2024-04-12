@@ -179,6 +179,11 @@ typedef struct CPUState {
     bool wfe;
     bool sev_pending;
 
+    struct {
+        uint32_t c1_dbgdrar; /* Debug ROM Address Register */
+        uint32_t c2_dbgdsar; /* Debug Self Address Offset Register */
+    } cp14;
+
     /* System control coprocessor (cp15) */
     struct {
         uint32_t c0_cpuid;       /* Sometimes known as MIDR - Main ID Register */

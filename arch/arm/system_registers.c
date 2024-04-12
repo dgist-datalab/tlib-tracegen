@@ -605,8 +605,8 @@ static ARMCPRegInfo feature_v7_registers[] = {
      * don't implement memory mapped debug components
      */
     ARM32_CP_REG_DEFINE(DBGDSCRext,       14,   0,   0,   2,   2,   0,  RO | CONST(0)) // Debug Status and Control external
-    ARM32_CP_REG_DEFINE(DBGDRAR,          14,   0,   1,   0,   0,   0,  RO | CONST(0)) // Debug ROM Address Register
-    ARM32_CP_REG_DEFINE(DBGDSAR,          14,   0,   2,   0,   0,   0,  RO | CONST(0)) // Debug Self Address Offset Register
+    ARM32_CP_REG_DEFINE(DBGDRAR,          14,   0,   1,   0,   0,   0,  RO, FIELD(cp14.c1_dbgdrar)) // Debug ROM Address Register
+    ARM32_CP_REG_DEFINE(DBGDSAR,          14,   0,   2,   0,   0,   0,  RO, FIELD(cp14.c2_dbgdsar)) // Debug Self Address Offset Register
 
     // ================== Coprocessor 15 ==================
     // The params are:  name              cp, op1, crn, crm, op2,  el, extra_type, ...
