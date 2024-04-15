@@ -495,14 +495,20 @@ void tb_flush(CPUState *env1)
 }
 
 /* invalidate one TB */
-static inline void tb_remove(TranslationBlock **ptb, TranslationBlock *tb, int next_offset)
+static inline bool tb_remove(TranslationBlock **ptb, TranslationBlock *tb, int next_offset)
 {
     TranslationBlock *tb1;
     for (;;) {
         tb1 = *ptb;
         if (tb1 == tb) {
             *ptb = *(TranslationBlock **)((char *)tb1 + next_offset);
-            break;
+            return true;
+        }
+        if (tb1 == NULL) {
+            // We couldn't find the right TranslationBlock.
+            // That means it must've been invalidated already,
+            // for example if there was a breakpoint triggered at the same address.
+            return false;
         }
         ptb = (TranslationBlock **)((char *)tb1 + next_offset);
     }
@@ -571,7 +577,10 @@ void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr)
     /* remove the TB from the hash list */
     phys_pc = tb->page_addr[0] + (tb->pc & ~TARGET_PAGE_MASK);
     h = tb_phys_hash_func(phys_pc);
-    tb_remove(&tb_phys_hash[h], tb, offsetof(TranslationBlock, phys_hash_next));
+    if (!tb_remove(&tb_phys_hash[h], tb, offsetof(TranslationBlock, phys_hash_next))) {
+        // The TB has already been invalidated.
+        return;
+    }
 
     /* remove the TB from the page list */
     if (tb->page_addr[0] != page_addr) {
