@@ -183,7 +183,7 @@ void set_c9_pmcntenclr(struct CPUState *env, uint64_t val)
     pmu_recalculate_cycles_instruction_limit();
 }
 
-static inline void pmu_recalculate_all_lazy()
+void pmu_recalculate_all_lazy(void)
 {
     // See comment in `c9_pmcntclr` why we need this
     if (env->pmu.cycle_counter.enabled) {
@@ -199,7 +199,7 @@ static inline void pmu_recalculate_all_lazy()
     }
 }
 
-static inline void pmu_take_all_snapshots()
+void pmu_take_all_snapshots(void)
 {
     if (env->pmu.cycle_counter.enabled) {
         pmu_set_snapshot(&env->pmu.cycle_counter, env->instructions_count_total_value);
@@ -578,7 +578,7 @@ void pmu_recalculate_cycles_instruction_limit_custom_mode(enum arm_cpu_mode mode
     pmu_update_cycles_instruction_limit_custom_mode(&env->pmu.cycle_counter, mode);
 }
 
-void pmu_recalculate_cycles_instruction_limit()
+void pmu_recalculate_cycles_instruction_limit(void)
 {
     pmu_recalculate_cycles_instruction_limit_custom_mode(cpu_get_current_execution_mode());
 }

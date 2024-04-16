@@ -104,3 +104,6 @@ void helper_pmu_count_instructions_cycles(uint32_t icount);
 
 void pmu_update_counter(struct CPUState *env, pmu_counter *const counter, uint64_t amount);
 void helper_pmu_update_event_counters(struct CPUState *env, int event_id, uint32_t amount);
+
+void pmu_recalculate_all_lazy(void);
+void pmu_take_all_snapshots(void);

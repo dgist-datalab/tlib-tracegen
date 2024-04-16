@@ -2846,3 +2846,14 @@ void HELPER(set_system_event)(void)
 {
     tlib_set_system_event(1);
 }
+
+void cpu_before_cycles_per_instruction_change(CPUState *env)
+{
+    pmu_recalculate_all_lazy();
+}
+
+void cpu_after_cycles_per_instruction_change(CPUState *env)
+{
+    pmu_take_all_snapshots();
+    pmu_recalculate_cycles_instruction_limit();
+}

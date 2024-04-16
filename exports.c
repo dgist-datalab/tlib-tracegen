@@ -197,9 +197,27 @@ uint32_t tlib_get_maximum_block_size()
 
 EXC_INT_0(uint32_t, tlib_get_maximum_block_size)
 
+__attribute__((weak))
+void cpu_before_cycles_per_instruction_change(CPUState *env)
+{
+    // Empty function for architectures which don't have the function implemented.
+}
+
+__attribute__((weak))
+void cpu_after_cycles_per_instruction_change(CPUState *env)
+{
+    // Empty function for architectures which don't have the function implemented.
+}
+
 void tlib_set_millicycles_per_instruction(uint32_t count)
 {
+    if (env->millicycles_per_instruction == count) {
+        return;
+    }
+
+    cpu_before_cycles_per_instruction_change(cpu);
     env->millicycles_per_instruction = count;
+    cpu_after_cycles_per_instruction_change(cpu);
 }
 
 EXC_VOID_1(tlib_set_millicycles_per_instruction, uint32_t, count)
