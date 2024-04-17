@@ -262,6 +262,15 @@ int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size)
     target_ulong e = 0;
     pmp_priv_t allowed_privs = 0;
 
+    /* 
+     * According to the RISC-V Privileged Architecture Specification (ch. 3.6),
+     * to calculate the effective accessing mode we have to account for the
+     * value of the mstatus.MPRV field. If mstatus.MPRV = 1, then the effective
+     * mode is dictated by the mstatus.MPP value. Take that into the account
+     * when determining the PMP configuration for a given address.
+     */
+    target_ulong priv = get_field(env->mstatus, MSTATUS_MPRV) ? get_field(env->mstatus, MSTATUS_MPP) : env->priv;
+
     /* Short cut if no rules */
     if (0 == pmp_get_num_rules(env)) {
         return PMP_READ | PMP_WRITE | PMP_EXEC;
@@ -285,7 +294,7 @@ int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size)
             pmp_get_a_field(env->pmp_state.pmp[i].cfg_reg);
         if ((s + e) == 2 && a_field != PMP_AMATCH_OFF) {
             allowed_privs = PMP_READ | PMP_WRITE | PMP_EXEC;
-            if ((env->priv != PRV_M) || pmp_is_locked(env, i)) {
+            if ((priv != PRV_M) || pmp_is_locked(env, i)) {
                 allowed_privs &= env->pmp_state.pmp[i].cfg_reg;
             }
             ret = allowed_privs;
@@ -295,7 +304,7 @@ int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size)
 
     /* No rule matched */
     if (ret == -1) {
-        if (env->priv == PRV_M) {
+        if (priv == PRV_M) {
             ret = PMP_READ | PMP_WRITE | PMP_EXEC; /* Privileged spec v1.10 states if no PMP entry matches an
                                                     * M-Mode access, the access succeeds */
         } else {
