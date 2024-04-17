@@ -25,6 +25,8 @@ typedef struct atomic_memory_state_t
     uint8_t is_mutex_initialized;
     uint8_t are_reservations_valid;
 
+    uint32_t number_of_registered_cpus;
+
     uint32_t locking_cpu_id;
     uint32_t entries_count;
 

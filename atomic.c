@@ -2,9 +2,21 @@
 #include "cpu.h"
 #include "pthread.h"
 
+// We only need to lock if there are multiple CPUs registered in the `atomic_memory_state`.
+// Reservations should be made regardless of it; atomic instructions need them even with a single CPU.
+// False is returned if `atomic_memory_state` hasn't been initialized at all.
+static inline bool are_multiple_cpus_registered()
+{
+    return env->atomic_memory_state != NULL && env->atomic_memory_state->number_of_registered_cpus > 1;
+}
+
 static inline void ensure_locked_by_me(struct CPUState *env)
 {
 #if DEBUG
+    if (!are_multiple_cpus_registered()) {
+        return;
+    }
+
     if (env->atomic_memory_state->locking_cpu_id != env->id) {
         tlib_abort("Tried to release global memory lock by the cpu that does not own it!");
     }
@@ -13,7 +25,11 @@ static inline void ensure_locked_by_me(struct CPUState *env)
 
 static void initialize_atomic_memory_state(atomic_memory_state_t *sm)
 {
+    // `is_mutex_initialized` is reset during serialization.
     if (!sm->is_mutex_initialized) {
+        sm->number_of_registered_cpus = 0;
+
+        // Initialize mutex.
         pthread_mutexattr_t attributes;
         if (unlikely(pthread_mutexattr_init(&attributes))) {
             tlib_abortf("Failed to initialize phthread_muttexattr_t");
@@ -38,6 +54,7 @@ static void initialize_atomic_memory_state(atomic_memory_state_t *sm)
         sm->is_mutex_initialized = 1;
     }
 
+    // `are_reservations_valid` is never reset.
     if (!sm->are_reservations_valid) {
         sm->reservations_count = 0;
         for (int i = 0; i < MAX_NUMBER_OF_CPUS; i++) {
@@ -134,12 +151,12 @@ void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id)
     }
 
     initialize_atomic_memory_state(sm);
+    sm->number_of_registered_cpus++;
 }
 
 void acquire_global_memory_lock(struct CPUState *env)
 {
-    if (env->atomic_memory_state == NULL) {
-        // no atomic_memory_state so no need for synchronization
+    if (!are_multiple_cpus_registered()) {
         return;
     }
 
@@ -156,8 +173,7 @@ void acquire_global_memory_lock(struct CPUState *env)
 
 void release_global_memory_lock(struct CPUState *env)
 {
-    if (env->atomic_memory_state == NULL) {
-        // no atomic_memory_state so no need for synchronization
+    if (!are_multiple_cpus_registered()) {
         return;
     }
 
@@ -173,6 +189,10 @@ void release_global_memory_lock(struct CPUState *env)
 
 void clear_global_memory_lock(struct CPUState *env)
 {
+    if (!are_multiple_cpus_registered()) {
+        return;
+    }
+
     pthread_mutex_lock(&env->atomic_memory_state->global_mutex);
     ensure_locked_by_me(env);
     env->atomic_memory_state->locking_cpu_id = NO_CPU_ID;
