@@ -789,18 +789,10 @@ uint64_t HELPER(get_cp_reg64)(CPUARMState *env, void *rip)
 
 void HELPER(pre_hvc)(CPUARMState *env)
 {
-    ARMCPU *cpu = env_archcpu(env);
     int cur_el = arm_current_el(env);
     /* FIXME: Use actual secure state.  */
     bool secure = false;
     bool undef;
-
-    if (arm_is_psci_call(cpu, EXCP_HVC)) {
-        /* If PSCI is enabled and this looks like a valid PSCI call then
-         * that overrides the architecturally mandated HVC behaviour.
-         */
-        return;
-    }
 
     if (!arm_feature(env, ARM_FEATURE_EL2)) {
         /* If EL2 doesn't exist, HVC always UNDEFs */
@@ -829,7 +821,6 @@ void HELPER(pre_hvc)(CPUARMState *env)
 
 void HELPER(pre_smc)(CPUARMState *env, uint32_t syndrome)
 {
-    ARMCPU *cpu = env_archcpu(env);
     int cur_el = arm_current_el(env);
     bool secure = arm_is_secure(env);
     bool smd_flag = env->cp15.scr_el3 & SCR_SMD;
@@ -862,6 +853,12 @@ void HELPER(pre_smc)(CPUARMState *env, uint32_t syndrome)
      *  Conduit SMC, valid call  Trap to EL2         PSCI Call
      *  Conduit SMC, inval call  Trap to EL2         Undef insn
      *  Conduit not SMC          Undef insn          Undef insn
+     * 
+     * We don't differientate between SMC and PSCI calls, since PSCI is just an interface (a standard)
+     * to manipulate power domains by communicating with EL3 software. We don't implement it here.
+     * Instead a firmware package interacting with Power Management Unit of a platform should be used
+     * e.g. Arm Trusted Firmware (ATF) can work in monitor mode to answer PSCI queries from soft running EL2 and below
+     * How the power states are changed, depends on the specific HW platform's implementation
      */
 
     /* On ARMv8 with EL3 AArch64, SMD applies to both S and NS state.
@@ -874,22 +871,6 @@ void HELPER(pre_smc)(CPUARMState *env, uint32_t syndrome)
     bool smd = arm_feature(env, ARM_FEATURE_AARCH64) ? smd_flag
                                                      : smd_flag && !secure;
 
-    // TODO: Remove? psci_conduit has been removed from ARMCPU (now ARMCoreConfig)
-    //       but perhaps it should stay.
-    // if (!arm_feature(env, ARM_FEATURE_EL3) &&
-    //     cpu->psci_conduit != QEMU_PSCI_CONDUIT_SMC) {
-    //     /* If we have no EL3 then SMC always UNDEFs and can't be
-    //      * trapped to EL2. PSCI-via-SMC is a sort of ersatz EL3
-    //      * firmware within QEMU, and we want an EL2 guest to be able
-    //      * to forbid its EL1 from making PSCI calls into QEMU's
-    //      * "firmware" via HCR.TSC, so for these purposes treat
-    //      * PSCI-via-SMC as implying an EL3.
-    //      * This handles the very last line of the previous table.
-    //      */
-    //     raise_exception(env, EXCP_UDEF, syn_uncategorized(),
-    //                     exception_target_el(env));
-    // }
-
     if (cur_el == 1 && (arm_hcr_el2_eff(env) & HCR_TSC)) {
         /* In NS EL1, HCR controlled routing to EL2 has priority over SMD.
          * We also want an EL2 guest to be able to forbid its EL1 from
@@ -899,12 +880,10 @@ void HELPER(pre_smc)(CPUARMState *env, uint32_t syndrome)
         raise_exception(env, EXCP_HYP_TRAP, syndrome, 2);
     }
 
-    /* Catch the two remaining "Undef insn" cases of the previous table:
-     *    - PSCI conduit is SMC but we don't have a valid PCSI call,
+    /* Catch the remaining "Undef insn" cases of the previous table:
      *    - We don't have EL3 or SMD is set.
      */
-    if (!arm_is_psci_call(cpu, EXCP_SMC) &&
-        (smd || !arm_feature(env, ARM_FEATURE_EL3))) {
+    if (smd || !arm_feature(env, ARM_FEATURE_EL3)) {
         raise_exception(env, EXCP_UDEF, syn_uncategorized(),
                         exception_target_el(env));
     }

@@ -30,15 +30,6 @@ static inline bool semihosting_enabled(bool arg)
     return false;
 }
 
-#define ARMCoreConfig void
-static inline bool arm_is_psci_call(ARMCoreConfig *cpu, uint32_t excp)
-{
-    // Let's assume false.
-    tlib_printf(LOG_LEVEL_DEBUG, "Stub encountered: arm_is_psci_call(cpu, 0x%x); returning false", excp);
-    return false;
-}
-#undef ARMCoreConfig
-
 #define DisasContext void
 static inline bool disas_mve(DisasContext *dc, uint32_t insn) {
     tlib_printf(LOG_LEVEL_DEBUG, "Stub encountered: disas_mve(); returning false");
