@@ -25,12 +25,13 @@
 #include "bit_helper.h"
 #include "host-utils.h"
 
-uint32_t tlib_get_cpu_id()
+// This is an id representing processor's model (not registration id, and neither SMP id)
+uint32_t tlib_get_cpu_model_id()
 {
     return cpu->cp15.c0_cpuid;
 }
 
-EXC_INT_0(uint32_t, tlib_get_cpu_id)
+EXC_INT_0(uint32_t, tlib_get_cpu_model_id)
 
 uint32_t tlib_get_it_state()
 {
@@ -86,12 +87,12 @@ uint32_t tlib_evaluate_condition_code(uint32_t condition)
 
 EXC_INT_1(uint32_t, tlib_evaluate_condition_code, uint32_t, condition)
 
-void tlib_set_cpu_id(uint32_t value)
+void tlib_set_cpu_model_id(uint32_t value)
 {
     cpu->cp15.c0_cpuid = value;
 }
 
-EXC_VOID_1(tlib_set_cpu_id, uint32_t, value)
+EXC_VOID_1(tlib_set_cpu_model_id, uint32_t, value)
 
 void tlib_toggle_fpu(int32_t enabled)
 {

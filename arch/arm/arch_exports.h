@@ -3,11 +3,11 @@
 #include <stdint.h>
 #include "arch_exports_common.h"
 
-uint32_t tlib_get_cpu_id(void);
+uint32_t tlib_get_cpu_model_id(void);
 uint32_t tlib_get_it_state(void);
 uint32_t tlib_evaluate_condition_code(uint32_t);
 
-void tlib_set_cpu_id(uint32_t value);
+void tlib_set_cpu_model_id(uint32_t value);
 void tlib_toggle_fpu(int32_t enabled);
 void tlib_set_sev_on_pending(int32_t);
 void tlib_set_event_flag(int value);
