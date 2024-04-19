@@ -75,7 +75,7 @@ uint64_t HELPER(get_cp_reg64)(CPUState * env, void *rip)
 
 static inline uint32_t get_mpidr(CPUState *env)
 {
-    int mpidr = tlib_get_cpu_index();
+    int mpidr = tlib_get_mp_index();
     /* We don't support setting cluster ID ([8..11])
      * so these bits always RAZ.
      */

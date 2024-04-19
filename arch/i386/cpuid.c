@@ -418,7 +418,7 @@ void cpu_x86_cpuid(CPUState *env, uint32_t index, uint32_t count, uint32_t *eax,
         break;
     case 1:
         *eax = env->cpuid_version;
-        *ebx = (tlib_get_cpu_index() << 24) | 8 << 8; /* CLFLUSH size in quad words, Linux wants it. */
+        *ebx = (tlib_get_mp_index() << 24) | 8 << 8; /* CLFLUSH size in quad words, Linux wants it. */
         *ecx = env->cpuid_ext_features;
         *edx = env->cpuid_features;
         if (env->nr_cores * env->nr_threads > 1) {

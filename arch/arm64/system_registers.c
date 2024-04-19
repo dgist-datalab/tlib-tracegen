@@ -82,12 +82,18 @@ static inline uint64_t *cpacr_el1_register_pointer(CPUState *env)
     return el2_and_hcr_el2_e2h_set(env) ? &env->cp15.cptr_el[2] : &env->cp15.cpacr_el1;
 }
 
-static inline uint64_t *mpidr_el1_register_pointer(CPUState *env)
+static inline uint64_t mpidr_el1_register(CPUState *env)
 {
+    uint32_t affinity = tlib_get_mp_index();
+
+    // Aff3 is not located immediately after Aff2 in MPIDR
+    uint64_t aff3 = extract64(affinity, 24, 8) << 32;
+    uint32_t aff0_1_2 = extract32(affinity, 0, 24);
+
     if (arm_current_el(env) == 1 && arm_is_el2_enabled(env)) {
-        return &env->cp15.vmpidr_el2;
+        return env->cp15.vmpidr_el2 | aff0_1_2 | aff3;
     }
-    return &env->arm_core_config.mpidr;
+    return env->arm_core_config.mpidr | aff0_1_2 | aff3;
 }
 
 static inline uint64_t *spsr_el1_register_pointer(CPUState *env)
@@ -298,7 +304,7 @@ static inline uint32_t encode_as_aarch64_register(CPUState *env, const ARMCPRegI
         (op2 << CP_REG_ARM64_SYSREG_OP2_SHIFT);
 }
 
-READ_FUNCTION(64, mpidr_el1, *mpidr_el1_register_pointer(env))
+READ_FUNCTION(64, mpidr_el1, mpidr_el1_register(env))
 
 RW_FUNCTIONS(64, fpcr,  vfp_get_fpcr(env), vfp_set_fpcr(env, value))
 RW_FUNCTIONS(64, fpsr,  vfp_get_fpsr(env), vfp_set_fpsr(env, value))

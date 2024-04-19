@@ -146,7 +146,8 @@ void cpu_init_v8_2(CPUState *env, uint32_t id)
     env->arm_core_config.isar.id_pfr1  = 0x10010000;  // Version with GIC CPU interface enabled.
     env->arm_core_config.isar.id_pfr2  = 0x00000011;
 
-    // TODO: MPIDR should depend on CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
+    // MPIDR will be modified in runtime, by calling `tlib_get_mp_index`
+    // which passes CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
     env->arm_core_config.mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (1u << 24) /* MT */;
     env->arm_core_config.revidr = 0;
 
@@ -226,7 +227,8 @@ void cpu_init_a53(CPUState *env, uint32_t id)
     env->arm_core_config.isar.id_pfr0  = 0x00000131;
     env->arm_core_config.isar.id_pfr1  = 0x10011011;  // Version with GIC CPU interface enabled.
 
-    // TODO: MPIDR should depend on CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
+    // MPIDR will be modified in runtime, by calling `tlib_get_mp_index`
+    // which passes CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
     env->arm_core_config.mpidr = (1u << 31) /* RES1 */ | (0u << 30) /* U */ | (0u << 24) /* MT */;
     env->arm_core_config.revidr = 0;
 
@@ -378,15 +380,13 @@ void cpu_init_r52(CPUState *env, uint32_t id)
         (0x0 << 3) | // Ctype2
         (0x3 << 0); // Ctype1, separate instructions and data caches
 
-    // TODO: Make affinity configurable from CPU class in C#
+    // MPIDR will be modified in runtime, by calling `tlib_get_mp_index`
+    // which passes CPUID, CLUSTERIDAFF2 and CLUSTERIDAFF3 configuration signals.
     env->arm_core_config.mpidr = // 32bit, from 3.3.78
         (0x1 << 31) | // M, RES1
         (0x0 << 30) | // U, core is part of cluster (no single core)
         (0x0 << 25) | // RES0
-        (0x0 << 24) | // MT
-        (0x0 << 16) | // Aff2
-        (0x0 << 8) | // Aff1
-        (0x0 << 0); // Aff0
+        (0x0 << 24); // MT
 
     env->arm_core_config.ccsidr[0] = // 32bit, 3.3.20
         (0x0 << 31) | // WT, here no Write-Through
