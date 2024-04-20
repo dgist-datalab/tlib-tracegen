@@ -804,6 +804,7 @@ static ARMCPRegInfo feature_pmsa_registers[] = {
     ARM32_CP_REG_DEFINE(MPUIR,            15,   0,   0,   0,   4,   1, RO, READFN(c0_mpuir))    // MPUIR, MPU Type Register
 
     ARM32_CP_REG_DEFINE(DFAR,             15,   0,   6,   0,   0,   1, RW, FIELD(cp15.c6_data)) // DFAR, Data Fault Address Register
+    ARM32_CP_REG_DEFINE(IFAR,             15,   0,   6,   0,   2,   1, RW, FIELD(cp15.c6_insn)) // IFAR, Instruction Fault Address Register
     ARM32_CP_REG_DEFINE(DRBAR,            15,   0,   6,   1,   0,   1, RW, RW_FNS(c6_drbar))    // DRBAR, Data Region Base Address Register
     ARM32_CP_REG_DEFINE(DRSR,             15,   0,   6,   1,   2,   1, RW, RW_FNS(c6_drsr))     // DRSR, Data Region Size and Enable Register
     ARM32_CP_REG_DEFINE(DRACR,            15,   0,   6,   1,   4,   1, RW, RW_FNS(c6_dracr))    // DRACR, Data Region Access Control Register
