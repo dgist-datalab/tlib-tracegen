@@ -14,7 +14,7 @@ char *tlib_get_arch();
 char *tlib_get_commit();
 
 int32_t tlib_init(char *cpu_name);
-void tlib_atomic_memory_state_init(int id, uintptr_t atomic_memory_state_ptr);
+int32_t tlib_atomic_memory_state_init(uintptr_t atomic_memory_state_ptr, int32_t atomic_id);
 void tlib_dispose(void);
 uint64_t tlib_get_executed_instructions(void);
 void tlib_reset_executed_instrucions(uint64_t val);

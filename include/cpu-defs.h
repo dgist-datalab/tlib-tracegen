@@ -238,7 +238,9 @@ enum block_interrupt_cause {
     uint32_t opcode_counters_size;                                            \
     opcode_counter_descriptor opcode_counters[MAX_OPCODE_COUNTERS];           \
                                                                               \
-    int id;                                                                   \
+    /* A unique, sequential id representing CPU for atomic (atomic.c)         \
+       operations. It doesn't correspond to Infrastructure's cpuId */         \
+    uint32_t atomic_id;                                                       \
     atomic_memory_state_t* atomic_memory_state;                               \
     /* STARTING FROM HERE FIELDS ARE NOT SERIALIZED */                        \
     struct TranslationBlock *current_tb; /* currently executing TB  */        \

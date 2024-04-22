@@ -248,14 +248,16 @@ int32_t tlib_init(char *cpu_name)
 
 EXC_INT_1(int32_t, tlib_init, char *, cpu_name)
 
-void tlib_atomic_memory_state_init(int id, uintptr_t atomic_memory_state_ptr)
+// atomic_id should normally be '-1' - then a next free id will be returned
+// passing an id explicitly only makes sense when restoring state after deserialization
+int32_t tlib_atomic_memory_state_init(uintptr_t atomic_memory_state_ptr, int32_t atomic_id)
 {
-    cpu->id = id;
     cpu->atomic_memory_state = (atomic_memory_state_t *)atomic_memory_state_ptr;
-    register_in_atomic_memory_state(cpu->atomic_memory_state, id);
+
+    return register_in_atomic_memory_state(cpu->atomic_memory_state, atomic_id);
 }
 
-EXC_VOID_2(tlib_atomic_memory_state_init, int, id, uintptr_t, atomic_memory_state_ptr)
+EXC_INT_2(int32_t, tlib_atomic_memory_state_init, uintptr_t, atomic_memory_state_ptr, int32_t, atomic_id)
 
 void tlib_dispose()
 {

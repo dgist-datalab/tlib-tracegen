@@ -260,7 +260,7 @@ static void verify_state(CPUState *env)
     if (env->atomic_memory_state == NULL) {
         return;
     }
-    if (env->atomic_memory_state->locking_cpu_id == env->id) {
+    if (env->atomic_memory_state->locking_cpu_id == env->atomic_id) {
         clear_global_memory_lock(env);
     }
 }

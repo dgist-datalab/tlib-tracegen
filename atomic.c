@@ -18,7 +18,7 @@ static inline void ensure_locked_by_me(struct CPUState *env)
         return;
     }
 
-    if (env->atomic_memory_state->locking_cpu_id != env->id) {
+    if (env->atomic_memory_state->locking_cpu_id != env->atomic_id) {
         tlib_abort("Tried to release global memory lock by the cpu that does not own it!");
     }
 #endif
@@ -86,7 +86,7 @@ static inline address_reservation_t *find_reservation_on_address(struct CPUState
 // there can be only one reservation per cpu
 static inline address_reservation_t *find_reservation_by_cpu(struct CPUState *env)
 {
-    int reservation_id = env->atomic_memory_state->reservations_by_cpu[env->id];
+    int reservation_id = env->atomic_memory_state->reservations_by_cpu[env->atomic_id];
 #if DEBUG
     if (reservation_id >= env->atomic_memory_state->reservations_count) {
         tlib_abort("Inconsistent reservation count detected.");
@@ -104,10 +104,10 @@ static inline address_reservation_t *make_reservation(struct CPUState *env, targ
     address_reservation_t *reservation = &env->atomic_memory_state->reservations[env->atomic_memory_state->reservations_count];
     reservation->active_flag = 1;
     reservation->address = address;
-    reservation->locking_cpu_id = env->id;
+    reservation->locking_cpu_id = env->atomic_id;
     reservation->manual_free = manual_free;
 
-    env->atomic_memory_state->reservations_by_cpu[env->id] = env->atomic_memory_state->reservations_count;
+    env->atomic_memory_state->reservations_by_cpu[env->atomic_id] = env->atomic_memory_state->reservations_count;
     env->atomic_memory_state->reservations_count++;
 
     return reservation;
@@ -145,16 +145,19 @@ static inline void free_reservation(struct CPUState *env, address_reservation_t 
 }
 
 
-void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id)
+int32_t register_in_atomic_memory_state(atomic_memory_state_t *sm, int32_t atomic_id)
 {
-    if (id >= MAX_NUMBER_OF_CPUS) {
-        tlib_abortf("Cpu id: %d exceeds the number of supported cores: %d", id, MAX_NUMBER_OF_CPUS);
-    }
-
+    cpu->atomic_id = -1;
     initialize_atomic_memory_state(sm);
     sm->number_of_registered_cpus++;
+    if (sm->number_of_registered_cpus > MAX_NUMBER_OF_CPUS) {
+        tlib_printf(LOG_LEVEL_ERROR, "atomic: Maximum number of supported cores exceeded: %d", MAX_NUMBER_OF_CPUS);
+        return -1;
+    }
 
     tcg_context_attach_number_of_registered_cpus(&sm->number_of_registered_cpus);
+    cpu->atomic_id = atomic_id != -1 ? atomic_id : sm->number_of_registered_cpus - 1;
+    return cpu->atomic_id;
 }
 
 void acquire_global_memory_lock(struct CPUState *env)
@@ -164,11 +167,11 @@ void acquire_global_memory_lock(struct CPUState *env)
     }
 
     pthread_mutex_lock(&env->atomic_memory_state->global_mutex);
-    if (env->atomic_memory_state->locking_cpu_id != env->id) {
+    if (env->atomic_memory_state->locking_cpu_id != env->atomic_id) {
         while (env->atomic_memory_state->locking_cpu_id != NO_CPU_ID) {
             pthread_cond_wait(&env->atomic_memory_state->global_cond, &env->atomic_memory_state->global_mutex);
         }
-        env->atomic_memory_state->locking_cpu_id = env->id;
+        env->atomic_memory_state->locking_cpu_id = env->atomic_id;
     }
     env->atomic_memory_state->entries_count++;
     pthread_mutex_unlock(&env->atomic_memory_state->global_mutex);
@@ -241,7 +244,7 @@ void register_address_access(struct CPUState *env, target_phys_addr_t address)
 
     address_reservation_t *reservation = find_reservation_on_address(env, address, 0);
     while (reservation != NULL) {
-        if (reservation->locking_cpu_id != env->id) {
+        if (reservation->locking_cpu_id != env->atomic_id) {
             free_reservation(env, reservation, 0);
         }
         reservation = find_reservation_on_address(env, address, reservation->id + 1);

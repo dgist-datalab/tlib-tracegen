@@ -39,7 +39,7 @@ typedef struct atomic_memory_state_t
 
 } atomic_memory_state_t;
 
-void register_in_atomic_memory_state(atomic_memory_state_t *sm, int id);
+int32_t register_in_atomic_memory_state(atomic_memory_state_t *sm, int32_t atomic_id);
 
 void acquire_global_memory_lock(struct CPUState *env);
 void release_global_memory_lock(struct CPUState *env);
