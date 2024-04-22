@@ -23,8 +23,8 @@
  */
 
 /* define it to use liveness analysis (better code) */
-// #define USE_LIVENESS_ANALYSIS
-// #define USE_TCG_OPTIMIZATIONS
+#define USE_LIVENESS_ANALYSIS
+#define USE_TCG_OPTIMIZATIONS
 
 #include "additional.h"
 #include <stdarg.h>
