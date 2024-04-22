@@ -829,11 +829,13 @@ static inline void gen_set_pc_im(uint32_t val)
    It's required for barrier instructions ISB, DSB and DMB. In a scenario
    of software interrupt happening just before the barrier, instructions
    following barrier have to see the changes caused by the interrupt handler.
-   This was exposed by Zephyr zero-latency interrupt tests. */
+   This was exposed by Zephyr zero-latency interrupt tests.
+   Don't flush the TLB, though: page table update code in guest software
+   will contain DSB/ISB, but this is not relevant in tlib as it does not
+   emulate caches. */
 static inline void gen_barrier(DisasContext *s)
 {
     gen_helper_invalidate_dirty_addresses_shared(cpu_env);
-    gen_helper_tlb_flush(cpu_env);
     gen_set_pc_im(s->base.pc);
     s->base.is_jmp = DISAS_UPDATE;
 }
