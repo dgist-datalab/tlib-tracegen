@@ -322,8 +322,7 @@ EXC_INT_0(uint32_t, tlib_is_v8)
 
 static void guard_pmsav8()
 {
-    if (!arm_feature(env, ARM_FEATURE_V8))
-    {
+    if (!arm_feature(env, ARM_FEATURE_V8)) {
         tlib_abort("This feature is only supported on ARM v8-M architecture");
     }
 }
