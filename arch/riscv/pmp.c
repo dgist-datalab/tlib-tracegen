@@ -254,7 +254,7 @@ int pmp_find_overlapping(CPUState *env, target_ulong addr, target_ulong size, in
 /*
  * Find and return PMP configuration matching memory address
  */
-int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size)
+int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size, int access_type)
 {
     int i = 0;
     int ret = -1;
@@ -264,12 +264,15 @@ int pmp_get_access(CPUState *env, target_ulong addr, target_ulong size)
 
     /* 
      * According to the RISC-V Privileged Architecture Specification (ch. 3.6),
-     * to calculate the effective accessing mode we have to account for the
-     * value of the mstatus.MPRV field. If mstatus.MPRV = 1, then the effective
-     * mode is dictated by the mstatus.MPP value. Take that into the account
-     * when determining the PMP configuration for a given address.
+     * to calculate the effective accessing mode during loads and stores,
+     * we have to account for the value of the mstatus.MPRV field.
+     * If mstatus.MPRV = 1, then the effective mode is dictated by the mstatus.MPP value.
+     * Take that into the account when determining the PMP configuration for a given address.
      */
-    target_ulong priv = get_field(env->mstatus, MSTATUS_MPRV) ? get_field(env->mstatus, MSTATUS_MPP) : env->priv;
+    target_ulong priv = env->priv;
+    if (get_field(env->mstatus, MSTATUS_MPRV) && (access_type == ACCESS_DATA_LOAD || access_type == ACCESS_DATA_STORE)) {
+        priv = get_field(env->mstatus, MSTATUS_MPP);
+    }
 
     /* Short cut if no rules */
     if (0 == pmp_get_num_rules(env)) {

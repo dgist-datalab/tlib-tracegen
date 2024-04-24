@@ -338,7 +338,7 @@ int cpu_handle_mmu_fault(CPUState *env, target_ulong address, int access_type, i
     target_ulong page_size = TARGET_PAGE_SIZE;
 
     ret = get_physical_address(env, &pa, &prot, address, access_type, mmu_idx, no_page_fault);
-    pmp_prot = pmp_get_access(env, pa, access_width);
+    pmp_prot = pmp_get_access(env, pa, access_width, access_type);
     if (!cpu->external_mmu_enabled && !((pmp_access_type & pmp_prot) == pmp_access_type)) {
         ret = TRANSLATE_FAIL;
     }
