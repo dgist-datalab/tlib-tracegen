@@ -552,22 +552,22 @@ static ARMCPRegInfo general_coprocessor_registers[] = {
 
     // crn == 7
     // The params are:  name           cp, op1, crn, crm, op2,  el,  extra_type, ...
-    ARM32_CP_REG_DEFINE(ICIALLU,       15,   0,   7,   5,   0,   1,  WO, WRITEFN(set_c15_i_max_min)) // Instruction Cache Invalidate All to PoU
-    ARM32_CP_REG_DEFINE(ICIMVAU,       15,   0,   7,   5,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Instruction Cache line Invalidate by VA to PoU
-    ARM32_CP_REG_DEFINE(BPIALL,        15,   0,   7,   5,   6,   1,  WO, WRITEFN(set_c15_i_max_min)) // Branch Predictor Invalidate All
-    ARM32_CP_REG_DEFINE(BPIMVA,        15,   0,   7,   5,   7,   1,  WO, WRITEFN(set_c15_i_max_min)) // Branch Predictor Invalidate by VA
-    ARM32_CP_REG_DEFINE(DCIMVAC,       15,   0,   7,   6,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Invalidate by MVA to PoC
-    ARM32_CP_REG_DEFINE(DCISW,         15,   0,   7,   6,   2,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Invalidate by Set/Way
-    ARM32_CP_REG_DEFINE(DCCMVAC,       15,   0,   7,  10,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Clean by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCSW,         15,   0,   7,  10,   2,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Clean by Set/Way
-    ARM32_CP_REG_DEFINE(DCCMVAU,       15,   0,   7,  11,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Clean by VA to PoU
-    ARM32_CP_REG_DEFINE(DCCIMVAC,      15,   0,   7,  14,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Clean and Invalidate by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCISW,        15,   0,   7,  14,   2,   1,  WO, WRITEFN(set_c15_i_max_min)) // Data Cache line Clean and Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(ICIALLU,       15,   0,   7,   5,   0,   1,  WO | IGNORED) // Instruction Cache Invalidate All to PoU
+    ARM32_CP_REG_DEFINE(ICIMVAU,       15,   0,   7,   5,   1,   1,  WO | IGNORED) // Instruction Cache line Invalidate by VA to PoU
+    ARM32_CP_REG_DEFINE(BPIALL,        15,   0,   7,   5,   6,   1,  WO | IGNORED) // Branch Predictor Invalidate All
+    ARM32_CP_REG_DEFINE(BPIMVA,        15,   0,   7,   5,   7,   1,  WO | IGNORED) // Branch Predictor Invalidate by VA
+    ARM32_CP_REG_DEFINE(DCIMVAC,       15,   0,   7,   6,   1,   1,  WO | IGNORED) // Data Cache line Invalidate by MVA to PoC
+    ARM32_CP_REG_DEFINE(DCISW,         15,   0,   7,   6,   2,   1,  WO | IGNORED) // Data Cache line Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(DCCMVAC,       15,   0,   7,  10,   1,   1,  WO | IGNORED) // Data Cache line Clean by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCSW,         15,   0,   7,  10,   2,   1,  WO | IGNORED) // Data Cache line Clean by Set/Way
+    ARM32_CP_REG_DEFINE(DCCMVAU,       15,   0,   7,  11,   1,   1,  WO | IGNORED) // Data Cache line Clean by VA to PoU
+    ARM32_CP_REG_DEFINE(DCCIMVAC,      15,   0,   7,  14,   1,   1,  WO | IGNORED) // Data Cache line Clean and Invalidate by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCISW,        15,   0,   7,  14,   2,   1,  WO | IGNORED) // Data Cache line Clean and Invalidate by Set/Way
 
-    ARM32_CP_REG_DEFINE(PREICL,        15,   0,   7,  13,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Prefetch instruction cache line (ARMv5)
-    ARM32_CP_REG_DEFINE(INVIDC,        15,   0,   7,   7,   0,   1,  WO, WRITEFN(set_c15_i_max_min)) // Invalidate both instruction and data caches or unified cache (ARMv5)
-    ARM32_CP_REG_DEFINE(INVUCL,        15,   0,   7,   7,   1,   1,  WO, WRITEFN(set_c15_i_max_min)) // Invalidate unified cache line Set/way MVA (ARMv5)
-    ARM32_CP_REG_DEFINE(INVICLSW,      15,   0,   7,   7,   2,   1,  WO, WRITEFN(set_c15_i_max_min)) // Invalidate unified cache line Set/way (ARMv5)
+    ARM32_CP_REG_DEFINE(PREICL,        15,   0,   7,  13,   1,   1,  WO | IGNORED) // Prefetch instruction cache line (ARMv5)
+    ARM32_CP_REG_DEFINE(INVIDC,        15,   0,   7,   7,   0,   1,  WO | IGNORED) // Invalidate both instruction and data caches or unified cache (ARMv5)
+    ARM32_CP_REG_DEFINE(INVUCL,        15,   0,   7,   7,   1,   1,  WO | IGNORED) // Invalidate unified cache line Set/way MVA (ARMv5)
+    ARM32_CP_REG_DEFINE(INVICLSW,      15,   0,   7,   7,   2,   1,  WO | IGNORED) // Invalidate unified cache line Set/way (ARMv5)
 
     ARM32_CP_REG_DEFINE(PAR,           15,   0,   7,   4,   0,   1,  RW, RW_FNS(c7_par))             // Physical Address Register
     ARM32_CP_REG_DEFINE(ATS1CPR,       15,   0,   7,   8,   0,   1,  WO, WRITEFN(c7_ats1cpr))        // PL1 read translation
