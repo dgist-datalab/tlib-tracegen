@@ -881,6 +881,14 @@ static ARMCPRegInfo feature_thumb2ee_registers[] = {
     ARM32_CP_REG_DEFINE(TEEHBR,           14,   6,   1,   0,   0,   1,  RW, FIELD(teehbr))         // Thumb EE Handler Base Register
 };
 
+// See ARMv7A/R manual's full lists of CP15 registers for PMSA (B5.8.2) and VMSA (B3.17.2) CP15 registers for the ones marked as "Added as part of the Multiprocessing Extensions.".
+static ARMCPRegInfo feature_v7mp_registers[] = {
+    // The params are:  name              cp, op1, crn, crm, op2,  el,  extra_type, ...
+    // This is not a barrier per se but it'll be treated like ISB cause we want to trigger TB invalidations.
+    ARM32_CP_REG_DEFINE(ICIALLUIS,        15,   0,   7,   1,   0,   1,  WO | ARM_CP_BARRIER)   // Instruction Cache Invalidate All to PoU, Inner Shareable
+    ARM32_CP_REG_DEFINE(BPIALLIS,         15,   0,   7,   1,   6,   1,  WO | IGNORED)          // Branch Predictor Invalidate All, Inner Shareable
+};
+
 static ARMCPRegInfo feature_v7sec_registers[] = {
     // The params are:  name              cp, op1, crn, crm, op2,  el,  extra_type, ...
     ARM32_CP_REG_DEFINE(VBAR,             15,   0,   12,   0,   0,  1,  RW, RW_FNS(c12_vbar)) // VBAR, Vector Base Address Register
@@ -1065,6 +1073,10 @@ inline static int count_extra_registers(const CPUState *env)
         extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_thumb2ee_registers);
     }
 
+    if (arm_feature(env, ARM_FEATURE_V7MP)) {
+        extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_v7mp_registers);
+    }
+
     if (arm_feature(env, ARM_FEATURE_V7SEC)) {
         extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_v7sec_registers);
     }
@@ -1150,6 +1162,10 @@ inline static void populate_ttable(CPUState *env)
 
     if (arm_feature(env, ARM_FEATURE_THUMB2EE)) {
         regs_array_add(env, feature_thumb2ee_registers);
+    }
+
+    if (arm_feature(env, ARM_FEATURE_V7MP)) {
+        regs_array_add(env, feature_v7mp_registers);
     }
 
     if (arm_feature(env, ARM_FEATURE_V7SEC)) {
