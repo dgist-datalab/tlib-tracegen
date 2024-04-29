@@ -486,7 +486,7 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         env->cp15.c0_cachetype = 0x8333C003; // CTR
         env->cp15.c0_tcmtype = 0x80010001; // TCMTR
         env->cp15.c0_clid = 0x09200003; // CLIDR, for cache implemented
-        env->cp15.c0_ccsid[0] = 0x201fe019; /* 32K L1 dcache */
+        env->cp15.c0_ccsid[0] = 0x701fe019; /* 32K L1 dcache */
         env->cp15.c0_ccsid[1] = 0x201fe019; /* 32K L1 icache */
         env->cp15.c1_sys = 0xc50078; // SCTLR
         env->cp15.c1_coproc = 0xC0000000; // CPACR
