@@ -825,19 +825,34 @@ static inline void gen_set_pc_im(uint32_t val)
     tcg_gen_movi_i32(cpu_R[15], val);
 }
 
-/* Treat current instruction like a jump, to force instruction block end.
-   It's required for barrier instructions ISB, DSB and DMB. In a scenario
+/* Always force TB end in addition to generating host memory barrier or
+   applying invalidations for dirty addresses from other CPUs. In a scenario
    of software interrupt happening just before the barrier, instructions
    following barrier have to see the changes caused by the interrupt handler.
    This was exposed by Zephyr zero-latency interrupt tests.
    Don't flush the TLB, though: page table update code in guest software
    will contain DSB/ISB, but this is not relevant in tlib as it does not
    emulate caches. */
-static inline void gen_barrier(DisasContext *s)
+static inline void gen_barrier(DisasContext *s, bool is_isb)
 {
-    gen_helper_invalidate_dirty_addresses_shared(cpu_env);
+    if (is_isb) {
+        gen_helper_invalidate_dirty_addresses_shared(cpu_env);
+    } else {
+        tcg_gen_mb(TCG_MO_ALL | TCG_BAR_SC);
+    }
+
     gen_set_pc_im(s->base.pc);
     s->base.is_jmp = DISAS_UPDATE;
+}
+
+static inline void gen_dxb(DisasContext *s)
+{
+    gen_barrier(s, /* is_isb: */ false);
+}
+
+static inline void gen_isb(DisasContext *s)
+{
+    gen_barrier(s, /* is_isb: */ true);
 }
 
 /* Force a TB lookup after an instruction that changes the CPU state.  */
@@ -6527,10 +6542,28 @@ static int do_coproc_insn(CPUState *env, DisasContext *s, uint32_t insn, int cpn
             }
             return 0;
         case ARM_CP_BARRIER:
-            gen_barrier(s);
-            return 0;
+            // Reading such a register shouldn't be possible, they should all be marked as WO.
+            assert(!isread);
+
+            // The instructions have common cp15, op0 and crn parts.
+            assert(ri->cp == 15 && ri->op0 == 0 && ri->crn == 7);
+
+            // crm and op2 are concatenated to analyze them in a single switch-case. crm is multiplied by 100 to simplify
+            // converting decimal crm and op2 to the case values; op2 is a 4-bit part so it never exceeds 15.
+            switch(ri->crm*100 + ri->op2) {
+                case 100:  // crm=1, op2=0: ICIALLUIS, it's treated like ISB cause it often accompanies self-modifying code.
+                case 504:  // crm=5, op2=4: CP15ISB
+                    gen_isb(s);
+                    return 0;
+                case 1004: // crm=10, op2=4: CP15DSB (ARMv7) / CP15DWB (preARMv7)
+                case 1005: // crm=10, op2=5: CP15DMB
+                    gen_dxb(s);
+                    return 0;
+                default:
+                    tlib_assert_not_reached();
+            }
         default:
-            g_assert_not_reached();
+            tlib_assert_not_reached();
         }
 
         /* Right now we don't need to make any preparations for ARM_CP_IO,
@@ -7075,10 +7108,12 @@ static void disas_arm_insn(CPUState *env, DisasContext *s)
                 return;
             case 4: /* dsb */
             case 5: /* dmb */
+                ARCH(7);
+                gen_dxb(s);
+                return;
             case 6: /* isb */
                 ARCH(7);
-                gen_barrier(s);
-                /* We don't emulate caches so these are a no-op.  */
+                gen_isb(s);
                 return;
             default:
                 goto illegal_op;
@@ -9233,9 +9268,10 @@ static int disas_thumb2_insn(CPUState *env, DisasContext *s, uint16_t insn_hw1)
                             break;
                         case 4: /* dsb */
                         case 5: /* dmb */
+                            gen_dxb(s);
+                            break;
                         case 6: /* isb */
-                            gen_barrier(s);
-                            /* These execute as NOPs.  */
+                            gen_isb(s);
                             break;
                         default:
                             goto illegal_op;
