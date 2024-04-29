@@ -713,10 +713,10 @@ static ARMCPRegInfo feature_pre_v6_registers[] = {
      */
     // The params are:  name           cp, op1, crn, crm, op2,  el,  extra_type, ...
     // Superseded by ATS1CUR
-    ARM32_CP_REG_DEFINE(CP15WFIprev6,  15,   0,   7,   8,   2,   1,  WO | ARM_CP_WFI)                // Wait For Interrupt
+    ARM32_CP_REG_DEFINE(CP15WFIprev6,  15,   0,   7,   8,   2,   1,  WO | ARM_CP_WFI)     // Wait For Interrupt
 
     // This is CP15DSB on newer ISA
-    ARM32_CP_REG_DEFINE(CP15DWB,       15,   0,   7,  10,   4,   0,  WO, WRITEFN(set_c15_i_max_min)) // Drain Write Buffer
+    ARM32_CP_REG_DEFINE(CP15DWB,       15,   0,   7,  10,   4,   0,  WO | ARM_CP_BARRIER) // Drain Write Buffer
 };
 
 static ARMCPRegInfo mpidr_register[] = {
