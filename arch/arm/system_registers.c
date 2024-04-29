@@ -106,7 +106,34 @@ static inline uint32_t get_ccsidr(CPUState *env)
         return 0;
     }
 
-    return env->cp15.c0_ccsid[env->cp15.c0_cssel];
+    uint32_t csselr = env->cp15.c0_cssel;
+    uint32_t cache_level = (csselr >> 1) + 1;
+    tlib_assert(cache_level <= 7);  // Setting CSSELR to value over 15 shouldn't be possible.
+
+    // Bits 0-2 for L1, 3-5 for L2...
+    uint32_t cache_type = extract32(env->cp15.c0_clid, 3 * (cache_level - 1), 3);
+
+    enum {
+        NO_CACHE        = 0,
+        ONLY_ICACHE     = 1,
+        ONLY_DCACHE     = 2,
+        SEPARATE_CACHES = 3,  // Both caches are implemented.
+        UNIFIED_CACHE   = 4,
+    };
+    tlib_assert(cache_type <= UNIFIED_CACHE);  // CLIDR is RO so we set it to invalid value if this fails.
+
+    bool icache_accessed = csselr & 1u;  // Data or unified cache is being accessed otherwise.
+    bool cache_implemented = (icache_accessed ? cache_type == ONLY_ICACHE : (cache_type == ONLY_DCACHE || cache_type == UNIFIED_CACHE))
+        || cache_type == SEPARATE_CACHES;
+
+    if (cache_implemented) {
+        return env->cp15.c0_ccsid[env->cp15.c0_cssel];
+    } else {
+        tlib_printf(LOG_LEVEL_WARNING,
+            "Tried to access CCSIDR with invalid CSSELR value: %u; L%u %s cache isn't implemented, returning 0",
+            csselr, cache_level, icache_accessed ? "instruction" : "data or unified");
+        return 0x0;
+    }
 }
 READ_FUNCTION(64, c0_ccsidr, get_ccsidr(env))
 
@@ -206,6 +233,10 @@ READ_FUNCTION(64, c0_mpuir, get_c0_mpuir(env))
 static inline void set_c5_csselr(CPUState *env, uint64_t val)
 {
     env->cp15.c0_cssel = val & 0xf;
+
+    if (unlikely(env->cp15.c0_cssel != val)) {
+        tlib_printf(LOG_LEVEL_WARNING, "Tried to set reserved bits by writing value to CSSELR: %" PRIu64 ", only bits 0-3 were set", val);
+    }
 }
 RW_FUNCTIONS(64, c0_csselr, env->cp15.c0_cssel, set_c5_csselr(env, value))
 
