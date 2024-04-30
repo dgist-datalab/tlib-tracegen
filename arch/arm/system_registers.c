@@ -812,6 +812,33 @@ static ARMCPRegInfo feature_pmsa_registers[] = {
     ARM32_CP_REG_DEFINE(RGNR,             15,   0,   6,   2,   0,   1, RW, RW_FNS(c6_rgnr))     // RGNR, MPU Region Number Register
 };
 
+// Based on https://developer.arm.com/documentation/100400/0002/system-control/register-summary/implementation-defined-registers
+static ARMCPRegInfo cortex_r8_registers[] = {
+    // The params are:  name              cp, op1, crn, crm, op2,  el, extra_type, ...
+    ARM32_CP_REG_DEFINE(PCR,              15,   0,  15,   0,   0,   0, RW)  // Power Control Register
+
+    ARM32_CP_REG_DEFINE(CTDOR,            15,   0,  15,   1,   0,   1, WO)  // Cache and TCM Debug Operation Register
+    ARM32_CP_REG_DEFINE(RADRLO,           15,   0,  15,   1,   1,   1, RW)  // RAM Access Data Register, bits[31:0]
+    ARM32_CP_REG_DEFINE(RADRHI,           15,   0,  15,   1,   2,   1, RW)  // RAM Access Data Register, bits[63:32]
+
+    // The below should only be available if ECC is implemented.
+    ARM32_CP_REG_DEFINE(RAECCR,           15,   0,  15,   1,   3,   1, RW)  // RAM Access ECC Register
+
+    ARM32_CP_REG_DEFINE(DEER0,            15,   0,  15,   2,   0,   1, RW, FIELD(cp15.c15_decc_entries[0]))  // D_ECC_ENTRY_0, Data ECC entry no. 0
+    ARM32_CP_REG_DEFINE(DEER1,            15,   0,  15,   2,   1,   1, RW, FIELD(cp15.c15_decc_entries[1]))  // D_ECC_ENTRY_1, Data ECC entry no. 1
+    ARM32_CP_REG_DEFINE(DEER2,            15,   0,  15,   2,   2,   1, RW, FIELD(cp15.c15_decc_entries[2]))  // D_ECC_ENTRY_2, Data ECC entry no. 2
+
+    ARM32_CP_REG_DEFINE(IEER0,            15,   0,  15,   3,   0,   1, RW, FIELD(cp15.c15_iecc_entries[0]))  // I_ECC_ENTRY_0, Insn ECC entry no. 0
+    ARM32_CP_REG_DEFINE(IEER1,            15,   0,  15,   3,   1,   1, RW, FIELD(cp15.c15_iecc_entries[1]))  // I_ECC_ENTRY_1, Insn ECC entry no. 1
+    ARM32_CP_REG_DEFINE(IEER2,            15,   0,  15,   3,   2,   1, RW, FIELD(cp15.c15_iecc_entries[2]))  // I_ECC_ENTRY_2, Insn ECC entry no. 2
+
+    // The below should only be accessible if ECC and TCM are implemented.
+    ARM32_CP_REG_DEFINE(DTCMEER,          15,   0,  15,   4,   0,   1, RW, FIELD(cp15.c15_tcm_ecc_entries[TCM_CP15_OP2_DATA]))                    // DTCM_ECC_ENTRY, Data TCM ECC entry
+    ARM32_CP_REG_DEFINE(ITCMEER,          15,   0,  15,   5,   0,   1, RW, FIELD(cp15.c15_tcm_ecc_entries[TCM_CP15_OP2_INSTRUCTION_OR_UNIFIED]))  // ITCM_ECC_ENTRY, Insn TCM ECC entry
+
+    // CBAR is added with FEATURE_CBAR_RO.
+};
+
 static ARMCPRegInfo feature_generic_timer_registers[] = {
     ARM32_CP_REG_DEFINE(GENERIC_TIMER,    15, ANY,  14, ANY, ANY,   1, RW | ARM_CP_IO, RW_FNS(read_cp15_write_ignore))     // Generic Timer
 };
@@ -1015,6 +1042,12 @@ inline static int count_extra_registers(const CPUState *env)
         extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_cbar_ro);
     }
 
+    switch (env->cp15.c0_cpuid) {
+        case ARM_CPUID_CORTEXR8:
+            extra_regs += ARM_CP_ARRAY_COUNT_ANY(cortex_r8_registers);
+            break;
+    }
+
     extra_regs += ARM_CP_ARRAY_COUNT_ANY(has_cp15_c13_registers);
     extra_regs += ARM_CP_ARRAY_COUNT_ANY(sctlr_register);
 
@@ -1094,6 +1127,12 @@ inline static void populate_ttable(CPUState *env)
 
     if (arm_feature(env, ARM_FEATURE_CBAR_RO)) {
         regs_array_add(env, feature_cbar_ro);
+    }
+
+    switch (env->cp15.c0_cpuid) {
+        case ARM_CPUID_CORTEXR8:
+            regs_array_add(env, cortex_r8_registers);
+            break;
     }
 
     // c13 are always present, but without ARM_FEATURE_V6K should be read as 0

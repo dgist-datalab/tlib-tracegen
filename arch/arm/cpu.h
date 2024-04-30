@@ -240,6 +240,9 @@ typedef struct CPUState {
         uint32_t c15_i_max;      /* Maximum D-cache dirty line index.  */
         uint32_t c15_i_min;      /* Minimum D-cache dirty line index.  */
         uint32_t c15_threadid;   /* TI debugger thread-ID.  */
+        uint32_t c15_decc_entries[3];    /* Cortex-R8: Data ECC entry no. 0-2 */
+        uint32_t c15_iecc_entries[3];    /* Cortex-R8: Instruction ECC entry no. 0-2 */
+        uint32_t c15_tcm_ecc_entries[2]; /* Cortex-R8: Data/Instruction TCM ECC entry */
     } cp15;
 
     struct {
