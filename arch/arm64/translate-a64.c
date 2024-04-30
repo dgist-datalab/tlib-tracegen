@@ -1613,6 +1613,9 @@ static void handle_hint(DisasContext *s, uint32_t insn,
 static void gen_clrex(DisasContext *s, uint32_t insn)
 {
     tcg_gen_movi_i64(cpu_exclusive_addr, -1);
+    gen_helper_acquire_global_memory_lock(cpu_env);
+    gen_helper_cancel_reservation(cpu_env);
+    gen_helper_release_global_memory_lock(cpu_env);
 }
 
 /* CLREX, DSB, DMB, ISB */
@@ -2516,6 +2519,8 @@ static void gen_load_exclusive(DisasContext *s, int rt, int rt2,
     int idx = get_mem_index(s);
     MemOp memop = s->be_data;
 
+    gen_helper_acquire_global_memory_lock(cpu_env);
+
     tlib_assert(size <= 3);
     if (is_pair) {
         tlib_assert(size >= 2);
@@ -2551,6 +2556,9 @@ static void gen_load_exclusive(DisasContext *s, int rt, int rt2,
         tcg_gen_mov_i64(cpu_reg(s, rt), cpu_exclusive_val);
     }
     tcg_gen_mov_i64(cpu_exclusive_addr, addr);
+
+    gen_helper_reserve_address(cpu_env, addr, tcg_const_i32(1));
+    gen_helper_release_global_memory_lock(cpu_env);
 }
 
 static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2,
@@ -2571,9 +2579,22 @@ static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2,
 
     int fail_label = gen_new_label();
     int done_label = gen_new_label();
-    TCGv_i64 tmp;
+    TCGv_i64 tmp, addr_local;
 
-    tcg_gen_brcond_i64(TCG_COND_NE, addr, cpu_exclusive_addr, fail_label);
+    // Address is copied to a "local" temporary
+    // so it lives through a branch instruction that results in basic block end
+    addr_local = tcg_temp_local_new_i64();
+    tcg_gen_mov_i64(addr_local, addr);
+
+    gen_helper_acquire_global_memory_lock(cpu_env);
+
+    TCGv_i64 has_reservation = tcg_temp_new_i64();
+    gen_helper_check_address_reservation(has_reservation, cpu_env, addr_local);
+    tcg_gen_brcond_i64(TCG_COND_NE, has_reservation, tcg_const_i64(0), fail_label);
+    tcg_temp_free_i64(has_reservation);
+
+    tcg_gen_brcond_i64(TCG_COND_NE, addr_local, cpu_exclusive_addr, fail_label);
+    tcg_temp_free_i64(addr_local);
 
     tmp = tcg_temp_new_i64();
     if (is_pair) {
@@ -2629,6 +2650,9 @@ static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2,
     tcg_gen_movi_i64(cpu_reg(s, rd), 1);
     gen_set_label(done_label);
     tcg_gen_movi_i64(cpu_exclusive_addr, -1);
+
+    gen_helper_cancel_reservation(cpu_env);
+    gen_helper_release_global_memory_lock(cpu_env);
 }
 
 static void gen_compare_and_swap(DisasContext *s, int rs, int rt,

@@ -226,6 +226,7 @@ void reserve_address(struct CPUState *env, target_phys_addr_t address, uint8_t m
     make_reservation(env, address, manual_free);
 }
 
+// Returns zero if the reservation was made for the given address
 uint32_t check_address_reservation(struct CPUState *env, target_phys_addr_t address)
 {
     ensure_locked_by_me(env);
