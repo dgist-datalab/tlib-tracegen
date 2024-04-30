@@ -729,8 +729,8 @@ static ARMCPRegInfo feature_mpu_registers[] = {
     ARM32_CP_REG_DEFINE(MPU_DATA,       15,   0,   2,   0,   0,   1,  RW, FIELD(cp15.c2_data))
     ARM32_CP_REG_DEFINE(MPU_INSN,       15,   0,   2,   0,   1,   1,  RW, FIELD(cp15.c2_insn))
 
-    ARM32_CP_REG_DEFINE(ADFSR,          15,   0,   5,   1,   0,   1,  RW, FIELD(cp15.c5_data)) // Auxiliary Data Fault Status Register
-    ARM32_CP_REG_DEFINE(AIFSR,          15,   0,   5,   1,   1,   1,  RW, FIELD(cp15.c5_insn)) // Auxiliary Instruction Fault Status Register
+    ARM32_CP_REG_DEFINE(ADFSR,          15,   0,   5,   1,   0,   1,  RW) // Auxiliary Data Fault Status Register
+    ARM32_CP_REG_DEFINE(AIFSR,          15,   0,   5,   1,   1,   1,  RW) // Auxiliary Instruction Fault Status Register
 };
 
 static ARMCPRegInfo has_mpu_fault_addr_register[] = {
