@@ -635,9 +635,12 @@ static ARMCPRegInfo feature_v7_registers[] = {
 
     // ================== Coprocessor 15 ==================
     // The params are:  name              cp, op1, crn, crm, op2,  el, extra_type, ...
-    ARM32_CP_REG_DEFINE(CSSELR,           15,   2,   0,   0,   0,   1, RW, RW_FNS(c0_csselr))              // Cache Size Selection Register
+    ARM32_CP_REG_DEFINE(CSSELR,           15,   2,   0,   0,   0,   1, RW, RW_FNS(c0_csselr)) // Cache Size Selection Register
 
-    ARM32_CP_REG_DEFINE(CP15WFIprev7,     15,   0,   7,   0,   4,   1, WO | ARM_CP_NOP)                    // Wait For Interrupt pre-v7, now NOP
+    ARM32_CP_REG_DEFINE(ADFSR,            15,   0,   5,   1,   0,   1, RW)                    // Auxiliary Data Fault Status Register
+    ARM32_CP_REG_DEFINE(AIFSR,            15,   0,   5,   1,   1,   1, RW)                    // Auxiliary Instruction Fault Status Register
+
+    ARM32_CP_REG_DEFINE(CP15WFIprev7,     15,   0,   7,   0,   4,   1, WO | ARM_CP_NOP)       // Wait For Interrupt pre-v7, now NOP
 
     // Performance Monitor Extensions
     /* We force TB end on some of these registers, even on reads
@@ -728,9 +731,6 @@ static ARMCPRegInfo feature_mpu_registers[] = {
     // The params are:  name            cp, op1, crn, crm, op2,  el,  extra_type, ...
     ARM32_CP_REG_DEFINE(MPU_DATA,       15,   0,   2,   0,   0,   1,  RW, FIELD(cp15.c2_data))
     ARM32_CP_REG_DEFINE(MPU_INSN,       15,   0,   2,   0,   1,   1,  RW, FIELD(cp15.c2_insn))
-
-    ARM32_CP_REG_DEFINE(ADFSR,          15,   0,   5,   1,   0,   1,  RW) // Auxiliary Data Fault Status Register
-    ARM32_CP_REG_DEFINE(AIFSR,          15,   0,   5,   1,   1,   1,  RW) // Auxiliary Instruction Fault Status Register
 };
 
 static ARMCPRegInfo has_mpu_fault_addr_register[] = {
