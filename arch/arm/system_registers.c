@@ -546,13 +546,6 @@ static ARMCPRegInfo general_coprocessor_registers[] = {
     // The params are:  name              cp, op1, crn, crm, op2,  el,  extra_type, ...
     ARM32_CP_REG_DEFINE(C3,               15, ANY,   3, ANY, ANY,   1,  RW, RW_FNS(c3))                 // MMU Domain access control (DACR) / MPU write buffer control
 
-/* These are introduced as multiprocessing extensions, let's keep them disabled for now
-    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1,  WO, WRITEFN(invalidate_all))
-    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1,  WO, WRITEFN(invalidate_single))
-    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1,  WO, WRITEFN(invalidate_on_asid))
-    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1,  WO, WRITEFN(invalidate_single_on_mva))
- */
-
     // crn == 5
     ARM32_CP_REG_DEFINE(DFSR,             15,   0,   5,   0,   0,   1,  RW, RW_FNS(c5_data))        // Data Fault Status Register
     ARM32_CP_REG_DEFINE(IFSR,             15,   0,   5,   0,   1,   1,  RW, RW_FNS(c5_insn))        // Instruction Fault Status Register
@@ -594,7 +587,6 @@ static ARMCPRegInfo general_coprocessor_registers[] = {
     ARM32_CP_REG_DEFINE(TLBIALL,       15,   0,   8,   7,   0,   1,  WO, WRITEFN(invalidate_all))
     ARM32_CP_REG_DEFINE(TLBIMVA,       15,   0,   8,   7,   1,   1,  WO, WRITEFN(invalidate_single))
     ARM32_CP_REG_DEFINE(TLBIASID,      15,   0,   8,   7,   2,   1,  WO, WRITEFN(invalidate_on_asid))
-    ARM32_CP_REG_DEFINE(TLBIMVAA,      15,   0,   8,   7,   3,   1,  WO, WRITEFN(invalidate_single_on_mva))
 
     // crn == 9
     ARM32_CP_REG_DEFINE(L1_C9DATA,     15,   0,   9,   0,   0,   1,  RW, FIELD(cp15.c9_data))      // L1 Cache lockdown
@@ -881,6 +873,17 @@ static ARMCPRegInfo feature_thumb2ee_registers[] = {
     ARM32_CP_REG_DEFINE(TEEHBR,           14,   6,   1,   0,   0,   1,  RW, FIELD(teehbr))         // Thumb EE Handler Base Register
 };
 
+// See ARMv7A/R manual's full list of CP15 registers for VMSA (B3.17.2) for the ones marked as "Added as part of the Multiprocessing Extensions.".
+static ARMCPRegInfo feature_v7mp_mmu_registers[] = {
+    // The params are:  name              cp, op1, crn, crm, op2,  el,  extra_type, ...
+    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1,  WO, WRITEFN(invalidate_all))            // Invalidate entire unified TLB Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1,  WO, WRITEFN(invalidate_single))         // Invalidate unified TLB entry by MVA and ASID, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1,  WO, WRITEFN(invalidate_on_asid))        // Invalidate unified TLB by ASID match Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1,  WO, WRITEFN(invalidate_single_on_mva))  // Invalidate unified TLB entry by MVA all ASID Inner Shareable
+
+    ARM32_CP_REG_DEFINE(TLBIMVAA,         15,   0,   8,   7,   3,   1,  WO, WRITEFN(invalidate_single_on_mva))  // Invalidate unified TLB entries by MVA all ASID
+};
+
 // See ARMv7A/R manual's full lists of CP15 registers for PMSA (B5.8.2) and VMSA (B3.17.2) CP15 registers for the ones marked as "Added as part of the Multiprocessing Extensions.".
 static ARMCPRegInfo feature_v7mp_registers[] = {
     // The params are:  name              cp, op1, crn, crm, op2,  el,  extra_type, ...
@@ -1074,6 +1077,9 @@ inline static int count_extra_registers(const CPUState *env)
     }
 
     if (arm_feature(env, ARM_FEATURE_V7MP)) {
+        if (!arm_feature(env, ARM_FEATURE_MPU)) {
+            extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_v7mp_mmu_registers);
+        }
         extra_regs += ARM_CP_ARRAY_COUNT_ANY(feature_v7mp_registers);
     }
 
@@ -1165,6 +1171,9 @@ inline static void populate_ttable(CPUState *env)
     }
 
     if (arm_feature(env, ARM_FEATURE_V7MP)) {
+        if (!arm_feature(env, ARM_FEATURE_MPU)) {
+            regs_array_add(env, feature_v7mp_mmu_registers);
+        }
         regs_array_add(env, feature_v7mp_registers);
     }
 
