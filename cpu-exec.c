@@ -201,6 +201,13 @@ not_found:
     /* if no translated code available, then translate it now */
     tb = tb_gen_code(env, pc, cs_base, flags, 0);
 
+    /* if tb_gen_code flushed translation blocks, ptb1 and prev_related_tb can be invalid;
+     * this is indicated by `tb_invalidated_flag` which is reset at the beginning of the current function
+     * and set when we invalidate TB (e.g. as a result of the code buffer reallocation) */
+    if (unlikely(tb_invalidated_flag)) {
+        prev_related_tb = NULL;
+        ptb1 = &tb_phys_hash[h];
+    }
 found:
     /* Move the last found TB closer to the beginning of the list,
      * but keeping related TBs sorted.

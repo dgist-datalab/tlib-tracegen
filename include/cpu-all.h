@@ -606,10 +606,6 @@ void cpu_resume_after_reset_or_init(CPUState *env);
    if no page found. */
 target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr);
 
-/* memory API */
-
-extern uintptr_t translation_cache_size;
-
 /* physical memory access */
 
 /* MMIO pages are identified by a combination of an IO device index and

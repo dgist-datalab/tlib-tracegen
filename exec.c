@@ -42,9 +42,9 @@ static int nb_tbs;
 /* any access to the tbs or the page table must use this lock */
 
 static uint8_t *code_gen_buffer;
-static uintptr_t code_gen_buffer_size;
+static uint64_t code_gen_buffer_size;
 /* threshold to flush the translated code buffer */
-static uintptr_t code_gen_buffer_max_size;
+static uint64_t code_gen_buffer_max_size;
 static uint8_t *code_gen_ptr;
 
 CPUState *cpu;
@@ -327,13 +327,17 @@ static void tlb_unprotect_code_phys(CPUState *env, ram_addr_t ram_addr, target_u
 #define mmap_lock()   do { } while(0)
 #define mmap_unlock() do { } while(0)
 
-#define DEFAULT_CODE_GEN_BUFFER_SIZE (32 * 1024 * 1024)
+extern uint64_t translation_cache_size_min;
+extern uint64_t translation_cache_size_max;
 
 static void code_gen_alloc()
 {
-    code_gen_buffer_size = translation_cache_size;
-    if (code_gen_buffer_size < MIN_CODE_GEN_BUFFER_SIZE) {
-        code_gen_buffer_size = MIN_CODE_GEN_BUFFER_SIZE;
+    if (code_gen_buffer_size < translation_cache_size_min) {
+        code_gen_buffer_size = translation_cache_size_min;
+    }
+
+    if (code_gen_buffer_size > translation_cache_size_max) {
+        code_gen_buffer_size = translation_cache_size_max;
     }
     /* The code gen buffer location may have constraints depending on
        the host cpu and OS */
@@ -343,18 +347,9 @@ static void code_gen_alloc()
         void *start = NULL;
 
         flags = MAP_PRIVATE | MAP_ANONYMOUS;
-#if defined(__x86_64__)
-        /* Cannot map more than that */
-        if (code_gen_buffer_size > (800 * 1024 * 1024)) {
-            code_gen_buffer_size = (800 * 1024 * 1024);
-        }
-#elif defined(__arm__)
-        /* Map the buffer below 32M, so we can use direct calls and branches */
+#if defined(__arm__)
         flags |= MAP_FIXED;
         start = (void *)0x01000000UL;
-        if (code_gen_buffer_size > 16 * 1024 * 1024) {
-            code_gen_buffer_size = 16 * 1024 * 1024;
-        }
 #endif
         code_gen_buffer = mmap(start, code_gen_buffer_size, PROT_WRITE | PROT_READ | PROT_EXEC, flags, -1, 0);
         // let's give some feedback about what size was actually used
@@ -371,6 +366,26 @@ static void code_gen_alloc()
     code_gen_buffer_max_size = code_gen_buffer_size - TCG_MAX_CODE_SIZE - TCG_MAX_SEARCH_SIZE;
     code_gen_max_blocks = code_gen_buffer_size / CODE_GEN_AVG_BLOCK_SIZE;
     tbs = tlib_malloc(code_gen_max_blocks * sizeof(TranslationBlock));
+}
+
+static void code_gen_expand()
+{
+    if (code_gen_buffer_size >= MAX_CODE_GEN_BUFFER_SIZE) {
+        return;
+    }
+
+    /* `code_gen_alloc` might still decide to cap the size later on */
+    tlib_printf(LOG_LEVEL_DEBUG, "Trying to expand code_gen_buffer size from %" PRIu64 " to %" PRIu64, code_gen_buffer_size, code_gen_buffer_size * 2);
+
+    /* Discard the current code buffer. This makes all generated code invalid (`tb_flush` should have been executed before) */
+    code_gen_free();
+
+    /* After increasing the size, allocate the buffer again. Note, that it might end in a different location in memory */
+    code_gen_buffer_size *= 2;
+    code_gen_alloc();
+
+    code_gen_ptr = code_gen_buffer;
+    return;
 }
 
 void code_gen_free(void)
@@ -690,6 +705,8 @@ TranslationBlock *tb_gen_code(CPUState *env, target_ulong pc, target_ulong cs_ba
     if (!tb) {
         /* flush must be done */
         tb_flush(env);
+        /* expand code gen buffer */
+        code_gen_expand();
         /* cannot fail at this point */
         tb = tb_alloc(pc);
         /* Don't forget to invalidate previous TB info.  */

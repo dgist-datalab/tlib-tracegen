@@ -499,14 +499,29 @@ void tlib_remove_breakpoint(uint64_t address)
 
 EXC_VOID_1(tlib_remove_breakpoint, uint64_t, address)
 
-uintptr_t translation_cache_size;
+uint64_t translation_cache_size_min = MIN_CODE_GEN_BUFFER_SIZE;
+uint64_t translation_cache_size_max = MAX_CODE_GEN_BUFFER_SIZE;
 
-void tlib_set_translation_cache_size(uintptr_t size)
+void tlib_set_translation_cache_configuration(uint64_t min_size, uint64_t max_size)
 {
-    translation_cache_size = size;
+    if (min_size < MIN_CODE_GEN_BUFFER_SIZE) {
+        tlib_printf(LOG_LEVEL_WARNING, "Translation cache size %" PRIu64 " is smaller than minimum allowed %" PRIu64 ". It will be clamped to minimum", min_size, MIN_CODE_GEN_BUFFER_SIZE);
+        min_size = MIN_CODE_GEN_BUFFER_SIZE;
+    }
+    translation_cache_size_min = min_size;
+    if (max_size > MAX_CODE_GEN_BUFFER_SIZE) {
+        tlib_printf(LOG_LEVEL_WARNING, "Translation cache size %" PRIu64 " is larger than maximum allowed %" PRIu64 ". It will be clamped to maximum", max_size, MAX_CODE_GEN_BUFFER_SIZE);
+        max_size = MAX_CODE_GEN_BUFFER_SIZE;
+    }
+    translation_cache_size_max = max_size;
+
+    if (translation_cache_size_min > translation_cache_size_max) {
+        tlib_abortf("Translation cache minimum size %" PRIu64 " is larger than maximum %" PRIu64, translation_cache_size_min, translation_cache_size_max);
+    }
+
 }
 
-EXC_VOID_1(tlib_set_translation_cache_size, uintptr_t, size)
+EXC_VOID_2(tlib_set_translation_cache_configuration, uint64_t, size, int, min_max)
 
 void tlib_invalidate_translation_cache()
 {

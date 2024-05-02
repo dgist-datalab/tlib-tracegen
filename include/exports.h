@@ -45,7 +45,7 @@ void tlib_set_block_begin_hook_present(uint32_t val);
 
 uint64_t tlib_get_total_executed_instructions(void);
 
-void tlib_set_translation_cache_size(uintptr_t size);
+void tlib_set_translation_cache_configuration(uint64_t min_size, uint64_t max_size);
 void tlib_invalidate_translation_cache(void);
 
 void tlib_enable_guest_profiler(int value);
