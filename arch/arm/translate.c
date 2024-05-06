@@ -6935,6 +6935,10 @@ static void gen_load_exclusive(DisasContext *s, int rt, int rt2, TCGv addr, int 
 
 static void gen_clrex(DisasContext *s)
 {
+    // We need to reset the address, for the load/store exclusive instructions to work on single-core systems
+    tcg_gen_movi_i32(cpu_exclusive_val, -1);
+    tcg_gen_movi_i32(cpu_exclusive_high, -1);
+
     gen_helper_acquire_global_memory_lock(cpu_env);
     gen_helper_cancel_reservation(cpu_env);
     gen_helper_release_global_memory_lock(cpu_env);
@@ -7011,6 +7015,9 @@ static void gen_store_exclusive(DisasContext *s, int rd, int rt, int rt2, TCGv a
     gen_set_label(fail_label);
     tcg_gen_movi_i32(cpu_R[rd], 1);
     gen_set_label(done_label);
+
+    tcg_gen_movi_i32(cpu_exclusive_val, -1);
+    tcg_gen_movi_i32(cpu_exclusive_high, -1);
 
     gen_helper_cancel_reservation(cpu_env);
     gen_helper_release_global_memory_lock(cpu_env);
