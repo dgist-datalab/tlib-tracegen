@@ -476,3 +476,15 @@ void tlib_enable_post_gpr_access_hook_on(uint32_t register_index, uint32_t value
 }
 
 EXC_VOID_2(tlib_enable_post_gpr_access_hook_on, uint32_t, register_index, uint32_t, value)
+
+void tlib_set_napot_grain(uint32_t minimal_napot_in_bytes)
+{
+    if(((minimal_napot_in_bytes & (minimal_napot_in_bytes - 1)) != 0) && (minimal_napot_in_bytes >= 8))
+    {
+        tlib_abort("PMP NAPOT size must be a power of 2 and larger than 4");
+    }
+    int grain = minimal_napot_in_bytes >> 4;
+    env->pmp_napot_grain = grain;
+}
+
+EXC_VOID_1(tlib_set_napot_grain, uint32_t, minimal_napot_in_bytes)
