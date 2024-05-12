@@ -918,67 +918,67 @@ ARMCPRegInfo aarch32_registers[] = {
 
 ARMCPRegInfo aarch32_instructions[] = {
     // The params are:  name              cp, op1, crn, crm, op2, el, extra_type, ...
-    ARM32_CP_REG_DEFINE(ATS12NSOPR,       15,   0,   7,   8,   4,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Read
-    ARM32_CP_REG_DEFINE(ATS12NSOPW,       15,   0,   7,   8,   5,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Write
-    ARM32_CP_REG_DEFINE(ATS12NSOUR,       15,   0,   7,   8,   6,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Read
-    ARM32_CP_REG_DEFINE(ATS12NSOUW,       15,   0,   7,   8,   7,   2, RW | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Write
-    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, RW | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Read
-    ARM32_CP_REG_DEFINE(ATS1CPRP,         15,   0,   7,   9,   0,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read PAN
-    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, RW | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Write
-    ARM32_CP_REG_DEFINE(ATS1CPWP,         15,   0,   7,   9,   1,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write PAN
-    ARM32_CP_REG_DEFINE(ATS1CUR,          15,   0,   7,   8,   2,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Read
-    ARM32_CP_REG_DEFINE(ATS1CUW,          15,   0,   7,   8,   3,   1, RW | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Write
-    ARM32_CP_REG_DEFINE(ATS1HR,           15,   4,   7,   8,   0,   2, RW | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Read
-    ARM32_CP_REG_DEFINE(ATS1HW,           15,   4,   7,   8,   1,   2, RW | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Write
-    ARM32_CP_REG_DEFINE(BPIALL,           15,   0,   7,   5,   6,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate All
-    ARM32_CP_REG_DEFINE(BPIALLIS,         15,   0,   7,   1,   6,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate All, Inner Shareable
-    ARM32_CP_REG_DEFINE(BPIMVA,           15,   0,   7,   5,   7,   1, RW | INSTRUCTION)  // Branch Predictor Invalidate by VA
-    ARM32_CP_REG_DEFINE(CFPRCTX,          15,   0,   7,   3,   4,   0, RW | INSTRUCTION)  // Control Flow Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(CP15DMB,          15,   0,   7,  10,   5,   0, RW | INSTRUCTION)  // Data Memory Barrier System instruction
-    ARM32_CP_REG_DEFINE(CP15DSB,          15,   0,   7,  10,   4,   0, RW | INSTRUCTION)  // Data Synchronization Barrier System instruction
-    ARM32_CP_REG_DEFINE(CP15ISB,          15,   0,   7,   5,   4,   0, RW | INSTRUCTION)  // Instruction Synchronization Barrier System instruction
-    ARM32_CP_REG_DEFINE(CPPRCTX,          15,   0,   7,   3,   7,   0, RW | INSTRUCTION)  // Cache Prefetch Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(DCCIMVAC,         15,   0,   7,  14,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean and Invalidate by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCISW,           15,   0,   7,  14,   2,   1, RW | INSTRUCTION)  // Data Cache line Clean and Invalidate by Set/Way
-    ARM32_CP_REG_DEFINE(DCCMVAC,          15,   0,   7,  10,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean by VA to PoC
-    ARM32_CP_REG_DEFINE(DCCMVAU,          15,   0,   7,  11,   1,   1, RW | INSTRUCTION)  // Data Cache line Clean by VA to PoU
-    ARM32_CP_REG_DEFINE(DCCSW,            15,   0,   7,  10,   2,   1, RW | INSTRUCTION)  // Data Cache line Clean by Set/W ay
-    ARM32_CP_REG_DEFINE(DCIMVAC,          15,   0,   7,   6,   1,   1, RW | INSTRUCTION)  // Data Cache line Invalidate by VA to PoC
-    ARM32_CP_REG_DEFINE(DCISW,            15,   0,   7,   6,   2,   1, RW | INSTRUCTION)  // Data Cache line Invalidate by Set/Way
-    ARM32_CP_REG_DEFINE(DTLBIALL,         15,   0,   8,   6,   0,   1, RW | INSTRUCTION)  // Data TLB Invalidate All
-    ARM32_CP_REG_DEFINE(DTLBIASID,        15,   0,   8,   6,   2,   1, RW | INSTRUCTION)  // Data TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(DTLBIMVA,         15,   0,   8,   6,   1,   1, RW | INSTRUCTION)  // Data TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(DVPRCTX,          15,   0,   7,   3,   5,   0, RW | INSTRUCTION)  // Data V alue Prediction Restriction by Context
-    ARM32_CP_REG_DEFINE(ICIALLU,          15,   0,   7,   5,   0,   1, RW | INSTRUCTION)  // Instruction Cache Invalidate All to PoU
-    ARM32_CP_REG_DEFINE(ICIALLUIS,        15,   0,   7,   1,   0,   1, RW | INSTRUCTION)  // Instruction Cache Invalidate All to PoU, Inner Shareable
-    ARM32_CP_REG_DEFINE(ICIMVAU,          15,   0,   7,   5,   1,   1, RW | INSTRUCTION)  // Instruction Cache line Invalidate by VA to PoU AArch32 System Instructions
-    ARM32_CP_REG_DEFINE(ITLBIALL,         15,   0,   8,   5,   0,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate All
-    ARM32_CP_REG_DEFINE(ITLBIASID,        15,   0,   8,   5,   2,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(ITLBIMVA,         15,   0,   8,   5,   1,   1, RW | INSTRUCTION)  // Instruction TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(TLBIALL,          15,   0,   8,   7,   0,   1, RW | INSTRUCTION)  // TLB Invalidate All
-    ARM32_CP_REG_DEFINE(TLBIALLH,         15,   4,   8,   7,   0,   2, RW | INSTRUCTION)  // TLB Invalidate All, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIALLHIS,       15,   4,   8,   3,   0,   2, RW | INSTRUCTION)  // TLB Invalidate All, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1, RW | INSTRUCTION)  // TLB Invalidate All, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIALLNSNH,      15,   4,   8,   7,   4,   2, RW | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp
-    ARM32_CP_REG_DEFINE(TLBIALLNSNHIS,    15,   4,   8,   3,   4,   2, RW | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIASID,         15,   0,   8,   7,   2,   1, RW | INSTRUCTION)  // TLB Invalidate by ASID match
-    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1, RW | INSTRUCTION)  // TLB Invalidate by ASID match, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIIPAS2,        15,   4,   8,   4,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2
-    ARM32_CP_REG_DEFINE(TLBIIPAS2IS,      15,   4,   8,   0,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIIPAS2L,       15,   4,   8,   4,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level
-    ARM32_CP_REG_DEFINE(TLBIIPAS2LIS,     15,   4,   8,   0,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVA,          15,   0,   8,   7,   1,   1, RW | INSTRUCTION)  // TLB Invalidate by VA
-    ARM32_CP_REG_DEFINE(TLBIMVAA,         15,   0,   8,   7,   3,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID
-    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAAL,        15,   0,   8,   7,   7,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level
-    ARM32_CP_REG_DEFINE(TLBIMVAALIS,      15,   0,   8,   3,   7,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAH,         15,   4,   8,   7,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIMVAHIS,       15,   4,   8,   3,   1,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVAL,         15,   0,   8,   7,   5,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level
-    ARM32_CP_REG_DEFINE(TLBIMVALH,        15,   4,   8,   7,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode
-    ARM32_CP_REG_DEFINE(TLBIMVALHIS,      15,   4,   8,   3,   5,   2, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode, Inner Shareable
-    ARM32_CP_REG_DEFINE(TLBIMVALIS,       15,   0,   8,   3,   5,   1, RW | INSTRUCTION)  // TLB Invalidate by VA, Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(ATS12NSOPR,       15,   0,   7,   8,   4,   2, WO | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Read
+    ARM32_CP_REG_DEFINE(ATS12NSOPW,       15,   0,   7,   8,   5,   2, WO | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only PL1 Write
+    ARM32_CP_REG_DEFINE(ATS12NSOUR,       15,   0,   7,   8,   6,   2, WO | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Read
+    ARM32_CP_REG_DEFINE(ATS12NSOUW,       15,   0,   7,   8,   7,   2, WO | INSTRUCTION)  // Address Translate Stages 1 and 2 Non-secure Only Unprivileged Write
+    ARM32_CP_REG_DEFINE(ATS1CPR,          15,   0,   7,   8,   0,   1, WO | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Read
+    ARM32_CP_REG_DEFINE(ATS1CPRP,         15,   0,   7,   9,   0,   1, WO | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Read PAN
+    ARM32_CP_REG_DEFINE(ATS1CPW,          15,   0,   7,   8,   1,   1, WO | INSTRUCTION, WRITEFN(ats1))  // Address Translate Stage 1 Current state PL1 Write
+    ARM32_CP_REG_DEFINE(ATS1CPWP,         15,   0,   7,   9,   1,   1, WO | INSTRUCTION)  // Address Translate Stage 1 Current state PL1 Write PAN
+    ARM32_CP_REG_DEFINE(ATS1CUR,          15,   0,   7,   8,   2,   1, WO | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Read
+    ARM32_CP_REG_DEFINE(ATS1CUW,          15,   0,   7,   8,   3,   1, WO | INSTRUCTION)  // Address Translate Stage 1 Current state Unprivileged Write
+    ARM32_CP_REG_DEFINE(ATS1HR,           15,   4,   7,   8,   0,   2, WO | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Read
+    ARM32_CP_REG_DEFINE(ATS1HW,           15,   4,   7,   8,   1,   2, WO | INSTRUCTION)  // Address Translate Stage 1 Hyp mode Write
+    ARM32_CP_REG_DEFINE(BPIALL,           15,   0,   7,   5,   6,   1, WO | INSTRUCTION)  // Branch Predictor Invalidate All
+    ARM32_CP_REG_DEFINE(BPIALLIS,         15,   0,   7,   1,   6,   1, WO | INSTRUCTION)  // Branch Predictor Invalidate All, Inner Shareable
+    ARM32_CP_REG_DEFINE(BPIMVA,           15,   0,   7,   5,   7,   1, WO | INSTRUCTION)  // Branch Predictor Invalidate by VA
+    ARM32_CP_REG_DEFINE(CFPRCTX,          15,   0,   7,   3,   4,   0, WO | INSTRUCTION)  // Control Flow Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(CP15DMB,          15,   0,   7,  10,   5,   0, WO | INSTRUCTION)  // Data Memory Barrier System instruction
+    ARM32_CP_REG_DEFINE(CP15DSB,          15,   0,   7,  10,   4,   0, WO | INSTRUCTION)  // Data Synchronization Barrier System instruction
+    ARM32_CP_REG_DEFINE(CP15ISB,          15,   0,   7,   5,   4,   0, WO | INSTRUCTION)  // Instruction Synchronization Barrier System instruction
+    ARM32_CP_REG_DEFINE(CPPRCTX,          15,   0,   7,   3,   7,   0, WO | INSTRUCTION)  // Cache Prefetch Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(DCCIMVAC,         15,   0,   7,  14,   1,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Clean and Invalidate by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCISW,           15,   0,   7,  14,   2,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Clean and Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(DCCMVAC,          15,   0,   7,  10,   1,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Clean by VA to PoC
+    ARM32_CP_REG_DEFINE(DCCMVAU,          15,   0,   7,  11,   1,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Clean by VA to PoU
+    ARM32_CP_REG_DEFINE(DCCSW,            15,   0,   7,  10,   2,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Clean by Set/W ay
+    ARM32_CP_REG_DEFINE(DCIMVAC,          15,   0,   7,   6,   1,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Invalidate by VA to PoC
+    ARM32_CP_REG_DEFINE(DCISW,            15,   0,   7,   6,   2,   1, WO | INSTRUCTION | IGNORED)  // Data Cache line Invalidate by Set/Way
+    ARM32_CP_REG_DEFINE(DTLBIALL,         15,   0,   8,   6,   0,   1, WO | INSTRUCTION)  // Data TLB Invalidate All
+    ARM32_CP_REG_DEFINE(DTLBIASID,        15,   0,   8,   6,   2,   1, WO | INSTRUCTION)  // Data TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(DTLBIMVA,         15,   0,   8,   6,   1,   1, WO | INSTRUCTION)  // Data TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(DVPRCTX,          15,   0,   7,   3,   5,   0, WO | INSTRUCTION)  // Data V alue Prediction Restriction by Context
+    ARM32_CP_REG_DEFINE(ICIALLU,          15,   0,   7,   5,   0,   1, WO | INSTRUCTION)  // Instruction Cache Invalidate All to PoU
+    ARM32_CP_REG_DEFINE(ICIALLUIS,        15,   0,   7,   1,   0,   1, WO | INSTRUCTION)  // Instruction Cache Invalidate All to PoU, Inner Shareable
+    ARM32_CP_REG_DEFINE(ICIMVAU,          15,   0,   7,   5,   1,   1, WO | INSTRUCTION)  // Instruction Cache line Invalidate by VA to PoU AArch32 System Instructions
+    ARM32_CP_REG_DEFINE(ITLBIALL,         15,   0,   8,   5,   0,   1, WO | INSTRUCTION)  // Instruction TLB Invalidate All
+    ARM32_CP_REG_DEFINE(ITLBIASID,        15,   0,   8,   5,   2,   1, WO | INSTRUCTION)  // Instruction TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(ITLBIMVA,         15,   0,   8,   5,   1,   1, WO | INSTRUCTION)  // Instruction TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(TLBIALL,          15,   0,   8,   7,   0,   1, WO | INSTRUCTION)  // TLB Invalidate All
+    ARM32_CP_REG_DEFINE(TLBIALLH,         15,   4,   8,   7,   0,   2, WO | INSTRUCTION)  // TLB Invalidate All, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIALLHIS,       15,   4,   8,   3,   0,   2, WO | INSTRUCTION)  // TLB Invalidate All, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIALLIS,        15,   0,   8,   3,   0,   1, WO | INSTRUCTION)  // TLB Invalidate All, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIALLNSNH,      15,   4,   8,   7,   4,   2, WO | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp
+    ARM32_CP_REG_DEFINE(TLBIALLNSNHIS,    15,   4,   8,   3,   4,   2, WO | INSTRUCTION)  // TLB Invalidate All, Non-Secure Non-Hyp, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIASID,         15,   0,   8,   7,   2,   1, WO | INSTRUCTION)  // TLB Invalidate by ASID match
+    ARM32_CP_REG_DEFINE(TLBIASIDIS,       15,   0,   8,   3,   2,   1, WO | INSTRUCTION)  // TLB Invalidate by ASID match, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIIPAS2,        15,   4,   8,   4,   1,   2, WO | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2
+    ARM32_CP_REG_DEFINE(TLBIIPAS2IS,      15,   4,   8,   0,   1,   2, WO | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIIPAS2L,       15,   4,   8,   4,   5,   2, WO | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level
+    ARM32_CP_REG_DEFINE(TLBIIPAS2LIS,     15,   4,   8,   0,   5,   2, WO | INSTRUCTION)  // TLB Invalidate by Intermediate Physical Address, Stage 2, Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVA,          15,   0,   8,   7,   1,   1, WO | INSTRUCTION)  // TLB Invalidate by VA
+    ARM32_CP_REG_DEFINE(TLBIMVAA,         15,   0,   8,   7,   3,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, All ASID
+    ARM32_CP_REG_DEFINE(TLBIMVAAIS,       15,   0,   8,   3,   3,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAAL,        15,   0,   8,   7,   7,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level
+    ARM32_CP_REG_DEFINE(TLBIMVAALIS,      15,   0,   8,   3,   7,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, All ASID , Last level, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAH,         15,   4,   8,   7,   1,   2, WO | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIMVAHIS,       15,   4,   8,   3,   1,   2, WO | INSTRUCTION)  // TLB Invalidate by VA, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAIS,        15,   0,   8,   3,   1,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVAL,         15,   0,   8,   7,   5,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, Last level
+    ARM32_CP_REG_DEFINE(TLBIMVALH,        15,   4,   8,   7,   5,   2, WO | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode
+    ARM32_CP_REG_DEFINE(TLBIMVALHIS,      15,   4,   8,   3,   5,   2, WO | INSTRUCTION)  // TLB Invalidate by VA, Last level, Hyp mode, Inner Shareable
+    ARM32_CP_REG_DEFINE(TLBIMVALIS,       15,   0,   8,   3,   5,   1, WO | INSTRUCTION)  // TLB Invalidate by VA, Last level, Inner Shareable
 };
 
 ARMCPRegInfo aarch64_registers[] = {
