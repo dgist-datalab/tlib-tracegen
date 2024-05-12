@@ -2000,6 +2000,7 @@ ARMCPRegInfo cortex_r52_regs[] =
     ARM32_CP_REG_DEFINE(IMP_FLASHIFREGIONR,  15,   0,  15,   0,   1,  1, RW) // Flash Interface Region Register
     ARM32_CP_REG_DEFINE(IMP_BUILDOPTR,       15,   0,  15,   2,   0,  1, RO) // Build Options Register
     ARM32_CP_REG_DEFINE(IMP_PINOPTR,         15,   0,  15,   2,   7,  1, RO) // Pin Options Register
+    ARM32_CP_REG_DEFINE(IMP_DCIMALL,         15,   0,  15,   5,   0,  1, WO | INSTRUCTION | IGNORED)  // Data Cache line Invalidate All
     ARM32_CP_REG_DEFINE(IMP_CBAR,            15,   1,  15,   3,   0,  1, RO) // Configuration Base Address Register
     ARM32_CP_REG_DEFINE(IMP_QOSR,            15,   1,  15,   3,   1,  1, RW) // Quality Of Service Register
     ARM32_CP_REG_DEFINE(IMP_BUSTIMEOUTR,     15,   1,  15,   3,   2,  1, RW) // Bus Timeout Register
