@@ -8,11 +8,9 @@ void tlib_set_irq_pending_bit(uint32_t irq, uint32_t value) {
 
 EXC_VOID_2(tlib_set_irq_pending_bit, uint32_t, irq, uint32_t, value)
 
-void tlib_update_execution_mode(uint32_t mode)
+void tlib_set_single_step(uint32_t enabled)
 {
-    // Mode is defined in ExecutionMode.cs in renode-infrastructure:
-    //   0: Continuous, 1: SingleStepNonBlocking, 2: SingleStepBlocking
-    cpu->singlestep_enabled = mode == 1 || mode == 2;
+    cpu->singlestep_enabled = enabled;
 }
 
-EXC_VOID_1(tlib_update_execution_mode, uint32_t, mode)
+EXC_VOID_1(tlib_set_single_step, uint32_t, enabled)
