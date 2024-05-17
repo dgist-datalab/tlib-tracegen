@@ -579,7 +579,7 @@ static const struct arm_cpu_t arm_cpu_names[] = {
     { ARM_CPUID_ARM7TDMI,  "arm7tdmi" },   { ARM_CPUID_ARM926,      "arm926" },     { ARM_CPUID_ARM946,     "arm946" },
     { ARM_CPUID_ARM1026,   "arm1026" },    { ARM_CPUID_ARM1136,     "arm1136" },    { ARM_CPUID_ARM1136_R2, "arm1136-r2" },
     { ARM_CPUID_ARM1176,   "arm1176" },    { ARM_CPUID_ARM11MPCORE, "arm11mpcore" },
-    
+
     // TODO: M0+ shouldn't be the same as M3. It doesn't support hardware division.
     { ARM_CPUID_CORTEXM0,  "cortex-m0" },  { ARM_CPUID_CORTEXM3,    "cortex-m0+" }, { ARM_CPUID_CORTEXM3,   "cortex-m1" },
     { ARM_CPUID_CORTEXM23, "cortex-m23" }, { ARM_CPUID_CORTEXM3,    "cortex-m3" },  { ARM_CPUID_CORTEXM33,  "cortex-m33" },
