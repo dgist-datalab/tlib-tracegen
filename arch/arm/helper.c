@@ -188,6 +188,9 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         env->cp15.c0_ccsid[2] = 0xf0000000; /* No L2 icache. */
         env->cp15.c1_sys = 0x00c50078;
         break;
+    // treating A5 as A9 is a simplification and should
+    // be improved in the future
+    case ARM_CPUID_CORTEXA5:
     case ARM_CPUID_CORTEXA9:
         set_feature(env, ARM_FEATURE_V4T);
         set_feature(env, ARM_FEATURE_V5);
@@ -589,6 +592,7 @@ static const struct arm_cpu_t arm_cpu_names[] = {
 
     { ARM_CPUID_CORTEXR5,  "cortex-r5" },  { ARM_CPUID_CORTEXR5F,   "cortex-r5f" }, { ARM_CPUID_CORTEXR8,   "cortex-r8" },
 
+    { ARM_CPUID_CORTEXA5,  "cortex-a5" },
     { ARM_CPUID_CORTEXA8,  "cortex-a8" },  { ARM_CPUID_CORTEXA9,    "cortex-a9" },  { ARM_CPUID_CORTEXA15,  "cortex-a15" },
 
     { ARM_CPUID_TI925T,    "ti925t" },     { ARM_CPUID_PXA250,      "pxa250" },     { ARM_CPUID_SA1100,     "sa1100" },
