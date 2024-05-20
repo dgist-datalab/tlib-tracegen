@@ -804,8 +804,8 @@ static void gen_arith(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2)
 #elif defined(TARGET_RISCV64)
         tcg_gen_andi_tl(source2, source2, BITMANIP_SHAMT_MASK);
 #endif
-        tcg_gen_andi_tl(source2, source2, 1);
         tcg_gen_shr_tl(source1, source1, source2);
+        tcg_gen_andi_tl(source1, source1, 1);
         break;
     case OPC_RISC_BINV:
         if (!ensure_additional_extension(dc, RISCV_FEATURE_ZBS)) {
