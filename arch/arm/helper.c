@@ -1521,7 +1521,37 @@ static int get_mpu_subregion_number(uint32_t region_base_address, uint32_t regio
     return (address - region_base_address) / subregion_size;
 }
 
-static int get_phys_addr_mpu(CPUState *env, uint32_t address, int access_type, int is_user, uint32_t *phys_ptr, int *prot)
+static bool page_with_address_is_fully_covered_by_consistent_mpu_subregions(uint32_t subregion_disable_mask, uint32_t region_base_address, uint32_t region_size, uint32_t address)
+{
+    int i, first_subregion_number, last_subregion_number;
+    uint32_t first_subregion_state;
+    uint32_t page_start = address & TARGET_PAGE_MASK;
+    uint32_t page_size = TARGET_PAGE_SIZE;
+
+    if (region_base_address > page_start || region_base_address + region_size < page_start + page_size) {
+        // No need to check particular subregions as a page is not contained within the whole region
+        return false;
+    }
+
+    first_subregion_number = get_mpu_subregion_number(region_base_address, region_size, page_start);
+    last_subregion_number = get_mpu_subregion_number(region_base_address, region_size, page_start + page_size - 1);
+
+    if (first_subregion_number == last_subregion_number) {
+        return true;
+    }
+
+    first_subregion_state = !(subregion_disable_mask & (1 << first_subregion_number));
+    for (i = first_subregion_number + 1; i <= last_subregion_number; i++) {
+        if (first_subregion_state != !(subregion_disable_mask & (1 << i))) {
+            // There are mixed disabled and enabled subregions covering a single page
+            return false;
+        }
+    }
+    return true;
+}
+
+static int get_phys_addr_mpu(CPUState *env, uint32_t address, int access_type, int is_user, uint32_t *phys_ptr, int *prot,
+                             target_ulong *page_size)
 {
     int n;
     uint32_t base;
@@ -1559,12 +1589,24 @@ static int get_phys_addr_mpu(CPUState *env, uint32_t address, int access_type, i
         /* Check if the region is enabled */
         if (address >= base && address <= base + mask) {
             /* Check subregions, only if region size is equal to or bigger than 256 bytes (region size = 2^size) */
-            if (size >= 8 && (env->cp15.c6_subregion_disable[n] & (1 << get_mpu_subregion_number(base, size, address)))) {
-                /* Subregion containing this address is disabled, try to match this address to a different region */
-                continue;
+            if (size >= 8) {
+                if (!page_with_address_is_fully_covered_by_consistent_mpu_subregions(env->cp15.c6_subregion_disable[n], base, 1 << size, address)) {
+                    /* MPU subregions with the same state (enabled/disabled) don't cover the whole page.
+                    * Setting page size != TARGET_PAGE_SIZE effectively makes the tlb page entry one-shot:
+                    * Thanks to this every access to this page will be verified against MPU.
+                    */
+                    *page_size = 0;
+                }
+                if (env->cp15.c6_subregion_disable[n] & (1 << get_mpu_subregion_number(base, size, address))) {
+                    /* Subregion containing this address is disabled, try to match this address to a different region. */
+                    continue;
+                }
             } else {
-                break;
+                /* The page is not fully covered by a single MPU region */
+                *page_size = 0;
             }
+
+            break;
         }
     }
 
@@ -1788,8 +1830,15 @@ inline int get_phys_addr(CPUState *env, uint32_t address, int access_type, int i
         *page_size = TARGET_PAGE_SIZE;
         return TRANSLATE_SUCCESS;
     } else if (arm_feature(env, ARM_FEATURE_MPU)) {
+        // Set default page_size for MPU background fault checks.
+        // Size of region for background mappings is bigger than TARGET_PAGE_SIZE
+        // and our TLB does not support large pages (tlb_add_large_page is suboptimal) so it's a sane default.
+        // We could also extend pmsav7_check_default_mapping and cortexm_check_default_mapping 
+        // to return region size but it doesn't bring any advantage.
+        // If MPU uses more granular permissions, it will result in `TLB_ONE_SHOT` tlb entry
+        // on successful translation.
         *page_size = TARGET_PAGE_SIZE;
-        return get_phys_addr_mpu(env, address, access_type, is_user, phys_ptr, prot);
+        return get_phys_addr_mpu(env, address, access_type, is_user, phys_ptr, prot, page_size);
     } else if (env->cp15.c1_sys & (1 << 23)) {
         return get_phys_addr_v6(env, address, access_type, is_user, phys_ptr, prot, page_size);
     } else {
