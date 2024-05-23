@@ -133,17 +133,23 @@ void cpsr_write(CPUState *env, uint32_t val, uint32_t mask, CPSRWriteType write_
     bool change_mode = (env->uncached_cpsr ^ val) & mode_mask;
     bool normal_exec = write_type != CPSRWriteRaw;
 
-    if (normal_exec && change_mode) {
-        uint32_t current_mode = env->uncached_cpsr & mode_mask;
+    if (change_mode) {
         uint32_t target_mode = val & mode_mask;
 
-        // if target mode is invalid do not change the mode and set CPSR_IL
-        if (!is_target_mode_valid(env, current_mode, target_mode, write_type)) {
-            mask = (mask & ~CPSR_M) | CPSR_IL;
-            val |= CPSR_IL;
-        }
+        if (normal_exec) {
+            uint32_t current_mode = env->uncached_cpsr & mode_mask;
 
-        switch_mode(env, target_mode);
+            // if target mode is invalid do not change the mode and set CPSR_IL
+            if (!is_target_mode_valid(env, current_mode, target_mode, write_type)) {
+                mask = (mask & ~CPSR_M) | CPSR_IL;
+                val |= CPSR_IL;
+            }
+
+            switch_mode(env, target_mode);
+        } else {
+            // Trust the received target_mode, and don't verify it with `is_target_mode_valid`
+            tlib_on_execution_mode_changed(arm_cpu_mode_to_el(env, target_mode), arm_is_secure(env));
+        }
     }
 
     mask &= ~CACHED_CPSR_BITS;
