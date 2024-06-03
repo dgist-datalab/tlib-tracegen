@@ -840,7 +840,7 @@ target_ulong helper_sret(CPUState *env, target_ulong cpu_pc_deb)
     sstatus =
         set_field(sstatus, (env->privilege_architecture >= RISCV_PRIV1_10) ? SSTATUS_SIE : 1 << prev_priv,
             get_field(sstatus, SSTATUS_SPIE));
-    sstatus = set_field(sstatus, SSTATUS_SPIE, 0);
+    sstatus = set_field(sstatus, SSTATUS_SPIE, 1);
     sstatus = set_field(sstatus, SSTATUS_SPP, prev_priv);
     riscv_set_mode(env, prev_priv);
     csr_write_helper(env, sstatus, CSR_SSTATUS);
@@ -873,7 +873,7 @@ target_ulong helper_mret(CPUState *env, target_ulong cpu_pc_deb)
     mstatus =
         set_field(mstatus, env->privilege_architecture >= RISCV_PRIV1_10 ? MSTATUS_MIE : 1 << prev_priv,
             get_field(mstatus, MSTATUS_MPIE));
-    mstatus = set_field(mstatus, MSTATUS_MPIE, 0);
+    mstatus = set_field(mstatus, MSTATUS_MPIE, 1);
     mstatus = set_field(mstatus, MSTATUS_MPP, riscv_has_ext(env, RISCV_FEATURE_RVU) ? PRV_U : PRV_M);
     mstatus = set_field(mstatus, MSTATUS_MPP, PRV_U);
     riscv_set_mode(env, prev_priv);
