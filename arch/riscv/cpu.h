@@ -309,7 +309,8 @@ enum riscv_additional_features {
 enum privilege_architecture {
     RISCV_PRIV1_09,
     RISCV_PRIV1_10,
-    RISCV_PRIV1_11
+    RISCV_PRIV1_11,
+    RISCV_PRIV1_12,
 };
 
 // The enum encodes the fmt field of opcode

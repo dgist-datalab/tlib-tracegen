@@ -130,8 +130,8 @@ EXC_INT_1(uint32_t, tlib_is_feature_allowed, uint32_t, feature_bit)
 
 void tlib_set_privilege_architecture(int32_t privilege_architecture)
 {
-    if (privilege_architecture > RISCV_PRIV1_11) {
-        tlib_abort("Invalid privilege architecture set. Highest suppported version is 1.11");
+    if (privilege_architecture > RISCV_PRIV1_12) {
+        tlib_abort("Invalid privilege architecture set. Highest supported version is 1.12");
     }
     cpu->privilege_architecture = privilege_architecture;
 }
