@@ -1089,7 +1089,7 @@ int cpu_breakpoint_insert(CPUState *env, target_ulong pc, int flags, CPUBreakpoi
     return 0;
 }
 
-void interrupt_current_translation_block(CPUState *env, int exeception_type)
+void interrupt_current_translation_block(CPUState *env, int exception_type)
 {
     target_ulong pc, cs_base;
     int cpu_flags;
@@ -1098,7 +1098,7 @@ void interrupt_current_translation_block(CPUState *env, int exeception_type)
 
     tb = tb_find_pc((uintptr_t)global_retaddr);
     if (tb != 0) {
-        executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, (uintptr_t)global_retaddr, exeception_type != EXCP_WATCHPOINT);
+        executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, (uintptr_t)global_retaddr, exception_type != EXCP_WATCHPOINT);
     }
 
     cpu_get_tb_cpu_state(cpu, &pc, &cs_base, &cpu_flags);
@@ -1110,7 +1110,7 @@ void interrupt_current_translation_block(CPUState *env, int exeception_type)
         tlib_on_block_finished(pc, executed_instructions);
     }
 
-    cpu->exception_index = exeception_type;
+    cpu->exception_index = exception_type;
     longjmp(cpu->jmp_env, 1);
 }
 
