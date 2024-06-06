@@ -57,6 +57,13 @@ uint32_t HELPER(prepare_block_for_execution)(void *tb)
 {
     cpu->current_tb = (TranslationBlock *)tb;
 
+    if(unlikely(cpu->exception_index >= 0)) {
+        // Exit the current block if a exception is pending. This will be true if a block interrupt was requested
+        // at the end of the previous block, but couldn't be handled there. See `interrupt_current_translation_block`
+        // for reason why that could happen.
+        return 1;
+    }
+
     if (cpu->exit_request != 0) {
         return cpu->exit_request;
     }
