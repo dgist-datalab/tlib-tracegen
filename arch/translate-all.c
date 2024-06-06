@@ -347,9 +347,9 @@ void cpu_gen_code(CPUState *env, TranslationBlock *tb, int *gen_code_size_ptr, i
     *search_size_ptr = search_size;
 }
 
-/* The cpu state corresponding to 'searched_pc' is restored.
- */
-int cpu_restore_state_from_tb(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc)
+/* If `skip_current_instruction` is true state will be restored to the NEXT instruction after the found instruction (if the found instruction is not the last one in the block)
+  */
+static inline int cpu_restore_state_from_tb_ex(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc, bool skip_current_instruction)
 {
     target_ulong data[TARGET_INSN_START_WORDS] = { tb->pc };
     uintptr_t host_pc = (uintptr_t)tb->tc_ptr;
@@ -368,20 +368,27 @@ int cpu_restore_state_from_tb(CPUState *env, TranslationBlock *tb, uintptr_t sea
         }
         host_pc += decode_sleb128(&p);
         if (host_pc > searched_pc) {
-            goto found;
+            if (skip_current_instruction) {                
+                skip_current_instruction = false;
+                continue;
+            }
+
+            restore_state_to_opc(env, tb, data);
+            return i;
         }
     }
     return -1;
-
- found:
-    restore_state_to_opc(env, tb, data);
-
-    return i;
 }
 
-int cpu_restore_state_and_restore_instructions_count(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc, bool include_last_instruction)
+/* The cpu state corresponding to 'searched_pc' is restored.
+ */
+int cpu_restore_state_from_tb(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc)
 {
-    int executed_instructions = cpu_restore_state_from_tb(env, tb, searched_pc);
+    return cpu_restore_state_from_tb_ex(env, tb, searched_pc, false);
+}
+
+static inline int adjust_instruction_count(TranslationBlock *tb, bool include_last_instruction, int executed_instructions)
+{
     if(executed_instructions > 0 && !include_last_instruction) {
         executed_instructions--;
     }
@@ -391,6 +398,16 @@ int cpu_restore_state_and_restore_instructions_count(CPUState *env, TranslationB
         tb->instructions_count_dirty = 0;
     }
     return executed_instructions;
+}
+
+int cpu_restore_state_and_restore_instructions_count(CPUState *env, TranslationBlock *tb, uintptr_t searched_pc, bool include_last_instruction)
+{
+    return adjust_instruction_count(tb, include_last_instruction, cpu_restore_state_from_tb_ex(env, tb, searched_pc, false));
+}
+
+int cpu_restore_state_to_next_instruction(CPUState *env, struct TranslationBlock *tb, uintptr_t searched_pc)
+{
+    return adjust_instruction_count(tb, false, cpu_restore_state_from_tb_ex(env, tb, searched_pc, true));
 }
 
 void cpu_restore_state(CPUState *env, void *retaddr) {

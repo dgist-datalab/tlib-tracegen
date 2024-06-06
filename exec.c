@@ -1095,10 +1095,28 @@ void interrupt_current_translation_block(CPUState *env, int exception_type)
     int cpu_flags;
     TranslationBlock *tb;
     int executed_instructions = -1;
+    uintptr_t host_pc = (uintptr_t)global_retaddr;
 
-    tb = tb_find_pc((uintptr_t)global_retaddr);
+    tb = tb_find_pc(host_pc);
     if (tb != 0) {
-        executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, (uintptr_t)global_retaddr, exception_type != EXCP_WATCHPOINT);
+        if (exception_type == EXCP_WATCHPOINT) {
+            executed_instructions = cpu_restore_state_and_restore_instructions_count(cpu, tb, host_pc, false);
+        } else {
+            // To prevent some unwanted side effects caused by executing the first part of the instruction twice
+            // the CPU state is restored to the first instruction after the current one. This will cause
+            // the program to skip executing the rest of the host instructions that make up the current
+            // guest instruction.
+            executed_instructions = cpu_restore_state_to_next_instruction(cpu, tb, host_pc);
+        }
+    }
+
+    if(executed_instructions == -1) {
+        // State could not be restored because either:
+        // * Restoring to the next instruction was requested, but the last instruction in the block is currently being executed
+        // * This function was not called from generated code
+        // Either way we cannot restore CPU's state so the interrupt will be handled at the start of the next executed block
+        cpu->exception_index = exception_type;
+        return;
     }
 
     cpu_get_tb_cpu_state(cpu, &pc, &cs_base, &cpu_flags);
