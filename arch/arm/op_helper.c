@@ -227,13 +227,28 @@ void HELPER(cpsr_write)(uint32_t val, uint32_t mask)
 uint32_t HELPER(get_user_reg)(uint32_t regno)
 {
     uint32_t val;
+    /*
+     * We need to know the current mode, to update registers immediately
+     * if we are in the correct mode already (User or System).
+     * Just storing values in banks means nothing if the changes aren't propagated
+     */
+    int mode = cpu_get_current_execution_mode();
 
     if (regno == 13) {
         val = env->banked_r13[0];
+        if(mode == ARM_CPU_MODE_USR || mode == ARM_CPU_MODE_SYS) {
+            env->regs[13] = env->banked_r13[0];
+        }
     } else if (regno == 14) {
         val = env->banked_r14[0];
+        if(mode == ARM_CPU_MODE_USR || mode == ARM_CPU_MODE_SYS) {
+            env->regs[14] = env->banked_r14[0];
+        }
     } else if (regno >= 8 && (env->uncached_cpsr & 0x1f) == ARM_CPU_MODE_FIQ) {
         val = env->usr_regs[regno - 8];
+        if(mode == ARM_CPU_MODE_USR || mode == ARM_CPU_MODE_SYS) {
+            env->regs[regno] = env->usr_regs[regno - 8];
+        }
     } else {
         val = env->regs[regno];
     }
