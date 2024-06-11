@@ -8159,6 +8159,8 @@ static bool op_stm(DisasContext *s, arg_ldst_block *a, int min_n)
         }
 
         if (user && i != 15) {
+            // If we are in User or System mode here, the behaviour could be CONSTRAINED UNPREDICTABLE
+            // However, in our implementation, this is a valid instruction (as Zephyr expects this)
             tmp = tcg_temp_new_i32();
             gen_helper_get_user_reg(tmp, cpu_env, tcg_constant_i32(i));
         } else {
@@ -8244,6 +8246,8 @@ static bool do_ldm(DisasContext *s, arg_ldst_block *a, int min_n)
         tmp = tcg_temp_new_i32();
         gen_aa32_ld_i32(s, tmp, addr, mem_idx, MO_UL | MO_ALIGN);
         if (user) {
+            // If we are in User or System mode here, the behaviour could be UNPREDICTABLE
+            // However, in our implementation, this is a valid instruction (as Zephyr expects this)
             gen_helper_set_user_reg(cpu_env, tcg_constant_i32(i), tmp);
             tcg_temp_free_i32(tmp);
         } else if (i == a->rn) {
