@@ -639,6 +639,11 @@ static ARMCPRegInfo feature_v7_registers[] = {
     // The params are:  name              cp, op1, crn, crm, op2,  el, extra_type, ...
     ARM32_CP_REG_DEFINE(CSSELR,           15,   2,   0,   0,   0,   1, RW, RW_FNS(c0_csselr)) // Cache Size Selection Register
 
+    // REVIDR register is an additional minor revision information which isn't specified even
+    // in the specific CPU model's manual (e.g. Cortex-R8). It's a MIDR alias if not implemented
+    // which is why the `cp15.c0_cpuid` field provides a value to it.
+    ARM32_CP_REG_DEFINE(REVIDR,           15,   0,   0,   0,   6,   1, RO, FIELD(cp15.c0_cpuid)) // Revision ID Register
+
     ARM32_CP_REG_DEFINE(ADFSR,            15,   0,   5,   1,   0,   1, RW)                    // Auxiliary Data Fault Status Register
     ARM32_CP_REG_DEFINE(AIFSR,            15,   0,   5,   1,   1,   1, RW)                    // Auxiliary Instruction Fault Status Register
 
@@ -666,6 +671,10 @@ static ARMCPRegInfo feature_v7_registers[] = {
     ARM32_CP_REG_DEFINE(PMUSERENR,        15,   0,   9,  14,   0,   0, RW, RW_FNS(c9_pmuserenr))                        // Performance monitor control user access enable
     ARM32_CP_REG_DEFINE(PMINTENSET,       15,   0,   9,  14,   1,   1, RW, RW_FNS(c9_pmintenset))                       // Performance monitor control interrupt enable set
     ARM32_CP_REG_DEFINE(PMINTENCLR,       15,   0,   9,  14,   2,   1, RW, RW_FNS(c9_pmintenclr))                       // Performance monitor control interrupt enable clear
+
+    // This one is only present in VMSA with Virtualization Extensions but this tlib doesn't support Virtualization Extensions.
+    // Let's keep it commented-out to document its presence.
+    //ARM32_CP_REG_DEFINE(PMOVSSET,         15,   0,   9,  14,   3,   1, RW)                                              // Performance Monitors Overflow Flag Status Set register
 };
 
 static ARMCPRegInfo feature_pre_v7_registers[] = {
