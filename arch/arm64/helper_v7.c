@@ -368,6 +368,9 @@ void cpu_reset_vfp(CPUState *env)
     set_default_nan_mode(1, &env->vfp.standard_fp_status);
     set_float_detect_tininess(float_tininess_before_rounding, &env->vfp.fp_status);
     set_float_detect_tininess(float_tininess_before_rounding, &env->vfp.standard_fp_status);
+
+    env->vfp.xregs[ARM_VFP_FPEXC] = 0x700;  // Bits 8-10 are RES1 for A53, A75 and R52 where it's accessible.
+    env->vfp.xregs[ARM_VFP_FPSID] = env->arm_core_config.reset_fpsid;
 }
 
 /* return 0 if not found */

@@ -459,9 +459,6 @@ static void cpu_init_core_config(CPUState *env, uint32_t id)
         cpu_abort(env, "Bad CPU ID: %x\n", id);
         break;
     }
-
-    env->vfp.xregs[ARM_VFP_FPEXC] = 0x700;  // Bits 8-10 are RES1 for A53, A75 and R52 where it's accessible.
-    env->vfp.xregs[ARM_VFP_FPSID] = env->arm_core_config.reset_fpsid;
 }
 
 void cpu_init_v8(CPUState *env, uint32_t id)
