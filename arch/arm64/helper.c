@@ -118,6 +118,14 @@ void cpu_init_v8_2(CPUState *env, uint32_t id)
     set_feature(env, ARM_FEATURE_A);
     set_feature(env, ARM_FEATURE_AARCH64);
     set_feature(env, ARM_FEATURE_V8);
+    set_feature(env, ARM_FEATURE_V7VE);
+    set_feature(env, ARM_FEATURE_V7MP);
+    set_feature(env, ARM_FEATURE_V7);
+    set_feature(env, ARM_FEATURE_V6K);
+    set_feature(env, ARM_FEATURE_V6);
+    set_feature(env, ARM_FEATURE_V5);
+    set_feature(env, ARM_FEATURE_V4T);
+
     set_feature(env, ARM_FEATURE_NEON);
     set_feature(env, ARM_FEATURE_GENERIC_TIMER);
     set_feature(env, ARM_FEATURE_CBAR_RO);
@@ -206,6 +214,14 @@ void cpu_init_a53(CPUState *env, uint32_t id)
     set_feature(env, ARM_FEATURE_A);
     set_feature(env, ARM_FEATURE_AARCH64);
     set_feature(env, ARM_FEATURE_V8);
+    set_feature(env, ARM_FEATURE_V7VE);
+    set_feature(env, ARM_FEATURE_V7MP);
+    set_feature(env, ARM_FEATURE_V7);
+    set_feature(env, ARM_FEATURE_V6K);
+    set_feature(env, ARM_FEATURE_V6);
+    set_feature(env, ARM_FEATURE_V5);
+    set_feature(env, ARM_FEATURE_V4T);
+
     set_feature(env, ARM_FEATURE_NEON);
     set_feature(env, ARM_FEATURE_GENERIC_TIMER);
     set_feature(env, ARM_FEATURE_CBAR_RO);
@@ -279,10 +295,12 @@ void cpu_init_r52(CPUState *env, uint32_t id)
     set_feature(env, ARM_FEATURE_R);
     set_feature(env, ARM_FEATURE_V8);
     set_feature(env, ARM_FEATURE_V7VE); // enables ERET
+    set_feature(env, ARM_FEATURE_V7MP);
     set_feature(env, ARM_FEATURE_V7);
-    set_feature(env, ARM_FEATURE_V4T); // enables BX
+    set_feature(env, ARM_FEATURE_V6K);
     set_feature(env, ARM_FEATURE_V6);
     set_feature(env, ARM_FEATURE_V5);
+    set_feature(env, ARM_FEATURE_V4T); // enables BX
 
     set_feature(env, ARM_FEATURE_NEON); // from 1.2.2
     set_feature(env, ARM_FEATURE_GENERIC_TIMER); // from 1.2
