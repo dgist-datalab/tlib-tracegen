@@ -436,6 +436,7 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_V4T);
         set_feature(env, ARM_FEATURE_V5);
         set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V6K);
         set_feature(env, ARM_FEATURE_V7);
         set_feature(env, ARM_FEATURE_V7MP);
         set_feature(env, ARM_FEATURE_ARM_DIV); // not for rp0p0
@@ -463,6 +464,7 @@ static void cpu_reset_model_id(CPUState *env, uint32_t id)
         set_feature(env, ARM_FEATURE_V4T);
         set_feature(env, ARM_FEATURE_V5);
         set_feature(env, ARM_FEATURE_V6);
+        set_feature(env, ARM_FEATURE_V6K);
         set_feature(env, ARM_FEATURE_V7);
         set_feature(env, ARM_FEATURE_V7MP);
         set_feature(env, ARM_FEATURE_ARM_DIV);
