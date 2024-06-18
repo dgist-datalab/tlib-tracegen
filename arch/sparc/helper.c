@@ -835,3 +835,15 @@ error:
     tlib_free(s);
     return -1;
 }
+
+void cpu_before_save(CPUState *env)
+{
+    cpu_set_cwp(env, env->cwp);
+    env->psr = cpu_get_psr(env);
+}
+
+void cpu_after_load(CPUState *env)
+{
+    env->cwp = 0;
+    cpu_put_psr(env, env->psr);
+}

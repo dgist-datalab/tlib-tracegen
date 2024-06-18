@@ -992,3 +992,29 @@ void tlib_set_cpu_wfi_state_change_hook_present(uint32_t val)
     cpu->cpu_wfi_state_change_hook_present = !!val;
 }
 EXC_VOID_1(tlib_set_cpu_wfi_state_change_hook_present, uint32_t, val);
+
+__attribute__((weak))
+void cpu_before_save(CPUState *env)
+{
+    // Empty function for architectures which don't have the function implemented.
+}
+
+__attribute__((weak))
+void cpu_after_load(CPUState *env)
+{
+    // Empty function for architectures which don't have the function implemented.
+}
+
+void tlib_before_save(void *env)
+{
+    cpu_before_save(env);
+}
+
+EXC_VOID_1(tlib_before_save, void *, env)
+
+void tlib_after_load(void *env)
+{
+    cpu_after_load(env);
+}
+
+EXC_VOID_1(tlib_after_load, void *, env)

@@ -57,19 +57,3 @@ void tlib_set_wfi()
 }
 
 EXC_VOID_0(tlib_set_wfi)
-
-void tlib_before_save(CPUState *env)
-{
-    cpu_set_cwp(env, env->cwp);
-    env->psr = cpu_get_psr(env);
-}
-
-EXC_VOID_1(tlib_before_save, CPUState *, env)
-
-void tlib_after_load(CPUState *env)
-{
-    env->cwp = 0;
-    cpu_put_psr(env, env->psr);
-}
-
-EXC_VOID_1(tlib_after_load, CPUState *, env)

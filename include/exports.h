@@ -106,3 +106,7 @@ void tlib_set_register_value_32(int reg_number, uint32_t value);
 uint64_t tlib_get_register_value_64(int reg_number);
 void tlib_set_register_value_64(int reg_number, uint64_t value);
 #endif
+
+void tlib_before_save(void *env);
+
+void tlib_after_load(void *env);
