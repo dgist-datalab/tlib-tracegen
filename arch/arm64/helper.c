@@ -62,6 +62,20 @@ void cpu_reset(CPUState *env)
     arm_rebuild_hflags(env);
 }
 
+void cpu_after_load(CPUState *env)
+{
+    // Trigger tlib_on_execution_mode_changed callback to allow subscribed cores
+    // on the managed part update their Exception Level and Security State.
+    // Otherwise cores with two security states like ARMv8A
+    // will incorrectly update their state to the default after reset,
+    // while the correct state is visible only after loading the state.
+    // To circumvent it, we explicitly trigger callback after loading the state.
+    tlib_on_execution_mode_changed(
+        arm_current_el(env),
+        arm_is_secure(env)
+    );
+}
+
 void do_interrupt(CPUState *env)
 {
     if (env->interrupt_begin_callback_enabled) {
