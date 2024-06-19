@@ -851,6 +851,57 @@ void validate_csr(CPUState *env, uint64_t which, uint64_t write)
 target_ulong helper_csrrw(CPUState *env, target_ulong src, target_ulong csr)
 {
     validate_csr(env, csr, 1);
+
+    /* We implement these CSRs explicitly here because reading them might return `src` which is not available
+       in csr_read_helper. Also, access to them with instructions other than csrrw is reserved. */
+    switch(csr) {
+        case CSR_MSCRATCHCSW:
+        case CSR_SSCRATCHCSW: 
+        {
+            target_ulong ppfield = csr == CSR_MSCRATCHCSW ? MSTATUS_MPP : MSTATUS_SPP;
+            target_ulong prev_priv = get_field(env->mstatus, ppfield);
+            /* If xpp == current priv, csr value and rd unchanged */
+            if (env->priv == prev_priv) {
+                return src;
+            } else {
+                target_ulong scratch;
+                if (csr == CSR_MSCRATCHCSW) {
+                    scratch = env->mscratch;
+                    env->mscratch = src;
+                } else {
+                    scratch = env->sscratch;
+                    env->sscratch = src;
+                }
+                return scratch;
+            }
+        } break;
+        case CSR_MSCRATCHCSWL:
+        {
+            /* If neither mpil nor mil are in an interrupt, or both are, csr value and rd unchanged */
+            if ((get_field(env->mcause, MCAUSE_MPIL) == 0) == (get_field(env->mintstatus, MINTSTATUS_MIL) == 0)) {
+                return src;
+            } else {
+                target_ulong mscratch = env->mscratch;
+                env->mscratch = src;
+                return mscratch;
+            }
+        } break;
+        case CSR_SSCRATCHCSWL:
+        {
+            /* If neither mpil nor mil are in an interrupt, or both are, csr value and rd unchanged */
+            if ((get_field(env->scause, SCAUSE_SPIL) == 0) == (get_field(env->mintstatus, MINTSTATUS_SIL) == 0)) {
+                return src;
+            } else {
+                target_ulong sscratch = env->sscratch;
+                env->sscratch = src;
+                return sscratch;
+            }
+        } break;
+        default:
+            /* No additional action for other CSRs. */
+            break;
+    }
+
     uint64_t csr_backup = csr_read_helper(env, csr);
     csr_write_helper(env, src, csr);
     return csr_backup;
