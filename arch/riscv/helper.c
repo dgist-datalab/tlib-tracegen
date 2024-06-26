@@ -493,7 +493,9 @@ void do_interrupt(CPUState *env)
     if (is_clic_interrupt) {
         int_priv = env->clic_interrupt_priv;
         tlib_clic_acknowledge_interrupt();
-        if(env->clic_interrupt_vectored) tlib_clic_clear_edge_interrupt();
+        if(env->clic_interrupt_vectored) {
+            tlib_clic_clear_edge_interrupt();
+        }
     }
 
     /* if in CLIC mode then only medeleg is active (interrupt privilege mode is set in the CLIC instead of mideleg) */
