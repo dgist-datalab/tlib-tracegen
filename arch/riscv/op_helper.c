@@ -169,7 +169,8 @@ static target_ulong mtvec_stvec_write_handler(target_ulong val_to_write, char* r
 {
     target_ulong new_value = 0;
 
-    if (((env->privilege_architecture >= RISCV_PRIV1_10 && env->privilege_architecture < RISCV_PRIV1_11) && (val_to_write & 0x2)) ||
+    bool is_before_clic = env->privilege_architecture < RISCV_PRIV_UNRATIFIED;
+    if (((env->privilege_architecture >= RISCV_PRIV1_10 && is_before_clic) && (val_to_write & 0x2)) ||
         (env->privilege_architecture < RISCV_PRIV1_10 && (val_to_write & 0x3))) {
         tlib_printf(LOG_LEVEL_WARNING, "Trying to set unaligned %s: 0x%X, aligning to 4-byte boundary.", register_name, val_to_write);
     }
@@ -177,7 +178,7 @@ static target_ulong mtvec_stvec_write_handler(target_ulong val_to_write, char* r
     switch (cpu->interrupt_mode)
     {
         case INTERRUPT_MODE_AUTO:
-            if (env->privilege_architecture >= RISCV_PRIV1_11) {
+            if (env->privilege_architecture >= RISCV_PRIV_UNRATIFIED) {
                 new_value = val_to_write;
             } else if (env->privilege_architecture >= RISCV_PRIV1_10) {
                 new_value = val_to_write & ~0x2;

@@ -324,6 +324,11 @@ enum privilege_architecture {
     RISCV_PRIV1_10,
     RISCV_PRIV1_11,
     RISCV_PRIV1_12,
+    // For features that are not yet part of ratified privileged architecture,
+    // use RISCV_PRIV_UNRATIFIED.
+    // Replace with an actual version once it becomes a part of ratified spec.
+    // KEEP LAST
+    RISCV_PRIV_UNRATIFIED
 };
 
 // The enum encodes the fmt field of opcode
