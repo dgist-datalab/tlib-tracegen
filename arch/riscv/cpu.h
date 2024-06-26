@@ -118,8 +118,8 @@ struct CPUState {
     target_ulong medeleg;
 
     target_ulong stvec;
-    target_ulong stvt;       /* since: priv-?.??.? */
-    target_ulong sintthresh; /* since: priv-?.??.? */
+    target_ulong stvt;       /* unratified as of 2024-06; ssclic extension */
+    target_ulong sintthresh; /* unratified as of 2024-06; ssclic extension */
     target_ulong sepc;
     target_ulong scause;
     target_ulong stval;  /* renamed from sbadaddr since: priv-1.10.0 */
@@ -128,8 +128,8 @@ struct CPUState {
     target_ulong sideleg;
 
     target_ulong mtvec;
-    target_ulong mtvt;       /* since: priv-?.??.? */
-    target_ulong mintthresh; /* since: priv-?.??.? */
+    target_ulong mtvt;       /* unratified as of 2024-06; smclic extension */
+    target_ulong mintthresh; /* unratified as of 2024-06; smclic extension */
     target_ulong mepc;
     target_ulong mcause;
     target_ulong mtval;      /*  renamed from mbadaddr since: priv-1.10.0 */
@@ -142,7 +142,7 @@ struct CPUState {
 
     target_ulong sscratch;
     target_ulong mscratch;
-    target_ulong mintstatus; /* since: priv-?.??.? */
+    target_ulong mintstatus; /* unratified as of 2024-06; smclic extension */
 
     target_ulong vstart;
     target_ulong vxsat;
