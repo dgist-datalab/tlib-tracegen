@@ -196,7 +196,7 @@ enum block_interrupt_cause {
     int tb_interrupt_request_from_callback;                                   \
                                                                               \
     uint32_t io_access_regions_count;                                         \
-    uint32_t io_access_regions[MAX_IO_ACCESS_REGIONS_COUNT];                  \
+    uint64_t io_access_regions[MAX_IO_ACCESS_REGIONS_COUNT];                  \
     /* in previous run cpu_exec returned with WFI */                          \
     bool was_not_working;                                                     \
                                                                               \
