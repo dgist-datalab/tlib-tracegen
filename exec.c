@@ -329,8 +329,21 @@ static void tlb_unprotect_code_phys(CPUState *env, ram_addr_t ram_addr, target_u
 
 extern uint64_t translation_cache_size_min;
 extern uint64_t translation_cache_size_max;
+static void code_gen_alloc(bool retry);
 
-static void code_gen_alloc()
+static inline void code_gen_alloc_retry(bool retry)
+{
+    if (!retry) {
+        tlib_abort("Could not allocate dynamic translator buffer\n");
+    } else {
+        /* Try once again to allocate a smaller buffer, if we failed before.
+           If it still doesn't succeed, we will fail hard */
+        code_gen_buffer_size /= 2;
+        code_gen_alloc(false);
+    }
+}
+
+static void code_gen_alloc(bool retry)
 {
     if (code_gen_buffer_size < translation_cache_size_min) {
         code_gen_buffer_size = translation_cache_size_min;
@@ -355,11 +368,14 @@ static void code_gen_alloc()
         // let's give some feedback about what size was actually used
         tlib_on_translation_cache_size_change(code_gen_buffer_size);
         if (code_gen_buffer == MAP_FAILED) {
-            tlib_abort("Could not allocate dynamic translator buffer\n");
+            code_gen_alloc_retry(retry);
         }
     }
 #else
     code_gen_buffer = tlib_malloc(code_gen_buffer_size);
+    if (code_gen_buffer == NULL) {
+        code_gen_alloc_retry(retry);
+    }
     map_exec(code_gen_buffer, code_gen_buffer_size);
 #endif
     map_exec(tcg->code_gen_prologue, 1024);
@@ -382,7 +398,7 @@ static void code_gen_expand()
 
     /* After increasing the size, allocate the buffer again. Note, that it might end in a different location in memory */
     code_gen_buffer_size *= 2;
-    code_gen_alloc();
+    code_gen_alloc(true);
 
     code_gen_ptr = code_gen_buffer;
     return;
@@ -409,7 +425,7 @@ TCGv_ptr cpu_env;
 void cpu_exec_init_all()
 {
     tcg_context_init();
-    code_gen_alloc();
+    code_gen_alloc(false);
     code_gen_ptr = code_gen_buffer;
     page_init();
     /* There's no guest base to take into account, so go ahead and
