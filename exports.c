@@ -269,11 +269,18 @@ void tlib_dispose()
     free_all_page_descriptors();
     // `tlib_free` is an EXTERNAL_AS, as such we need to clear `cpu` before calling it
     // to avoid a use-after-free in its wrapper
+
+    // DataLab: call routines on dispose
+    printf("tlib_dispose()\n");
+    printf("cpu->instructions_count_value: %lu\n", cpu->instructions_count_total_value);
+    // =====================================================================================
+    
     CPUState *cpu_copy = cpu;
     cpu = NULL;
     tlib_free(cpu_copy);
     tcg_dispose();
-    
+
+    // DataLab: call routines on dispose
     dl_print_inst_stat();
     dl_close_log_fp();
 }
