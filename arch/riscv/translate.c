@@ -1332,7 +1332,7 @@ static void gen_arith_imm(DisasContext *dc, uint32_t opc, int rd, int rs1, targe
     tcg_temp_free_i32(topclass);
     //==================================================//
  #endif
- 
+
     tcg_temp_free(source1);
 }
 
@@ -5369,6 +5369,9 @@ static void gen_v(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int 
     }
     uint8_t funct6 = extract32(dc->opcode, 26, 6);
     uint8_t vm = extract32(dc->opcode, 25, 1);
+
+    // DataLab: variable opclass
+    uint32_t opclass = 0;
 
     switch (opc) {
     case OPC_RISC_V_IVV:
