@@ -7886,3 +7886,6 @@ int process_interrupt(int interrupt_request, CPUState *env)
     }
     return 0;
 }
+
+void dl_print_inst_stat(void) {}
+void dl_close_log_fp(void) {}

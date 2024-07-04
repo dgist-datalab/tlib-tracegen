@@ -9850,3 +9850,6 @@ int process_interrupt(int interrupt_request, CPUState *env)
 void cpu_exec_epilogue(CPUState *env)
 {
 }
+
+void dl_print_inst_stat(void) {}
+void dl_close_log_fp(void) {}

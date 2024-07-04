@@ -28,6 +28,91 @@ static TCGv cpu_gpr[32], cpu_pc, cpu_opcode;
 static TCGv_i64 cpu_fpr[32]; /* assume F and D extensions */
 static TCGv cpu_vstart;
 
+//#define DL_TRACE_ARITH
+
+/* constants */
+// 산술 연산 분류 코드 정의
+// helper에 인자로 전달한다
+enum DLArithInstClass {
+    DL_RISC_ARITH_IMM = 0x00, 
+    DL_RISC_ARITH, 
+    DL_RISC_FMADD = 0x10,   // FP Multiply-Add; MAC 연산과 기능적으로 동일
+    DL_RISC_FMSUB,          // FP Multiply-Subtract
+    DL_RISC_FNMADD,         // FP Negative Multiply-Add; MAC의 결과에 부호 반전
+    DL_RISC_FNMSUB,         // FP Negative Multiply-Subtract
+    DL_RISC_FP_ARITH,       //
+    // 벡터 산술연산: 피연산자별 분류{vv, vi, vx}
+    DL_RISC_V_IVV = 0x20,
+    DL_RISC_V_IVX,
+    DL_RISC_V_IVI,
+    DL_RISC_V_MVV,
+    DL_RISC_V_MVX,
+    DL_RISC_V_FVV,
+    DL_RISC_V_FVF
+};
+
+/* global register indices */
+static TCGv cpu_gpr[32], cpu_pc, cpu_opcode;
+static TCGv_i64 cpu_fpr[32]; /* assume F and D extensions */
+static TCGv cpu_vstart;
+
+/* DataLab: Datastructures for instruction trace */
+typedef struct DLInstStat {
+    uint32_t ldCnt;
+    uint32_t lwCnt;
+    uint32_t lwuCnt;
+    uint32_t lhCnt;
+    uint32_t lhuCnt;
+    uint32_t lbCnt;
+    uint32_t lbuCnt;
+
+    uint32_t sdCnt;
+    uint32_t swCnt;
+    uint32_t shCnt;
+    uint32_t sbCnt;
+
+    uint32_t fldCnt;	
+    uint32_t flwCnt;
+    uint32_t flhCnt;
+    uint32_t fsdCnt;
+    uint32_t fswCnt;
+    uint32_t fshCnt;
+
+    // 8, 16, 32, 64
+    uint32_t vleCnt[4];
+    uint32_t vlseCnt[4];
+    uint32_t vlxeiCnt[4];
+
+    uint32_t vseCnt[4];
+    uint32_t vsseCnt[4];
+    uint32_t vsxeiCnt[4];
+
+    uint32_t arithImmCnt;
+    uint32_t arithCnt;
+
+    // FP arith
+    // operand precise: sigle, double, half
+    uint32_t fmaddCnt[3];
+    uint32_t fmsubCnt[3];
+    uint32_t fnmaddCnt[3];
+    uint32_t fnmsubCnt[3];
+    uint32_t fparithCnt;
+
+    // Vector arith
+    uint32_t varithiCnt[3]; // vv, vx, vi
+    uint32_t varithmCnt[2]; // vv, vx
+    uint32_t varithfCnt[2]; // vv, vf
+
+    uint64_t instCtr;
+    uint32_t unknownCnt;
+} DLInstStat;
+
+/* DataLab: Global variables for memory trace */
+DLInstStat instStat = { 0, };
+const char *LOG_PATH_BASE="/home/euntae/tmp/renode-log/ecg_small";
+FILE *logfp = NULL;
+char pathName[256];
+
 #include "tb-helper.h"
 
 void translate_init(void)
@@ -60,6 +145,18 @@ void translate_init(void)
     cpu_pc = tcg_global_mem_new(TCG_AREG0, offsetof(CPUState, pc), "pc");
     cpu_opcode = tcg_global_mem_new(TCG_AREG0, offsetof(CPUState, opcode), "opcode");
     cpu_vstart = tcg_global_mem_new(TCG_AREG0, offsetof(CPUState, vstart), "vstart");
+
+    /* DataLab: execution trace initialize */
+    time_t timer;
+    struct tm *ts;
+    timer = time(NULL);
+    ts = localtime(&timer);
+    
+    sprintf(pathName, "%s_%d%02d%02d_%02d%02d%02d.txt", LOG_PATH_BASE, 
+        ts->tm_year + 1900, ts->tm_mon + 1, ts->tm_mday,
+        ts->tm_hour, ts->tm_min, ts->tm_sec);
+    logfp = fopen(pathName, "wt");
+    printf("\ntranslate_init(): %s is created\n", pathName);
 }
 
 static inline void kill_unknown(DisasContext *dc, int excp);
@@ -880,6 +977,17 @@ static void gen_arith(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2)
         tcg_gen_ext32s_tl(source1, source1);
     }
 
+#ifdef DL_TRACE_ARITH
+    /* DataLab: helper call and free temporary variable */
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_ARITH);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+    tcg_temp_free(topc);
+    tcg_temp_free(topclass);
+    //==================================================//
+#endif
+
     gen_set_gpr(rd, source1);
     tcg_temp_free(source1);
     tcg_temp_free(source2);
@@ -1213,6 +1321,18 @@ static void gen_arith_imm(DisasContext *dc, uint32_t opc, int rd, int rs1, targe
     }
 
     gen_set_gpr(rd, source1);
+
+#ifdef DL_TRACE_ARITH
+    /* DataLab: helper call and free temporary variable */
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_ARITH_IMM);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+    //==================================================//
+ #endif
+ 
     tcg_temp_free(source1);
 }
 
@@ -1363,6 +1483,11 @@ static void gen_load(DisasContext *dc, uint32_t opc, int rd, int rs1, target_lon
     tcg_gen_addi_tl(t0, t0, imm);
 
     gen_sync_pc(dc);
+
+    /* DataLab: helper call */
+    TCGv_i32 topc = tcg_const_i32(opc);
+    gen_helper_log_inst(cpu_env, topc, t0);
+
     switch (opc) {
 
     case OPC_RISC_LB:
@@ -1393,6 +1518,11 @@ static void gen_load(DisasContext *dc, uint32_t opc, int rd, int rs1, target_lon
     }
 
     gen_set_gpr(rd, t1);
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    //====================================
+
     tcg_temp_free(t0);
     tcg_temp_free(t1);
 }
@@ -1406,6 +1536,10 @@ static void gen_store(DisasContext *dc, uint32_t opc, int rs1, int rs2, target_l
     gen_get_gpr(t0, rs1);
     tcg_gen_addi_tl(t0, t0, imm);
     gen_get_gpr(dat, rs2);
+
+    /* DataLab: helper call */
+    TCGv_i32 topc = tcg_const_i32(opc);
+    gen_helper_log_inst(cpu_env, topc, t0);
 
     switch (opc) {
     case OPC_RISC_SB:
@@ -1424,6 +1558,10 @@ static void gen_store(DisasContext *dc, uint32_t opc, int rs1, int rs2, target_l
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    //====================================
 
     tcg_temp_free(t0);
     tcg_temp_free(dat);
@@ -1452,6 +1590,11 @@ static void gen_fp_load(DisasContext *dc, uint32_t opc, int rd, int rs1, target_
     gen_get_gpr(t0, rs1);
     tcg_gen_addi_tl(t0, t0, imm);
 
+    /* DataLab: helper call */
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    gen_helper_log_inst(cpu_env, topc, t0);
+
     TCGv destination = tcg_temp_new();
     switch (opc) {
     case OPC_RISC_FLH:
@@ -1474,6 +1617,10 @@ static void gen_fp_load(DisasContext *dc, uint32_t opc, int rd, int rs1, target_
     tcg_temp_free(destination);
     gen_set_label(done);
     tcg_temp_free(t0);
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    //====================================
 }
 
 static void gen_v_load(DisasContext *dc, uint32_t opc, uint32_t rest, uint32_t vd, uint32_t rs1, uint32_t rs2, uint32_t width)
@@ -1655,10 +1802,27 @@ static void gen_v_load(DisasContext *dc, uint32_t opc, uint32_t rest, uint32_t v
         break;
     }
     tcg_gen_movi_tl(cpu_vstart, 0);
+
+    /* DataLab: helper call */
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 twidth = tcg_const_i32(width);
+    TCGv taddr = tcg_temp_new();
+    gen_get_gpr(taddr, rs1);
+    //gen_helper_log_inst_vector(cpu_env, topc, t_rs1, twidth);
+    gen_helper_log_inst_vector(cpu_env, topc, taddr, twidth);
+    //========================================================
+
     tcg_temp_free_i32(t_vd);
     tcg_temp_free_i32(t_rs1);
     tcg_temp_free_i32(t_rs2);
     tcg_temp_free_i32(t_nf);
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(twidth);
+    tcg_temp_free(taddr);
+    //====================================
 #endif  // HOST_LONG_BITS != 32
 }
 
@@ -1686,6 +1850,10 @@ static void gen_fp_store(DisasContext *dc, uint32_t opc, int rs1, int rs2, targe
     gen_get_gpr(t0, rs1);
     tcg_gen_addi_tl(t0, t0, imm);
 
+    /* DataLab: helper call */
+    TCGv_i32 topc = tcg_const_i32(opc);
+    gen_helper_log_inst(cpu_env, topc, t0);
+
     switch (opc) {
     case OPC_RISC_FSH:
         tcg_gen_qemu_st16(cpu_fpr[rs2], t0, dc->base.mem_idx);
@@ -1704,6 +1872,10 @@ static void gen_fp_store(DisasContext *dc, uint32_t opc, int rs1, int rs2, targe
     gen_set_label(done);
     tcg_temp_free(t0);
     tcg_temp_free(t1);
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    //====================================
 }
 
 static void gen_v_store(DisasContext *dc, uint32_t opc, uint32_t rest, uint32_t vd, uint32_t rs1, uint32_t rs2, uint32_t width)
@@ -1857,10 +2029,27 @@ static void gen_v_store(DisasContext *dc, uint32_t opc, uint32_t rest, uint32_t 
         break;
     }
     tcg_gen_movi_tl(cpu_vstart, 0);
+
+    /* DataLab: helper call */
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 twidth = tcg_const_i32(width);
+    TCGv taddr = tcg_temp_new();
+    gen_get_gpr(taddr, rs1);
+    //gen_helper_log_inst_vector(cpu_env, topc, t_rs1, twidth);
+    gen_helper_log_inst_vector(cpu_env, topc, taddr, twidth);
+    //=============================================================
+
     tcg_temp_free_i32(t_vd);
     tcg_temp_free_i32(t_rs1);
     tcg_temp_free_i32(t_rs2);
     tcg_temp_free_i32(t_nf);
+
+    /* DataLab: free temporary variable */
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(twidth);
+    tcg_temp_free(taddr);
+    //====================================
 #endif  // HOST_LONG_BITS != 32
 }
 
@@ -2137,6 +2326,18 @@ static void gen_fp_fmadd(DisasContext* dc, uint32_t opc, int rd, int rs1, int rs
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+#ifdef DL_TRACE_ARITH
+    // DataLab: helper call
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_FMADD);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+
+    // DataLab: free temporary variables
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+#endif
 }
 
 static void gen_fp_fmsub(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int rs3, int rm)
@@ -2163,6 +2364,18 @@ static void gen_fp_fmsub(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+#ifdef DL_TRACE_ARITH
+    // DataLab: helper call
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_FMSUB);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+
+    // DataLab: free temporary variables
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+#endif
 }
 
 static void gen_fp_fnmsub(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int rs3, int rm)
@@ -2189,6 +2402,18 @@ static void gen_fp_fnmsub(DisasContext *dc, uint32_t opc, int rd, int rs1, int r
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+#ifdef DL_TRACE_ARITH
+    // DataLab: helper call
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_FNMSUB);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+
+    // DataLab: free temporary variables
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+#endif
 }
 
 static void gen_fp_fnmadd(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int rs3, int rm)
@@ -2215,6 +2440,18 @@ static void gen_fp_fnmadd(DisasContext *dc, uint32_t opc, int rd, int rs1, int r
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+#ifdef DL_TRACE_ARITH
+    // DataLab: helper call
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_FNMADD);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+
+    // DataLab: free temporary variables
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+#endif
 }
 
 static void gen_fp_arith(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int rm)
@@ -2655,6 +2892,18 @@ static void gen_fp_arith(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs
     }
     tcg_temp_free_i64(rm_reg);
     tcg_temp_free(write_int_rd);
+
+#ifdef DL_TRACE_ARITH
+    // DataLab: helper call
+    gen_sync_pc(dc);
+    TCGv_i32 topc = tcg_const_i32(opc);
+    TCGv_i32 topclass = tcg_const_i32(DL_RISC_FP_ARITH);
+    gen_helper_log_inst_arith(cpu_env, topc, topclass);
+
+    // DataLab: free temporary variables
+    tcg_temp_free_i32(topc);
+    tcg_temp_free_i32(topclass);
+#endif
 }
 
 static void gen_system(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int funct12)
@@ -5150,6 +5399,21 @@ static void gen_v(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int 
         kill_unknown(dc, RISCV_EXCP_ILLEGAL_INST);
         break;
     }
+
+#ifdef DL_TRACE_ARITH
+    if (opc != OPC_RISC_V_CFG) { // DataLab: helper call
+        TCGv_i32 topc = tcg_const_i32(opc);
+        TCGv_i32 topclass = tcg_const_i32(opclass);
+        gen_sync_pc(dc);
+        gen_helper_log_inst_arith(cpu_env, topc, topclass);
+        tcg_temp_free(topc);
+        tcg_temp_free(topclass);
+    }
+#else
+    TCGv_i32 topclass = tcg_const_i32(opclass);
+    tcg_temp_free(topclass);
+#endif
+
     tcg_gen_movi_tl(cpu_vstart, 0);
 #endif  // HOST_LONG_BITS != 32
 }
@@ -5576,6 +5840,9 @@ static int disas_insn(CPUState *env, DisasContext *dc)
             TCGv_i64 opcode = tcg_const_i64(dc->opcode & ((1ULL << (8 * ci->length)) - 1));
             TCGv_i32 pc_modified = tcg_temp_new_i32();
 
+            /* DataLab: instruction counter */
+            gen_helper_inst_ctr();
+
             gen_sync_pc(dc);
             gen_helper_handle_custom_instruction(pc_modified, id, opcode);
 
@@ -5624,6 +5891,9 @@ static int disas_insn(CPUState *env, DisasContext *dc)
     if (env->count_opcodes) {
         generate_opcode_count_increment(env, dc->opcode);
     }
+
+    /* DataLab: instruction counter */
+    gen_helper_inst_ctr();
 
     if (is_compressed) {
         decode_RV32_64C(env, dc);
@@ -5747,4 +6017,460 @@ void cpu_exec_epilogue(CPUState *env)
 
 void cpu_exec_prologue(CPUState *env)
 {
+}
+
+// void dl_log_inst(CPUState *env) {
+//     DLInstDecodeTbl *t = &instDecodeTbl;
+
+//     //uint32_t pc = (uint32_t)CPU_PC(env);
+//     uint32_t pc = (uint32_t)env->pc;
+//     uint32_t idx = dl_calc_tbl_idx(pc);
+
+//     uint32_t opc = t->tbl[idx].opc;
+//     uint16_t rs1 = t->tbl[idx].rs1;
+//     uint16_t imm = t->tbl[idx].imm;
+//     uint32_t imm32 = (imm >> 15) ? 0xffff0000 | (uint32_t)imm : (uint32_t)imm;
+//     uint32_t rs1value = dl_get_reg_value32(env, rs1);
+//     ...
+// }
+//
+
+// uint32_t dl_get_opc(uint32_t pc) {
+//     uint32_t idx = dl_calc_tbl_idx(pc);
+//     uint32_t opc = instDecodeTbl.tbl[idx].opc;
+//     return opc;
+// }
+
+void dl_inst_ctr_inc(void) {
+    instStat.instCtr++;
+}
+
+void dl_put_opc(uint32_t opc) {
+    char *opcStr = "unknown";
+    uint32_t instCnt = 0;
+
+    switch (opc) {
+    /* scalar integer load */
+    case OPC_RISC_LB:
+        instCnt = (++instStat.lbCnt);
+        opcStr = "lb";
+        break;
+    case OPC_RISC_LH:
+        instCnt = (++instStat.lhCnt);
+        opcStr = "lh";
+        break;
+    case OPC_RISC_LW:
+        instCnt = (++instStat.lwCnt);
+        opcStr = "lw";
+        break;
+    case OPC_RISC_LD:
+        instCnt = (++instStat.ldCnt);
+        opcStr = "ld";
+        break;
+    case OPC_RISC_LBU:
+        instCnt = (++instStat.lbuCnt);
+        opcStr = "lbu";
+        break;
+    case OPC_RISC_LHU:
+        instCnt = (++instStat.lhuCnt);
+        opcStr = "lhu";
+        break;
+    case OPC_RISC_LWU:
+        instCnt = (++instStat.lwuCnt);
+        opcStr = "lwu";
+        break;
+    /* scalar integer store */
+    case OPC_RISC_SB:
+        instCnt = (++instStat.sbCnt);
+        opcStr = "sb";
+        break;
+    case OPC_RISC_SH:
+        instCnt = (++instStat.shCnt);
+        opcStr = "sh";
+        break;
+    case OPC_RISC_SW:
+        instCnt = (++instStat.swCnt);
+        opcStr = "sw";
+        break;
+    case OPC_RISC_SD:
+        instCnt = (++instStat.sdCnt);
+        opcStr = "sd";
+        break;
+    /* scalar fp load */
+    case OPC_RISC_FLH:
+        instCnt = (++instStat.flhCnt);
+        opcStr = "flh";
+        break;
+    case OPC_RISC_FLW:
+        instCnt = (++instStat.flwCnt);
+        opcStr = "flw";
+        break;
+    case OPC_RISC_FLD:
+        instCnt = (++instStat.fldCnt);
+        opcStr = "fld";
+        break;
+    /* scalar fp store */
+    case OPC_RISC_FSH:
+        instCnt = (++instStat.fshCnt);
+        opcStr = "fsh";
+        break;
+    case OPC_RISC_FSW:
+        instCnt = (++instStat.fswCnt);
+        opcStr = "fsw";
+        break;
+    case OPC_RISC_FSD:
+        instCnt = (++instStat.fsdCnt);
+        opcStr = "fsd";
+        break;
+    default:
+        opcStr = "unknown";
+        instCnt = (++instStat.unknownCnt);
+        break;
+    }
+    fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+}
+
+/*
+void dl_put_opc_arith(uint32_t opc) {
+    char *opcStr = "unknown";
+    uint32_t instCnt = 0;
+
+    switch (opc) {
+    // arith imm.
+    case OPC_RISC_ADDI:
+    case OPC_RISC_ADDIW:
+    case OPC_RISC_SLTI:
+    case OPC_RISC_SLTIU:
+    case OPC_RISC_XORI:
+    case OPC_RISC_ORI:
+    case OPC_RISC_ANDI:
+    case OPC_RISC_SLLIW:            // RV64
+    case OPC_RISC_SLLI:
+    case OPC_RISC_SHIFT_RIGHT_I:
+    case OPC_RISC_SHIFT_RIGHT_IW:   // RV64
+    case OPC_RISC_SLLI_UW:
+    case OPC_RISC_RORI:
+    case OPC_RISC_RORIW:
+        instCnt = (++instStat.arithImmCnt);
+        opcStr = "arithimm";
+        break;
+    default: // arith
+        instCnt = (++instStat.arithCnt);
+        opcStr = "arith";
+        break;
+    }
+    fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+}
+*/
+
+void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
+    char *opcStr = "unknown";
+    uint32_t instCnt = 0;
+
+    if (opclass == DL_RISC_ARITH_IMM) {
+        opcStr = "arithimm";
+        instCnt = (++instStat.arithImmCnt);
+    }
+    else if (opclass == DL_RISC_ARITH) {
+        opcStr = "arith";
+        instCnt = (++instStat.arithCnt);
+    }
+    else if (opclass == DL_RISC_FMADD) {
+        switch (opc) {
+        case OPC_RISC_FMADD_S:
+            opcStr = "fmadd.s";
+            instCnt = (++instStat.fmaddCnt[0]);
+            break;
+        case OPC_RISC_FMADD_D:
+            opcStr = "fmadd.d";
+            instCnt = (++instStat.fmaddCnt[1]);
+            break;
+        case OPC_RISC_FMADD_H:
+            opcStr = "fmadd.h";
+            instCnt = (++instStat.fmaddCnt[2]);
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FMSUB) {
+        switch (opc) {
+        case OPC_RISC_FMSUB_S:
+            opcStr = "fmsub.s";
+            instCnt = (++instStat.fmsubCnt[0]);
+            break;
+        case OPC_RISC_FMSUB_D:
+            opcStr = "fmsub.d";
+            instCnt = (++instStat.fmsubCnt[1]);
+            break;
+        case OPC_RISC_FMSUB_H:
+            opcStr = "fmsub.h";
+            instCnt = (++instStat.fmsubCnt[2]);
+            break;
+        }
+
+    }
+    else if (opclass == DL_RISC_FNMADD) {
+        switch (opc) {
+        case OPC_RISC_FNMADD_S:
+            opcStr = "fnmadd.s";
+            instCnt = (++instStat.fnmaddCnt[0]);
+            break;
+        case OPC_RISC_FNMADD_D:
+            opcStr = "fnmadd.d";
+            instCnt = (++instStat.fnmaddCnt[1]);
+            break;
+        case OPC_RISC_FNMADD_H:
+            opcStr = "fnmadd.h";
+            instCnt = (++instStat.fnmaddCnt[2]);
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FNMSUB) {
+        switch (opc) {
+        case OPC_RISC_FNMSUB_S:
+            opcStr = "fnmsub.s";
+            instCnt = (++instStat.fnmsubCnt[0]);
+            break;
+        case OPC_RISC_FNMSUB_D:
+            opcStr = "fnmsub.d";
+            instCnt = (++instStat.fnmsubCnt[1]);
+            break;
+        case OPC_RISC_FNMSUB_H:
+            opcStr = "fnmsub.h";
+            instCnt = (++instStat.fnmsubCnt[2]);
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FP_ARITH) {
+        opcStr = "fparith";
+        instCnt = (++instStat.fparithCnt);
+    }
+    else if (opclass == DL_RISC_V_IVV) {
+        opcStr = "varithi.vv";
+        instCnt = (++instStat.varithiCnt[0]); // vv
+    }
+    else if (opclass == DL_RISC_V_IVX) {
+        opcStr = "varithi.vx";
+        instCnt = (++instStat.varithiCnt[1]); // vx
+    }
+    else if (opclass == DL_RISC_V_IVI) {
+        opcStr = "varithi.vi";
+        instCnt = (++instStat.varithiCnt[2]); // vi
+    }
+    else if (opclass == DL_RISC_V_MVV) {
+        opcStr = "varithm.vv";
+        instCnt = (++instStat.varithmCnt[0]); // vv
+    }
+    else if (opclass == DL_RISC_V_MVX) {
+        opcStr = "varithm.vx";
+        instCnt = (++instStat.varithmCnt[1]); // vx
+    }
+    else if (opclass == DL_RISC_V_FVV) {
+        opcStr = "varithf.vv";
+        instCnt = (++instStat.varithfCnt[0]); // vv
+    }
+    else if (opclass == DL_RISC_V_FVF) {
+        opcStr = "varithf.vf";
+        instCnt = (++instStat.varithfCnt[1]); // vf
+    }
+    fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+}
+
+void dl_put_opc_vector(uint32_t opc, uint32_t width) {
+    char *opcStr = "unknown";
+    uint32_t instCnt = 0;
+    //uint32_t nwidth = ((width & 0x3) <= 3) ? 8 << (width & 0x3) : 0;
+    uint32_t mw = width & 0x03;
+    uint32_t nwidth = 8 << mw;
+
+    switch (opc) {
+    // load
+    case OPC_RISC_VL_US:  // unit-stride
+        instCnt = (++instStat.vleCnt[mw]);
+        opcStr = "vle";
+        break;
+    case OPC_RISC_VL_VS:  // vector-strided
+        instCnt = (++instStat.vlseCnt[mw]);
+        opcStr = "vlse";
+        break;
+    case OPC_RISC_VL_UVI: // unordered vector-indexed
+    case OPC_RISC_VL_OVI: // ordered vector-indexed
+        instCnt = (++instStat.vlxeiCnt[mw]);
+        opcStr = "vlxei";
+        break;
+    // store
+    case OPC_RISC_VS_US:  // unit-stride
+        instCnt = (++instStat.vseCnt[mw]);
+        opcStr = "vse";
+        break;
+    case OPC_RISC_VS_VS:  // vector-strided
+        instCnt = (++instStat.vsseCnt[mw]);
+        opcStr = "vsse";
+        break;
+    case OPC_RISC_VS_UVI: // unordered vector-indexed
+    case OPC_RISC_VS_OVI: // ordered vector-indexed
+        instCnt = (++instStat.vsxeiCnt[mw]);
+        opcStr = "vsxei";
+        break;
+    }
+    fprintf(logfp, "[%lu] %s%d(=%04x)/%u: ", instStat.instCtr, opcStr, nwidth, opc, instCnt);
+}
+
+void dl_print_inst_stat(void) {
+    uint32_t intLoadTotal = 0, intStoreTotal = 0;
+    uint32_t floatLoadTotal = 0, floatStoreTotal = 0;
+    uint32_t vectorLoadTotal = 0, vectorStoreTotal = 0;
+    uint32_t fmaddTotal = 0, fmsubTotal = 0;
+    uint32_t fnmaddTotal = 0, fnmsubTotal = 0;
+    //uint32_t loadTotal = 0, storeTotal = 0;
+
+    fprintf(logfp, "## Scala integer loads ##\n");
+    fprintf(logfp, "ld:  %u\n", instStat.ldCnt);
+    fprintf(logfp, "lw:  %u\n", instStat.lwCnt);
+    fprintf(logfp, "lwu: %u\n", instStat.lwuCnt);
+    fprintf(logfp, "lh:  %u\n", instStat.lhCnt);
+    fprintf(logfp, "lhu: %u\n", instStat.lhuCnt);
+    fprintf(logfp, "lb:  %u\n", instStat.lbCnt);
+    fprintf(logfp, "lbu: %u\n\n", instStat.lbuCnt);
+    intLoadTotal += instStat.ldCnt;
+    intLoadTotal += instStat.lwCnt;
+    intLoadTotal += instStat.lwuCnt;
+    intLoadTotal += instStat.lhCnt;
+    intLoadTotal += instStat.lhuCnt;
+    intLoadTotal += instStat.lbCnt;
+    intLoadTotal += instStat.lbuCnt;
+
+    fprintf(logfp, "## Scala integer stores ##\n");
+    fprintf(logfp, "sd: %u\n", instStat.sdCnt);
+    fprintf(logfp, "sw: %u\n", instStat.swCnt);
+    fprintf(logfp, "sh: %u\n", instStat.shCnt);
+    fprintf(logfp, "sb: %u\n\n", instStat.sbCnt);
+    intStoreTotal += instStat.sdCnt;
+    intStoreTotal += instStat.swCnt;
+    intStoreTotal += instStat.shCnt;
+    intStoreTotal += instStat.sbCnt;
+
+    fprintf(logfp, "## Scala FP loads ##\n");
+    fprintf(logfp, "fld: %u\n", instStat.fldCnt);
+    fprintf(logfp, "flw: %u\n", instStat.flwCnt);
+    fprintf(logfp, "flh: %u\n\n", instStat.flhCnt);
+    floatLoadTotal += instStat.fldCnt;
+    floatLoadTotal += instStat.flwCnt;
+    floatLoadTotal += instStat.flhCnt;
+
+    fprintf(logfp, "## Scala FP stores ##\n");
+    fprintf(logfp, "fsd: %u\n", instStat.fsdCnt);
+    fprintf(logfp, "fsw: %u\n", instStat.fswCnt);
+    fprintf(logfp, "fsh: %u\n\n", instStat.fshCnt);
+    floatStoreTotal += instStat.fsdCnt;
+    floatStoreTotal += instStat.fswCnt;
+    floatStoreTotal += instStat.fshCnt;
+
+    fprintf(logfp, "## Vector loads ##\n");
+    int i;
+    for (i = 0; i < 4; i++) {
+        fprintf(logfp, "vle%d: %u\n", 8 << i, instStat.vleCnt[i]);
+        fprintf(logfp, "vlse%d: %u\n", 8 << i, instStat.vlseCnt[i]);
+        fprintf(logfp, "vlxei%d: %u\n\n", 8 << i, instStat.vlxeiCnt[i]);
+        vectorLoadTotal += instStat.vleCnt[i];
+        vectorLoadTotal += instStat.vlseCnt[i];
+        vectorLoadTotal += instStat.vlxeiCnt[i];
+    }
+
+    fprintf(logfp, "## Vector stores ##\n");
+    for (i = 0; i < 4; i++) {
+        fprintf(logfp, "vse%d: %u\n", 8 << i, instStat.vseCnt[i]);
+        fprintf(logfp, "vsse%d: %u\n", 8 << i, instStat.vsseCnt[i]);
+        fprintf(logfp, "vsxei%d: %u\n\n", 8 << i, instStat.vsxeiCnt[i]);
+        vectorLoadTotal += instStat.vseCnt[i];
+        vectorLoadTotal += instStat.vsseCnt[i];
+        vectorLoadTotal += instStat.vsxeiCnt[i];
+    }
+
+    const char *fpsuffix[] = { ".s", ".d", ".h" };
+    fprintf(logfp, "## fmadd ##\n");
+    for (i = 0; i < 3; i++) {
+        fprintf(logfp, "fmadd%s: %u\n", fpsuffix[i], instStat.fmaddCnt[i]);
+        fmaddTotal += instStat.fmaddCnt[i];
+    }
+    fprintf(logfp, "\n");
+
+    fprintf(logfp, "## fmsub ##\n");
+    for (i = 0; i < 3; i++) {
+        fprintf(logfp, "fmsub%s: %u\n", fpsuffix[i], instStat.fmsubCnt[i]);
+        fmaddTotal += instStat.fmsubCnt[i];
+    }
+    fprintf(logfp, "\n");
+
+    fprintf(logfp, "## fnmadd ##\n");
+    for (i = 0; i < 3; i++) {
+        fprintf(logfp, "fnmadd%s: %u\n", fpsuffix[i], instStat.fnmaddCnt[i]);
+        fmaddTotal += instStat.fnmaddCnt[i];
+    }
+    fprintf(logfp, "\n");
+
+    fprintf(logfp, "## fnmsub ##\n");
+    for (i = 0; i < 3; i++) {
+        fprintf(logfp, "fnmsub%s: %u\n", fpsuffix[i], instStat.fnmsubCnt[i]);
+        fmaddTotal += instStat.fnmsubCnt[i];
+    }
+    fprintf(logfp, "\n");
+
+    const char *vsuffix[] = { ".vv", ".vx", ".vi" };
+    uint32_t varithiTotal = 0;
+    uint32_t varithmTotal = 0;
+    uint32_t varithfTotal = 0;
+    fprintf(logfp, "## Vector arithmetic ##\n");
+    for (i = 0; i < 3; i++) {
+        fprintf(logfp, "varithi%s: %u\n", vsuffix[i], instStat.varithiCnt[i]);
+        varithiTotal += instStat.varithiCnt[i];
+    }
+    for (i = 0; i < 2; i++) {
+        fprintf(logfp, "varithm%s: %u\n", vsuffix[i], instStat.varithmCnt[i]);
+        varithmTotal += instStat.varithmCnt[i];
+    }
+    for (i = 0; i < 2; i++) {
+        const char *suffix = vsuffix[i];
+        if (i == 1)
+            suffix = ".vf";
+        fprintf(logfp, "varithf%s: %u\n", suffix, instStat.varithfCnt[i]);
+        varithfTotal += instStat.varithfCnt[i];
+    }
+    fprintf(logfp, "\n");
+
+    //printf("## Detected unknown instructions ##\n");
+    //printf("unknown: %u\n\n", instStat.unknownCnt);
+
+    fprintf(logfp, "## Total instruction count ##\n");
+    fprintf(logfp, "load: %u\n", intLoadTotal);
+    fprintf(logfp, "store: %u\n", intStoreTotal);
+    fprintf(logfp, "FP load: %u\n", floatLoadTotal);
+    fprintf(logfp, "FP store: %u\n", floatStoreTotal);
+    fprintf(logfp, "Vector load: %u\n", vectorLoadTotal);
+    fprintf(logfp, "Vector store: %u\n", vectorStoreTotal);
+
+    fprintf(logfp, "Total load: %u\n", intLoadTotal + floatLoadTotal + vectorLoadTotal);
+    fprintf(logfp, "Total store: %u\n", intStoreTotal + floatStoreTotal + vectorStoreTotal);
+
+    fprintf(logfp, "Total arith imm.: %u\n", instStat.arithImmCnt);
+    fprintf(logfp, "Total arith: %u\n", instStat.arithCnt);
+
+    fprintf(logfp, "Total FP arith: %u\n", instStat.arithCnt);
+    fprintf(logfp, "Total fmadd: %u\n", fmaddTotal);
+    fprintf(logfp, "Total fmsub: %u\n", fmsubTotal);
+    fprintf(logfp, "Total fnmadd: %u\n", fnmaddTotal);
+    fprintf(logfp, "Total fnmsub: %u\n", fnmsubTotal);
+
+    fprintf(logfp, "Total vector arith (i): %u\n", varithiTotal);
+    fprintf(logfp, "Total vector arith (m): %u\n", varithmTotal);
+    fprintf(logfp, "Total vector arith (f): %u\n", varithfTotal);
+
+    fprintf(logfp, "Total instructions: %lu\n", instStat.instCtr);
+}
+
+void dl_close_log_fp(void) {
+    if (logfp) {
+        fclose(logfp);
+        logfp = NULL;
+        printf("dl_close_log_fp(): %s is closed\n", pathName);
+    }
 }

@@ -259,6 +259,9 @@ int32_t tlib_atomic_memory_state_init(uintptr_t atomic_memory_state_ptr, int32_t
 
 EXC_INT_2(int32_t, tlib_atomic_memory_state_init, uintptr_t, atomic_memory_state_ptr, int32_t, atomic_id)
 
+extern void dl_print_inst_stat(void);
+extern void dl_close_log_fp(void);
+
 void tlib_dispose()
 {
     tlib_arch_dispose();
@@ -270,6 +273,9 @@ void tlib_dispose()
     cpu = NULL;
     tlib_free(cpu_copy);
     tcg_dispose();
+    
+    dl_print_inst_stat();
+    dl_close_log_fp();
 }
 
 EXC_VOID_0(tlib_dispose)

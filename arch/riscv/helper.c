@@ -659,3 +659,72 @@ void HELPER(handle_post_gpr_access_hook)(uint32_t register_index, uint32_t isWri
 {
     tlib_handle_post_gpr_access_hook(register_index, isWrite);
 }
+
+/* Defined in arch/riscv/helper.h */
+// DEF_HELPER_0(hello_load, void)
+// DEF_HELPER_0(hello_store, void)
+
+void HELPER(hello_load)(void)
+{
+    printf("Hello load!\n");
+}
+
+void HELPER(hello_store)(void)
+{
+    printf("Hello store!\n");
+}
+
+int ldCnt = 0, stCnt = 0;
+void HELPER(hello_load_env)(CPUState *env)
+{
+    //printf("Hello load!\n");
+    printf("load/%d: pc=%08x, sp=%08x\n", ++ldCnt, (uint32_t)env->pc, (uint32_t)env->gpr[2]);
+}
+
+void HELPER(hello_store_env)(CPUState *env)
+{
+    //printf("Hello load!\n");
+    printf("store/%d: pc=%08x, sp=%08x\n", ++stCnt, (uint32_t)env->pc, (uint32_t)env->gpr[2]);
+}
+
+extern FILE *logfp;
+extern void dl_inst_ctr_inc(void);
+extern void dl_put_opc(uint32_t opc);
+//extern void dl_put_opc_arith(uint32_t opc);
+extern void dl_put_opc_arith(uint32_t opc, uint32_t opclass);
+extern void dl_put_opc_vector(uint32_t opc, uint32_t width);
+
+void HELPER(inst_ctr)(void) {
+    dl_inst_ctr_inc();
+}
+
+void HELPER(log_inst)(CPUState *env, uint32_t opc, uint32_t addr) {
+    dl_put_opc(opc);
+    fprintf(logfp, "pc=%08x, addr=%08x\n", (uint32_t)env->pc, addr);
+}
+
+void HELPER(log_inst_arith)(CPUState *env, uint32_t opc, uint32_t opclass) {
+    dl_put_opc_arith(opc, opclass);
+    fprintf(logfp, "pc=%08x\n", (uint32_t)env->pc);
+}
+
+void HELPER(log_inst_vector)(CPUState *env, uint32_t opc, uint32_t addr, uint32_t width) {
+    dl_put_opc_vector(opc, width);
+    fprintf(logfp, "pc=%08x, addr=%08x\n", (uint32_t)env->pc, addr);
+}
+
+// deprecated
+/*
+void HELPER(log_test)(CPUState *env, uint32_t addr) {
+    uint32_t pc = (uint32_t)env->pc;
+    //uint32_t opc = dl_get_opc(pc);
+    uint32_t opc = 0;
+    dl_put_opc(opc);
+    fprintf(logfp, "pc=%08x, addr=%08x\n", pc, addr);
+}
+
+void HELPER(log_inst_arith)(CPUState *env, uint32_t opc) {
+    dl_put_opc_arith(opc);
+    fprintf(logfp, "pc=%08x, opc=%04x\n", (uint32_t)env->pc, opc);
+}
+*/

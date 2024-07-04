@@ -1,5 +1,22 @@
 #include "def-helper.h"
 
+/* Test */
+// defined in include/def-helper.h:
+// DEF_HELPER_N(func_name, return_t, param_t1, param_t2, …, param_tN)
+DEF_HELPER_0(hello_load, void)
+DEF_HELPER_0(hello_store, void)
+DEF_HELPER_1(hello_load_env, void, env)
+DEF_HELPER_1(hello_store_env, void, env)
+
+DEF_HELPER_0(inst_ctr, void)
+DEF_HELPER_3(log_inst, void, env, i32, i32)             // env, opc, addr
+DEF_HELPER_3(log_inst_arith, void, env, i32, i32)       // env, opc, opclass
+DEF_HELPER_4(log_inst_vector, void, env, i32, i32, i32) // env, opc, addr, width
+
+// deprecated
+//DEF_HELPER_2(log_test, void, env, i32)              // env, addr
+//DEF_HELPER_2(log_inst_arith, void, env, i32)        // env, opc
+
 /* Exceptions */
 DEF_HELPER_2(raise_exception, void, env, i32)
 DEF_HELPER_1(raise_exception_debug, void, env)

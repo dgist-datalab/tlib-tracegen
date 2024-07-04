@@ -9947,3 +9947,6 @@ void translate_init(void)
     // The 'a64_translate_init' function is also called at the end of it.
     arm_translate_init();
 }
+
+void dl_print_inst_stat(void) {}
+void dl_close_log_fp(void) {}
