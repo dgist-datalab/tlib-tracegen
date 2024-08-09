@@ -28,12 +28,15 @@ static TCGv cpu_gpr[32], cpu_pc, cpu_opcode;
 static TCGv_i64 cpu_fpr[32]; /* assume F and D extensions */
 static TCGv cpu_vstart;
 
-//#define DL_TRACE_ARITH
+//#define DL_TRACE_HUMAN_READABLE
+//#define DL_TRACE_FULL
+//#define DL_TRACE_COMPACT
+#define DL_TRACE_ARITH
 
 /* constants */
 // 산술 연산 분류 코드 정의
 // helper에 인자로 전달한다
-enum DLArithInstClass {
+enum DLInstClass {
     DL_RISC_ARITH_IMM = 0x00, 
     DL_RISC_ARITH, 
     DL_RISC_FMADD = 0x10,   // FP Multiply-Add; MAC 연산과 기능적으로 동일
@@ -48,7 +51,19 @@ enum DLArithInstClass {
     DL_RISC_V_MVV,
     DL_RISC_V_MVX,
     DL_RISC_V_FVV,
-    DL_RISC_V_FVF
+    DL_RISC_V_FVF,
+    DL_RISC_MEM = 0x30,     // int/FP load/store
+    DL_RISC_VL_US = 0x31,   // unit-stride (vle)
+    DL_RISC_VL_VS = 0x32,   // vector-strided (vlse)
+    DL_RISC_VL_UVI = 0x33,  // unordered vector-indexed (vlxei)
+    DL_RISC_VL_OVI = 0x33,  // ordered vector-indexed (vlxei)
+    DL_RISC_VS_US = 0x34,   // unit-stride (vse)
+    DL_RISC_VS_VS = 0x35,   // vector-strided (vsse)
+    DL_RISC_VS_UVI = 0x36,  // unordered vector-indexed (vsxei)
+    DL_RISC_VS_OVI = 0x36,  // ordered vector-indexed (vsxei)
+    DL_RISC_UNKNOWN = 0xff,
+    DL_RISC_CUSTOM0 = 0xf0,
+    DL_RISC_CUSTOM1 = 0xf1
 };
 
 /* global register indices */
@@ -107,9 +122,35 @@ typedef struct DLInstStat {
     uint32_t unknownCnt;
 } DLInstStat;
 
+/* Datastructure for binary format trace */
+// opType과 dataType이 모두 비트 1로 지정되어 있으면 unknown이나 custom이다
+// 이때 명령어 종류는 operandSize의 4비트 필드를 이용하여 식별한다 (DLTraceCustomCode 참조)
+typedef struct DLTraceLow {
+	uint8_t opType: 1;			// mem/arith
+	uint8_t dataType: 3;		// int/float/vector/uint
+	uint8_t operandSize: 4;		// 8/16/32/64/128
+} DLTraceLow;
+
+typedef struct DLTraceCompactMem {
+	DLTraceLow lower;
+	uint64_t instCtr;			// instruction counter
+	uint32_t addr;				// target address (mem) / PC (arith)
+} DLTraceCompactMem;
+
+typedef struct DLTraceCompactArith {
+    DLTraceLow lower;
+    uint64_t instCtr;
+    uint32_t addr;
+    uint8_t opclass;            // 명령어 세부 분류
+} DLTraceCompactArith;
+
+#define DL_TRACE_SIZE_COMPACT_MEM   sizeof(struct DLTraceLow) + 12
+#define DL_TRACE_SIZE_COMPACT_ARITH sizeof(struct DLTraceLow) + 13
+
 /* DataLab: Global variables for memory trace */
 DLInstStat instStat = { 0, };
-const char *LOG_PATH_BASE="/home/euntae/tmp/renode-log/ecg_small";
+//const char *LOG_PATH_BASE="/home/euntae/tmp/renode-log/ecg_small";
+const char *LOG_PATH_BASE="/work/renode-logs/mobilebert";
 FILE *logfp = NULL;
 char pathName[256];
 
@@ -152,10 +193,18 @@ void translate_init(void)
     timer = time(NULL);
     ts = localtime(&timer);
     
+#ifdef DL_TRACE_HUMAN_READABLE
     sprintf(pathName, "%s_%d%02d%02d_%02d%02d%02d.txt", LOG_PATH_BASE, 
         ts->tm_year + 1900, ts->tm_mon + 1, ts->tm_mday,
         ts->tm_hour, ts->tm_min, ts->tm_sec);
     logfp = fopen(pathName, "wt");
+#else
+    sprintf(pathName, "%s_%d%02d%02d_%02d%02d%02d.bin", LOG_PATH_BASE, 
+        ts->tm_year + 1900, ts->tm_mon + 1, ts->tm_mday,
+        ts->tm_hour, ts->tm_min, ts->tm_sec);
+    logfp = fopen(pathName, "wb");
+    printf("\ntranslate_init(): sizeof(DLTraceLow)=%zu\n", sizeof(DLTraceLow));
+#endif
     printf("\ntranslate_init(): %s is created\n", pathName);
 }
 
@@ -5375,24 +5424,31 @@ static void gen_v(DisasContext *dc, uint32_t opc, int rd, int rs1, int rs2, int 
 
     switch (opc) {
     case OPC_RISC_V_IVV:
+        opclass = DL_RISC_V_IVV;
         gen_v_opivv(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_FVV:
+        opclass = DL_RISC_V_FVV;
         gen_v_opfvv(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_MVV:
+        opclass = DL_RISC_V_MVV;
         gen_v_opmvv(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_IVI:
+        opclass = DL_RISC_V_IVI;
         gen_v_opivi(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_IVX:
+        opclass = DL_RISC_V_IVX;
         gen_v_opivx(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_FVF:
+        opclass = DL_RISC_V_FVF;
         gen_v_opfvf(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_MVX:
+        opclass = DL_RISC_V_MVX;
         gen_v_opmvx(dc, funct6, rd, rs1, rs2, vm);
         break;
     case OPC_RISC_V_CFG:
@@ -6133,40 +6189,135 @@ void dl_put_opc(uint32_t opc) {
     fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
 }
 
-/*
-void dl_put_opc_arith(uint32_t opc) {
-    char *opcStr = "unknown";
-    uint32_t instCnt = 0;
-
+uint8_t dl_put_opc_bin(uint32_t opc) {
+    //uint32_t instCnt = 0;
+    uint32_t opResult = 0; // zero: normal, non-zero: unknown or custom
+    DLTraceCompactMem trace = { 0, };
+    trace.lower.opType = 0; // mem
     switch (opc) {
-    // arith imm.
-    case OPC_RISC_ADDI:
-    case OPC_RISC_ADDIW:
-    case OPC_RISC_SLTI:
-    case OPC_RISC_SLTIU:
-    case OPC_RISC_XORI:
-    case OPC_RISC_ORI:
-    case OPC_RISC_ANDI:
-    case OPC_RISC_SLLIW:            // RV64
-    case OPC_RISC_SLLI:
-    case OPC_RISC_SHIFT_RIGHT_I:
-    case OPC_RISC_SHIFT_RIGHT_IW:   // RV64
-    case OPC_RISC_SLLI_UW:
-    case OPC_RISC_RORI:
-    case OPC_RISC_RORIW:
-        instCnt = (++instStat.arithImmCnt);
-        opcStr = "arithimm";
+    /* scalar integer load */
+    case OPC_RISC_LB:
+        // instCnt = (++instStat.lbCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 0;    // 8
+        ++instStat.lbCnt;
         break;
-    default: // arith
-        instCnt = (++instStat.arithCnt);
-        opcStr = "arith";
+    case OPC_RISC_LH:
+        // instCnt = (++instStat.lhCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 1;    // 16
+        ++instStat.lhCnt;
+        break;
+    case OPC_RISC_LW:
+        // instCnt = (++instStat.lwCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 2;    // 32
+        ++instStat.lwCnt;
+        break;
+    case OPC_RISC_LD:
+        // instCnt = (++instStat.ldCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 3;    // 64
+        ++instStat.ldCnt;
+        break;
+    case OPC_RISC_LBU:
+        // instCnt = (++instStat.lbuCnt);
+        trace.lower.dataType = 3;       // uint
+        trace.lower.operandSize = 0;    // 8
+        ++instStat.lbuCnt;
+        break;
+    case OPC_RISC_LHU:
+        // instCnt = (++instStat.lhuCnt);
+        trace.lower.dataType = 3;       // uint
+        trace.lower.operandSize = 1;    // 16
+        ++instStat.lhuCnt;
+        break;
+    case OPC_RISC_LWU:
+        // instCnt = (++instStat.lwuCnt);
+        trace.lower.dataType = 3;       // uint
+        trace.lower.operandSize = 2;    // 32
+        ++instStat.lwuCnt;
+        break;
+    /* scalar integer store */
+    case OPC_RISC_SB:
+        // instCnt = (++instStat.sbCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 0;    // 8
+        ++instStat.sbCnt;
+        break;
+    case OPC_RISC_SH:
+        // instCnt = (++instStat.shCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 1;   // 16
+        ++instStat.shCnt;
+        break;
+    case OPC_RISC_SW:
+        // instCnt = (++instStat.swCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 2;    // 32
+        ++instStat.swCnt;
+        break;
+    case OPC_RISC_SD:
+        // instCnt = (++instStat.sdCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 3;    // 64
+        ++instStat.sdCnt;
+        break;
+    /* scalar fp load */
+    case OPC_RISC_FLH:
+        // instCnt = (++instStat.flhCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 1;    // FP16
+        ++instStat.flhCnt;
+        break;
+    case OPC_RISC_FLW:
+        // instCnt = (++instStat.flwCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 2;    // FP32
+        ++instStat.flwCnt;
+        break;
+    case OPC_RISC_FLD:
+        // instCnt = (++instStat.fldCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 3;    // FP64
+        ++instStat.fldCnt;
+        break;
+    /* scalar fp store */
+    case OPC_RISC_FSH:
+        // instCnt = (++instStat.fshCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 1;    // FP16
+        ++instStat.fshCnt;
+        break;
+    case OPC_RISC_FSW:
+        // instCnt = (++instStat.fswCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 2;    // FP32
+        ++instStat.fswCnt;
+        break;
+    case OPC_RISC_FSD:
+        // instCnt = (++instStat.fsdCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 3;    // FP64
+        ++instStat.fsdCnt;
+        break;
+    default:
+        // instCnt = (++instStat.unknownCnt);
+        trace.lower.opType = 1;
+        trace.lower.dataType = 0b111;
+        trace.lower.operandSize = 0b1111;
+        opResult = DL_RISC_UNKNOWN;
+        ++instStat.unknownCnt;
         break;
     }
-    fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+    trace.instCtr = instStat.instCtr;
+    fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
+    fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
+    return opResult;
 }
-*/
 
 void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
+#ifdef DL_TRACE_HUMAN_READABLE
     char *opcStr = "unknown";
     uint32_t instCnt = 0;
 
@@ -6276,6 +6427,181 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         instCnt = (++instStat.varithfCnt[1]); // vf
     }
     fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+#else // for binary format
+    // uint32_t instCnt = 0;
+    DLTraceCompactArith trace = { 0, };
+    trace.lower.opType = 1; // arith
+    if (opclass == DL_RISC_ARITH_IMM) {
+        // instCnt = (++instStat.arithImmCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 2;    // 32
+        ++instStat.arithImmCnt;
+    }
+    else if (opclass == DL_RISC_ARITH) {
+        // instCnt = (++instStat.arithCnt);
+        trace.lower.dataType = 0;       // int
+        trace.lower.operandSize = 2;    // 32
+        ++instStat.arithCnt;
+    }
+    else if (opclass == DL_RISC_FMADD) {
+        trace.lower.dataType = 1; // fp
+        switch (opc) {
+        case OPC_RISC_FMADD_S:
+            //opcStr = "fmadd.s";
+            // instCnt = (++instStat.fmaddCnt[0]);
+            trace.lower.operandSize = 2;    // FP32
+            ++instStat.fmaddCnt[0];
+            break;
+        case OPC_RISC_FMADD_D:
+            //opcStr = "fmadd.d";
+            // instCnt = (++instStat.fmaddCnt[1]);
+            trace.lower.operandSize = 3;    // FP64
+            ++instStat.fmaddCnt[1];
+            break;
+        case OPC_RISC_FMADD_H:
+            //opcStr = "fmadd.h";
+            // instCnt = (++instStat.fmaddCnt[2]);
+            trace.lower.operandSize = 1;    // FP16
+            ++instStat.fmaddCnt[2];
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FMSUB) {
+        trace.lower.dataType = 1; // fp
+        switch (opc) {
+        case OPC_RISC_FMSUB_S:
+            //opcStr = "fmsub.s";
+            // instCnt = (++instStat.fmsubCnt[0]);
+            trace.lower.operandSize = 2;    // FP32
+            ++instStat.fmsubCnt[0];
+            break;
+        case OPC_RISC_FMSUB_D:
+            //opcStr = "fmsub.d";
+            // instCnt = (++instStat.fmsubCnt[1]);
+            trace.lower.operandSize = 3;    // FP64
+            ++instStat.fmsubCnt[1];
+            break;
+        case OPC_RISC_FMSUB_H:
+            //opcStr = "fmsub.h";
+            // instCnt = (++instStat.fmsubCnt[2]);
+            trace.lower.operandSize = 1;    // FP16
+            ++instStat.fmsubCnt[2];
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FNMADD) {
+        trace.lower.dataType = 1; // fp
+        switch (opc) {
+        case OPC_RISC_FNMADD_S:
+            //opcStr = "fnmadd.s";
+            // instCnt = (++instStat.fnmaddCnt[0]);
+            trace.lower.operandSize = 2;    // FP32
+            ++instStat.fnmaddCnt[0];
+            break;
+        case OPC_RISC_FNMADD_D:
+            //opcStr = "fnmadd.d";
+            // instCnt = (++instStat.fnmaddCnt[1]);
+            trace.lower.operandSize = 3;    // FP64
+            ++instStat.fnmaddCnt[1];
+            break;
+        case OPC_RISC_FNMADD_H:
+            //opcStr = "fnmadd.h";
+            // instCnt = (++instStat.fnmaddCnt[2]);
+            trace.lower.operandSize = 1;    // FP16
+            ++instStat.fnmaddCnt[2];
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FNMSUB) {
+        trace.lower.dataType = 1; // fp
+        switch (opc) {
+        case OPC_RISC_FNMSUB_S:
+            //opcStr = "fnmsub.s";
+            // instCnt = (++instStat.fnmsubCnt[0]);
+            trace.lower.operandSize = 2;    // FP32
+            ++instStat.fnmsubCnt[0];
+            break;
+        case OPC_RISC_FNMSUB_D:
+            // opcStr = "fnmsub.d";
+            // instCnt = (++instStat.fnmsubCnt[1]);
+            trace.lower.operandSize = 3;    // FP64
+            ++instStat.fnmsubCnt[1];
+            break;
+        case OPC_RISC_FNMSUB_H:
+            // opcStr = "fnmsub.h";
+            // instCnt = (++instStat.fnmsubCnt[2]);
+            trace.lower.operandSize = 1;    // FP16
+            ++instStat.fnmsubCnt[2];
+            break;
+        }
+    }
+    else if (opclass == DL_RISC_FP_ARITH) {
+        // opcStr = "fparith";
+        // instCnt = (++instStat.fparithCnt);
+        trace.lower.dataType = 1;       // fp
+        trace.lower.operandSize = 2;    // FP32
+        ++instStat.fparithCnt;
+    }
+    else if (opclass == DL_RISC_V_IVV) {
+        // opcStr = "varithi.vv";
+        // instCnt = (++instStat.varithiCnt[0]); // vv
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;    // 32?
+        ++instStat.varithiCnt[0];
+    }
+    else if (opclass == DL_RISC_V_IVX) {
+        // opcStr = "varithi.vx";
+        // instCnt = (++instStat.varithiCnt[1]); // vx
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithiCnt[1];
+    }
+    else if (opclass == DL_RISC_V_IVI) {
+        // opcStr = "varithi.vi";
+        // instCnt = (++instStat.varithiCnt[2]); // vi
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithiCnt[2];
+    }
+    else if (opclass == DL_RISC_V_MVV) {
+        // opcStr = "varithm.vv";
+        // instCnt = (++instStat.varithmCnt[0]); // vv
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithmCnt[0];
+    }
+    else if (opclass == DL_RISC_V_MVX) {
+        // opcStr = "varithm.vx";
+        // instCnt = (++instStat.varithmCnt[1]); // vx
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithmCnt[1];
+    }
+    else if (opclass == DL_RISC_V_FVV) {
+        // opcStr = "varithf.vv";
+        // instCnt = (++instStat.varithfCnt[0]); // vv
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithfCnt[0];
+    }
+    else if (opclass == DL_RISC_V_FVF) {
+        // opcStr = "varithf.vf";
+        // instCnt = (++instStat.varithfCnt[1]); // vf
+        trace.lower.dataType = 2;       // vector
+        trace.lower.operandSize = 2;
+        ++instStat.varithfCnt[1];
+    }
+    // else { // unknown or custom
+    //     trace.lower.opType = 1;
+    //     trace.lower.dataType = 0b111;
+    //     trace.lower.operandSize = 0b1111;
+    //     ++instStat.unknownCnt;
+    // }
+    trace.instCtr = instStat.instCtr;
+    fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
+    fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
+    //fprintf(logfp, "[%lu] %s(=%04x)/%u: ", instStat.instCtr, opcStr, opc, instCnt);
+#endif
 }
 
 void dl_put_opc_vector(uint32_t opc, uint32_t width) {
@@ -6318,6 +6644,71 @@ void dl_put_opc_vector(uint32_t opc, uint32_t width) {
     fprintf(logfp, "[%lu] %s%d(=%04x)/%u: ", instStat.instCtr, opcStr, nwidth, opc, instCnt);
 }
 
+uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
+    //uint32_t instCnt = 0;
+    uint32_t mw = width & 0x03;
+    //uint32_t nwidth = 8 << mw;
+    uint8_t opclass = 0;
+    DLTraceCompactMem trace = { 0, };
+    trace.lower.opType = 0;     // mem
+    trace.lower.dataType = 2;   // vector
+    trace.lower.operandSize = mw;
+    switch (opc) {
+    // load
+    case OPC_RISC_VL_US:  // unit-stride
+        // opcStr = "vle";
+        //instCnt = (++instStat.vleCnt[mw]);
+        ++instStat.vleCnt[mw];
+        opclass = DL_RISC_VL_US;
+        break;
+    case OPC_RISC_VL_VS:  // vector-strided
+        // opcStr = "vlse";
+        //instCnt = (++instStat.vlseCnt[mw]);
+        ++instStat.vlseCnt[mw];
+        opclass = DL_RISC_VL_VS;
+        break;
+    case OPC_RISC_VL_UVI: // unordered vector-indexed
+    case OPC_RISC_VL_OVI: // ordered vector-indexed
+        // opcStr = "vlxei";
+        // instCnt = (++instStat.vlxeiCnt[mw]);
+        ++instStat.vlxeiCnt[mw];
+        opclass = DL_RISC_VL_UVI;
+        break;
+    // store
+    case OPC_RISC_VS_US:  // unit-stride
+        // opcStr = "vse";
+        // instCnt = (++instStat.vseCnt[mw]);
+        ++instStat.vseCnt[mw];
+        opclass = DL_RISC_VS_US;
+        break;
+    case OPC_RISC_VS_VS:  // vector-strided
+        // opcStr = "vsse";
+        // instCnt = (++instStat.vsseCnt[mw]);
+        opclass = DL_RISC_VS_VS;
+        ++instStat.vsseCnt[mw];
+        break;
+    case OPC_RISC_VS_UVI: // unordered vector-indexed
+    case OPC_RISC_VS_OVI: // ordered vector-indexed
+        // opcStr = "vsxei";
+        // instCnt = (++instStat.vsxeiCnt[mw]);
+        opclass = DL_RISC_VS_UVI;
+        ++instStat.vsxeiCnt[mw];
+        break;
+    default: // unknown
+        trace.lower.opType = 1;
+        trace.lower.dataType = 0b111;
+        trace.lower.operandSize = 0b1111;
+        ++instStat.unknownCnt;
+        opclass = DL_RISC_UNKNOWN;
+        break;
+    }
+    //fprintf(logfp, "[%lu] %s%d(=%04x)/%u: ", instStat.instCtr, opcStr, nwidth, opc, instCnt);
+    trace.instCtr = instStat.instCtr;
+    fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
+    fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
+    return opclass;
+}
+
 void dl_print_inst_stat(void) {
     uint32_t intLoadTotal = 0, intStoreTotal = 0;
     uint32_t floatLoadTotal = 0, floatStoreTotal = 0;
@@ -6326,14 +6717,20 @@ void dl_print_inst_stat(void) {
     uint32_t fnmaddTotal = 0, fnmsubTotal = 0;
     //uint32_t loadTotal = 0, storeTotal = 0;
 
-    fprintf(logfp, "## Scala integer loads ##\n");
-    fprintf(logfp, "ld:  %u\n", instStat.ldCnt);
-    fprintf(logfp, "lw:  %u\n", instStat.lwCnt);
-    fprintf(logfp, "lwu: %u\n", instStat.lwuCnt);
-    fprintf(logfp, "lh:  %u\n", instStat.lhCnt);
-    fprintf(logfp, "lhu: %u\n", instStat.lhuCnt);
-    fprintf(logfp, "lb:  %u\n", instStat.lbCnt);
-    fprintf(logfp, "lbu: %u\n\n", instStat.lbuCnt);
+#ifdef DL_TRACE_HUMAN_READABLE
+    FILE *fpTarget = logfp;
+#else
+    FILE *fpTarget = stdout;
+#endif    
+
+    fprintf(fpTarget, "## Scala integer loads ##\n");
+    fprintf(fpTarget, "ld:  %u\n", instStat.ldCnt);
+    fprintf(fpTarget, "lw:  %u\n", instStat.lwCnt);
+    fprintf(fpTarget, "lwu: %u\n", instStat.lwuCnt);
+    fprintf(fpTarget, "lh:  %u\n", instStat.lhCnt);
+    fprintf(fpTarget, "lhu: %u\n", instStat.lhuCnt);
+    fprintf(fpTarget, "lb:  %u\n", instStat.lbCnt);
+    fprintf(fpTarget, "lbu: %u\n\n", instStat.lbuCnt);
     intLoadTotal += instStat.ldCnt;
     intLoadTotal += instStat.lwCnt;
     intLoadTotal += instStat.lwuCnt;
@@ -6342,132 +6739,132 @@ void dl_print_inst_stat(void) {
     intLoadTotal += instStat.lbCnt;
     intLoadTotal += instStat.lbuCnt;
 
-    fprintf(logfp, "## Scala integer stores ##\n");
-    fprintf(logfp, "sd: %u\n", instStat.sdCnt);
-    fprintf(logfp, "sw: %u\n", instStat.swCnt);
-    fprintf(logfp, "sh: %u\n", instStat.shCnt);
-    fprintf(logfp, "sb: %u\n\n", instStat.sbCnt);
+    fprintf(fpTarget, "## Scala integer stores ##\n");
+    fprintf(fpTarget, "sd: %u\n", instStat.sdCnt);
+    fprintf(fpTarget, "sw: %u\n", instStat.swCnt);
+    fprintf(fpTarget, "sh: %u\n", instStat.shCnt);
+    fprintf(fpTarget, "sb: %u\n\n", instStat.sbCnt);
     intStoreTotal += instStat.sdCnt;
     intStoreTotal += instStat.swCnt;
     intStoreTotal += instStat.shCnt;
     intStoreTotal += instStat.sbCnt;
 
-    fprintf(logfp, "## Scala FP loads ##\n");
-    fprintf(logfp, "fld: %u\n", instStat.fldCnt);
-    fprintf(logfp, "flw: %u\n", instStat.flwCnt);
-    fprintf(logfp, "flh: %u\n\n", instStat.flhCnt);
+    fprintf(fpTarget, "## Scala FP loads ##\n");
+    fprintf(fpTarget, "fld: %u\n", instStat.fldCnt);
+    fprintf(fpTarget, "flw: %u\n", instStat.flwCnt);
+    fprintf(fpTarget, "flh: %u\n\n", instStat.flhCnt);
     floatLoadTotal += instStat.fldCnt;
     floatLoadTotal += instStat.flwCnt;
     floatLoadTotal += instStat.flhCnt;
 
-    fprintf(logfp, "## Scala FP stores ##\n");
-    fprintf(logfp, "fsd: %u\n", instStat.fsdCnt);
-    fprintf(logfp, "fsw: %u\n", instStat.fswCnt);
-    fprintf(logfp, "fsh: %u\n\n", instStat.fshCnt);
+    fprintf(fpTarget, "## Scala FP stores ##\n");
+    fprintf(fpTarget, "fsd: %u\n", instStat.fsdCnt);
+    fprintf(fpTarget, "fsw: %u\n", instStat.fswCnt);
+    fprintf(fpTarget, "fsh: %u\n\n", instStat.fshCnt);
     floatStoreTotal += instStat.fsdCnt;
     floatStoreTotal += instStat.fswCnt;
     floatStoreTotal += instStat.fshCnt;
 
-    fprintf(logfp, "## Vector loads ##\n");
+    fprintf(fpTarget, "## Vector loads ##\n");
     int i;
     for (i = 0; i < 4; i++) {
-        fprintf(logfp, "vle%d: %u\n", 8 << i, instStat.vleCnt[i]);
-        fprintf(logfp, "vlse%d: %u\n", 8 << i, instStat.vlseCnt[i]);
-        fprintf(logfp, "vlxei%d: %u\n\n", 8 << i, instStat.vlxeiCnt[i]);
+        fprintf(fpTarget, "vle%d: %u\n", 8 << i, instStat.vleCnt[i]);
+        fprintf(fpTarget, "vlse%d: %u\n", 8 << i, instStat.vlseCnt[i]);
+        fprintf(fpTarget, "vlxei%d: %u\n\n", 8 << i, instStat.vlxeiCnt[i]);
         vectorLoadTotal += instStat.vleCnt[i];
         vectorLoadTotal += instStat.vlseCnt[i];
         vectorLoadTotal += instStat.vlxeiCnt[i];
     }
 
-    fprintf(logfp, "## Vector stores ##\n");
+    fprintf(fpTarget, "## Vector stores ##\n");
     for (i = 0; i < 4; i++) {
-        fprintf(logfp, "vse%d: %u\n", 8 << i, instStat.vseCnt[i]);
-        fprintf(logfp, "vsse%d: %u\n", 8 << i, instStat.vsseCnt[i]);
-        fprintf(logfp, "vsxei%d: %u\n\n", 8 << i, instStat.vsxeiCnt[i]);
+        fprintf(fpTarget, "vse%d: %u\n", 8 << i, instStat.vseCnt[i]);
+        fprintf(fpTarget, "vsse%d: %u\n", 8 << i, instStat.vsseCnt[i]);
+        fprintf(fpTarget, "vsxei%d: %u\n\n", 8 << i, instStat.vsxeiCnt[i]);
         vectorLoadTotal += instStat.vseCnt[i];
         vectorLoadTotal += instStat.vsseCnt[i];
         vectorLoadTotal += instStat.vsxeiCnt[i];
     }
 
     const char *fpsuffix[] = { ".s", ".d", ".h" };
-    fprintf(logfp, "## fmadd ##\n");
+    fprintf(fpTarget, "## fmadd ##\n");
     for (i = 0; i < 3; i++) {
-        fprintf(logfp, "fmadd%s: %u\n", fpsuffix[i], instStat.fmaddCnt[i]);
+        fprintf(fpTarget, "fmadd%s: %u\n", fpsuffix[i], instStat.fmaddCnt[i]);
         fmaddTotal += instStat.fmaddCnt[i];
     }
-    fprintf(logfp, "\n");
+    fprintf(fpTarget, "\n");
 
-    fprintf(logfp, "## fmsub ##\n");
+    fprintf(fpTarget, "## fmsub ##\n");
     for (i = 0; i < 3; i++) {
-        fprintf(logfp, "fmsub%s: %u\n", fpsuffix[i], instStat.fmsubCnt[i]);
+        fprintf(fpTarget, "fmsub%s: %u\n", fpsuffix[i], instStat.fmsubCnt[i]);
         fmaddTotal += instStat.fmsubCnt[i];
     }
-    fprintf(logfp, "\n");
+    fprintf(fpTarget, "\n");
 
-    fprintf(logfp, "## fnmadd ##\n");
+    fprintf(fpTarget, "## fnmadd ##\n");
     for (i = 0; i < 3; i++) {
-        fprintf(logfp, "fnmadd%s: %u\n", fpsuffix[i], instStat.fnmaddCnt[i]);
+        fprintf(fpTarget, "fnmadd%s: %u\n", fpsuffix[i], instStat.fnmaddCnt[i]);
         fmaddTotal += instStat.fnmaddCnt[i];
     }
-    fprintf(logfp, "\n");
+    fprintf(fpTarget, "\n");
 
-    fprintf(logfp, "## fnmsub ##\n");
+    fprintf(fpTarget, "## fnmsub ##\n");
     for (i = 0; i < 3; i++) {
-        fprintf(logfp, "fnmsub%s: %u\n", fpsuffix[i], instStat.fnmsubCnt[i]);
+        fprintf(fpTarget, "fnmsub%s: %u\n", fpsuffix[i], instStat.fnmsubCnt[i]);
         fmaddTotal += instStat.fnmsubCnt[i];
     }
-    fprintf(logfp, "\n");
+    fprintf(fpTarget, "\n");
 
     const char *vsuffix[] = { ".vv", ".vx", ".vi" };
     uint32_t varithiTotal = 0;
     uint32_t varithmTotal = 0;
     uint32_t varithfTotal = 0;
-    fprintf(logfp, "## Vector arithmetic ##\n");
+    fprintf(fpTarget, "## Vector arithmetic ##\n");
     for (i = 0; i < 3; i++) {
-        fprintf(logfp, "varithi%s: %u\n", vsuffix[i], instStat.varithiCnt[i]);
+        fprintf(fpTarget, "varithi%s: %u\n", vsuffix[i], instStat.varithiCnt[i]);
         varithiTotal += instStat.varithiCnt[i];
     }
     for (i = 0; i < 2; i++) {
-        fprintf(logfp, "varithm%s: %u\n", vsuffix[i], instStat.varithmCnt[i]);
+        fprintf(fpTarget, "varithm%s: %u\n", vsuffix[i], instStat.varithmCnt[i]);
         varithmTotal += instStat.varithmCnt[i];
     }
     for (i = 0; i < 2; i++) {
         const char *suffix = vsuffix[i];
         if (i == 1)
             suffix = ".vf";
-        fprintf(logfp, "varithf%s: %u\n", suffix, instStat.varithfCnt[i]);
+        fprintf(fpTarget, "varithf%s: %u\n", suffix, instStat.varithfCnt[i]);
         varithfTotal += instStat.varithfCnt[i];
     }
-    fprintf(logfp, "\n");
+    fprintf(fpTarget, "\n");
 
     //printf("## Detected unknown instructions ##\n");
     //printf("unknown: %u\n\n", instStat.unknownCnt);
 
-    fprintf(logfp, "## Total instruction count ##\n");
-    fprintf(logfp, "load: %u\n", intLoadTotal);
-    fprintf(logfp, "store: %u\n", intStoreTotal);
-    fprintf(logfp, "FP load: %u\n", floatLoadTotal);
-    fprintf(logfp, "FP store: %u\n", floatStoreTotal);
-    fprintf(logfp, "Vector load: %u\n", vectorLoadTotal);
-    fprintf(logfp, "Vector store: %u\n", vectorStoreTotal);
+    fprintf(fpTarget, "## Total instruction count ##\n");
+    fprintf(fpTarget, "load: %u\n", intLoadTotal);
+    fprintf(fpTarget, "store: %u\n", intStoreTotal);
+    fprintf(fpTarget, "FP load: %u\n", floatLoadTotal);
+    fprintf(fpTarget, "FP store: %u\n", floatStoreTotal);
+    fprintf(fpTarget, "Vector load: %u\n", vectorLoadTotal);
+    fprintf(fpTarget, "Vector store: %u\n", vectorStoreTotal);
 
-    fprintf(logfp, "Total load: %u\n", intLoadTotal + floatLoadTotal + vectorLoadTotal);
-    fprintf(logfp, "Total store: %u\n", intStoreTotal + floatStoreTotal + vectorStoreTotal);
+    fprintf(fpTarget, "Total load: %u\n", intLoadTotal + floatLoadTotal + vectorLoadTotal);
+    fprintf(fpTarget, "Total store: %u\n", intStoreTotal + floatStoreTotal + vectorStoreTotal);
 
-    fprintf(logfp, "Total arith imm.: %u\n", instStat.arithImmCnt);
-    fprintf(logfp, "Total arith: %u\n", instStat.arithCnt);
+    fprintf(fpTarget, "Total arith imm.: %u\n", instStat.arithImmCnt);
+    fprintf(fpTarget, "Total arith: %u\n", instStat.arithCnt);
 
-    fprintf(logfp, "Total FP arith: %u\n", instStat.arithCnt);
-    fprintf(logfp, "Total fmadd: %u\n", fmaddTotal);
-    fprintf(logfp, "Total fmsub: %u\n", fmsubTotal);
-    fprintf(logfp, "Total fnmadd: %u\n", fnmaddTotal);
-    fprintf(logfp, "Total fnmsub: %u\n", fnmsubTotal);
+    fprintf(fpTarget, "Total FP arith: %u\n", instStat.arithCnt);
+    fprintf(fpTarget, "Total fmadd: %u\n", fmaddTotal);
+    fprintf(fpTarget, "Total fmsub: %u\n", fmsubTotal);
+    fprintf(fpTarget, "Total fnmadd: %u\n", fnmaddTotal);
+    fprintf(fpTarget, "Total fnmsub: %u\n", fnmsubTotal);
 
-    fprintf(logfp, "Total vector arith (i): %u\n", varithiTotal);
-    fprintf(logfp, "Total vector arith (m): %u\n", varithmTotal);
-    fprintf(logfp, "Total vector arith (f): %u\n", varithfTotal);
+    fprintf(fpTarget, "Total vector arith (i): %u\n", varithiTotal);
+    fprintf(fpTarget, "Total vector arith (m): %u\n", varithmTotal);
+    fprintf(fpTarget, "Total vector arith (f): %u\n", varithfTotal);
 
-    fprintf(logfp, "Total instructions: %lu\n", instStat.instCtr);
+    fprintf(fpTarget, "Total instructions: %lu\n", instStat.instCtr);
 }
 
 void dl_close_log_fp(void) {

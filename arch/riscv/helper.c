@@ -29,6 +29,8 @@
 #define RVXLEN ((target_ulong)2 << (TARGET_LONG_BITS - 2))
 #endif
 
+//#define DL_TRACE_HUMAN_READABLE
+
 void cpu_reset(CPUState *env)
 {
     int32_t interrupt_mode = env->interrupt_mode;
@@ -690,41 +692,58 @@ void HELPER(hello_store_env)(CPUState *env)
 extern FILE *logfp;
 extern void dl_inst_ctr_inc(void);
 extern void dl_put_opc(uint32_t opc);
-//extern void dl_put_opc_arith(uint32_t opc);
 extern void dl_put_opc_arith(uint32_t opc, uint32_t opclass);
 extern void dl_put_opc_vector(uint32_t opc, uint32_t width);
+/* binary trace mode에서 사용 */
+extern uint8_t dl_put_opc_bin(uint32_t opc);
+extern uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width);
 
 void HELPER(inst_ctr)(void) {
     dl_inst_ctr_inc();
 }
 
+// helper for {int, FP} load/store instructions
 void HELPER(log_inst)(CPUState *env, uint32_t opc, uint32_t addr) {
+#ifdef DL_TRACE_HUMAN_READABLE
     dl_put_opc(opc);
     fprintf(logfp, "pc=%08x, addr=%08x\n", (uint32_t)env->pc, addr);
+#else
+    // for binary trace mode
+    // dl_put_opc_bin에서 trace.lower과 instCtr 출력
+    uint8_t opResult = dl_put_opc_bin(opc);
+    fwrite(&addr, sizeof(uint32_t), 1, logfp);
+    if (opResult != 0) { // unknown or custom
+        fwrite(&opResult, sizeof(opResult), 1, logfp);
+    }
+#endif
 }
 
+// helper for {int, FP, vector} arithmetic instructions
 void HELPER(log_inst_arith)(CPUState *env, uint32_t opc, uint32_t opclass) {
-    dl_put_opc_arith(opc, opclass);
+    dl_put_opc_arith(opc, opclass); // write trace.lower, trace.instCtr
+#ifdef DL_TRACE_HUMAN_READABLE
     fprintf(logfp, "pc=%08x\n", (uint32_t)env->pc);
+#else
+    // for binary trace mode
+    // write PC, opclass
+    uint8_t opcls = (uint8_t)opclass;
+    fwrite((uint32_t*)&env->pc, sizeof(uint32_t), 1, logfp);
+    fwrite(&opcls, sizeof(opcls), 1, logfp);
+    //fwrite((uint8_t*)&opclass, sizeof(uint8_t), 1, logfp);
+#endif
 }
 
+// helper for vector load/store instructions
 void HELPER(log_inst_vector)(CPUState *env, uint32_t opc, uint32_t addr, uint32_t width) {
+#ifdef DL_TRACE_HUMAN_READABLE
     dl_put_opc_vector(opc, width);
     fprintf(logfp, "pc=%08x, addr=%08x\n", (uint32_t)env->pc, addr);
+#else
+    // for binary trace mode
+    // write trace.lower, trace.instCtr
+    uint8_t opclass = dl_put_opc_vector_bin(opc, width);
+    // write target address, opclass
+    fwrite(&addr, sizeof(uint32_t), 1, logfp);
+    fwrite(&opclass, sizeof(opclass), 1, logfp);
+#endif
 }
-
-// deprecated
-/*
-void HELPER(log_test)(CPUState *env, uint32_t addr) {
-    uint32_t pc = (uint32_t)env->pc;
-    //uint32_t opc = dl_get_opc(pc);
-    uint32_t opc = 0;
-    dl_put_opc(opc);
-    fprintf(logfp, "pc=%08x, addr=%08x\n", pc, addr);
-}
-
-void HELPER(log_inst_arith)(CPUState *env, uint32_t opc) {
-    dl_put_opc_arith(opc);
-    fprintf(logfp, "pc=%08x, opc=%04x\n", (uint32_t)env->pc, opc);
-}
-*/
