@@ -126,9 +126,9 @@ typedef struct DLInstStat {
 // opType과 dataType이 모두 비트 1로 지정되어 있으면 unknown이나 custom이다
 // 이때 명령어 종류는 operandSize의 4비트 필드를 이용하여 식별한다 (DLTraceCustomCode 참조)
 typedef struct DLTraceLow {
-	uint8_t opType: 1;			// mem/arith
+	uint8_t opType: 2;			// mem/arith
 	uint8_t dataType: 3;		// int/float/vector/uint
-	uint8_t operandSize: 4;		// 8/16/32/64/128
+	uint8_t operandSize: 3;		// 8/16/32/64/128
 } DLTraceLow;
 
 typedef struct DLTraceCompactMem {
@@ -149,8 +149,8 @@ typedef struct DLTraceCompactArith {
 
 /* DataLab: Global variables for memory trace */
 DLInstStat instStat = { 0, };
-//const char *LOG_PATH_BASE="/home/euntae/tmp/renode-log/ecg_small";
-const char *LOG_PATH_BASE="/work/renode-logs/mobilebert";
+const char *LOG_PATH_BASE="/home/euntae/tmp/renode-log/ecg_small";
+//const char *LOG_PATH_BASE="/work/renode-logs/mobilebert";
 FILE *logfp = NULL;
 char pathName[256];
 
@@ -6193,47 +6193,54 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     //uint32_t instCnt = 0;
     uint32_t opResult = 0; // zero: normal, non-zero: unknown or custom
     DLTraceCompactMem trace = { 0, };
-    trace.lower.opType = 0; // mem
+    //trace.lower.opType = 0; // mem (traceV1, deprecated)
     switch (opc) {
     /* scalar integer load */
     case OPC_RISC_LB:
         // instCnt = (++instStat.lbCnt);
+        trace.lower.opType = 0;         // load (traceV2)
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 0;    // 8
         ++instStat.lbCnt;
         break;
     case OPC_RISC_LH:
         // instCnt = (++instStat.lhCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 1;    // 16
         ++instStat.lhCnt;
         break;
     case OPC_RISC_LW:
         // instCnt = (++instStat.lwCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 2;    // 32
         ++instStat.lwCnt;
         break;
     case OPC_RISC_LD:
         // instCnt = (++instStat.ldCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 3;    // 64
         ++instStat.ldCnt;
         break;
     case OPC_RISC_LBU:
         // instCnt = (++instStat.lbuCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 3;       // uint
         trace.lower.operandSize = 0;    // 8
         ++instStat.lbuCnt;
         break;
     case OPC_RISC_LHU:
         // instCnt = (++instStat.lhuCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 3;       // uint
         trace.lower.operandSize = 1;    // 16
         ++instStat.lhuCnt;
         break;
     case OPC_RISC_LWU:
         // instCnt = (++instStat.lwuCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 3;       // uint
         trace.lower.operandSize = 2;    // 32
         ++instStat.lwuCnt;
@@ -6241,24 +6248,28 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     /* scalar integer store */
     case OPC_RISC_SB:
         // instCnt = (++instStat.sbCnt);
+        trace.lower.opType = 1;         // store (traceV2)
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 0;    // 8
         ++instStat.sbCnt;
         break;
     case OPC_RISC_SH:
         // instCnt = (++instStat.shCnt);
+        trace.lower.opType = 1;         // store (traceV2)
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 1;   // 16
         ++instStat.shCnt;
         break;
     case OPC_RISC_SW:
         // instCnt = (++instStat.swCnt);
+        trace.lower.opType = 1;         // store (traceV2)
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 2;    // 32
         ++instStat.swCnt;
         break;
     case OPC_RISC_SD:
         // instCnt = (++instStat.sdCnt);
+        trace.lower.opType = 1;         // store (traceV2)
         trace.lower.dataType = 0;       // int
         trace.lower.operandSize = 3;    // 64
         ++instStat.sdCnt;
@@ -6266,18 +6277,21 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     /* scalar fp load */
     case OPC_RISC_FLH:
         // instCnt = (++instStat.flhCnt);
+        trace.lower.opType = 0;         // load (traceV2)
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 1;    // FP16
         ++instStat.flhCnt;
         break;
     case OPC_RISC_FLW:
         // instCnt = (++instStat.flwCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 2;    // FP32
         ++instStat.flwCnt;
         break;
     case OPC_RISC_FLD:
         // instCnt = (++instStat.fldCnt);
+        trace.lower.opType = 0;         // load
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 3;    // FP64
         ++instStat.fldCnt;
@@ -6285,27 +6299,31 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     /* scalar fp store */
     case OPC_RISC_FSH:
         // instCnt = (++instStat.fshCnt);
+        trace.lower.opType = 1;         // store (traceV2)
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 1;    // FP16
         ++instStat.fshCnt;
         break;
     case OPC_RISC_FSW:
         // instCnt = (++instStat.fswCnt);
+        trace.lower.opType = 1;         // store
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 2;    // FP32
         ++instStat.fswCnt;
         break;
     case OPC_RISC_FSD:
         // instCnt = (++instStat.fsdCnt);
+        trace.lower.opType = 1;         // store
         trace.lower.dataType = 1;       // fp
         trace.lower.operandSize = 3;    // FP64
         ++instStat.fsdCnt;
         break;
     default:
         // instCnt = (++instStat.unknownCnt);
-        trace.lower.opType = 1;
-        trace.lower.dataType = 0b111;
-        trace.lower.operandSize = 0b1111;
+        trace.lower.opType = 2;         // unknown/custom (traceV2)
+        // trace.lower.opType = 1;
+        // trace.lower.dataType = 0b111;
+        // trace.lower.operandSize = 0b1111;
         opResult = DL_RISC_UNKNOWN;
         ++instStat.unknownCnt;
         break;
@@ -6430,7 +6448,8 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
 #else // for binary format
     // uint32_t instCnt = 0;
     DLTraceCompactArith trace = { 0, };
-    trace.lower.opType = 1; // arith
+    //trace.lower.opType = 1; // arith (traceV1, deprecated)
+    trace.lower.opType = 2; // arith (traceV2)
     if (opclass == DL_RISC_ARITH_IMM) {
         // instCnt = (++instStat.arithImmCnt);
         trace.lower.dataType = 0;       // int
@@ -6591,12 +6610,10 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         trace.lower.operandSize = 2;
         ++instStat.varithfCnt[1];
     }
-    // else { // unknown or custom
-    //     trace.lower.opType = 1;
-    //     trace.lower.dataType = 0b111;
-    //     trace.lower.operandSize = 0b1111;
-    //     ++instStat.unknownCnt;
-    // }
+    else { // unknown or custom
+        trace.lower.opType = 3;
+        ++instStat.unknownCnt; // TODO: unknown과 custom 세분화
+    }
     trace.instCtr = instStat.instCtr;
     fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
     fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
@@ -6650,7 +6667,7 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     //uint32_t nwidth = 8 << mw;
     uint8_t opclass = 0;
     DLTraceCompactMem trace = { 0, };
-    trace.lower.opType = 0;     // mem
+    //trace.lower.opType = 0;     // mem (traceV1, deprecated)
     trace.lower.dataType = 2;   // vector
     trace.lower.operandSize = mw;
     switch (opc) {
@@ -6658,12 +6675,14 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     case OPC_RISC_VL_US:  // unit-stride
         // opcStr = "vle";
         //instCnt = (++instStat.vleCnt[mw]);
+        trace.lower.opType = 0; // load (traceV2)
         ++instStat.vleCnt[mw];
         opclass = DL_RISC_VL_US;
         break;
     case OPC_RISC_VL_VS:  // vector-strided
         // opcStr = "vlse";
         //instCnt = (++instStat.vlseCnt[mw]);
+        trace.lower.opType = 0; // load
         ++instStat.vlseCnt[mw];
         opclass = DL_RISC_VL_VS;
         break;
@@ -6671,6 +6690,7 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     case OPC_RISC_VL_OVI: // ordered vector-indexed
         // opcStr = "vlxei";
         // instCnt = (++instStat.vlxeiCnt[mw]);
+        trace.lower.opType = 0; // load
         ++instStat.vlxeiCnt[mw];
         opclass = DL_RISC_VL_UVI;
         break;
@@ -6678,12 +6698,14 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     case OPC_RISC_VS_US:  // unit-stride
         // opcStr = "vse";
         // instCnt = (++instStat.vseCnt[mw]);
+        trace.lower.opType = 1; // store (traceV2)
         ++instStat.vseCnt[mw];
         opclass = DL_RISC_VS_US;
         break;
     case OPC_RISC_VS_VS:  // vector-strided
         // opcStr = "vsse";
         // instCnt = (++instStat.vsseCnt[mw]);
+        trace.lower.opType = 1; // store
         opclass = DL_RISC_VS_VS;
         ++instStat.vsseCnt[mw];
         break;
@@ -6691,13 +6713,14 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     case OPC_RISC_VS_OVI: // ordered vector-indexed
         // opcStr = "vsxei";
         // instCnt = (++instStat.vsxeiCnt[mw]);
+        trace.lower.opType = 1; // store
         opclass = DL_RISC_VS_UVI;
         ++instStat.vsxeiCnt[mw];
         break;
     default: // unknown
-        trace.lower.opType = 1;
-        trace.lower.dataType = 0b111;
-        trace.lower.operandSize = 0b1111;
+        trace.lower.opType = 3; // unknown/custom (traceV2)
+        // trace.lower.dataType = 0b111;
+        // trace.lower.operandSize = 0b1111;
         ++instStat.unknownCnt;
         opclass = DL_RISC_UNKNOWN;
         break;
@@ -6837,8 +6860,8 @@ void dl_print_inst_stat(void) {
     }
     fprintf(fpTarget, "\n");
 
-    //printf("## Detected unknown instructions ##\n");
-    //printf("unknown: %u\n\n", instStat.unknownCnt);
+    printf("## Detected unknown or custom instructions ##\n");
+    printf("unknown: %u\n\n", instStat.unknownCnt);
 
     fprintf(fpTarget, "## Total instruction count ##\n");
     fprintf(fpTarget, "load: %u\n", intLoadTotal);
