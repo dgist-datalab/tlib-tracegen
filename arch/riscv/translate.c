@@ -6227,21 +6227,21 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     case OPC_RISC_LBU:
         // instCnt = (++instStat.lbuCnt);
         trace.lower.opType = 0;         // load
-        trace.lower.dataType = 3;       // uint
+        trace.lower.dataType = 1;       // uint (traceV2)
         trace.lower.operandSize = 0;    // 8
         ++instStat.lbuCnt;
         break;
     case OPC_RISC_LHU:
         // instCnt = (++instStat.lhuCnt);
         trace.lower.opType = 0;         // load
-        trace.lower.dataType = 3;       // uint
+        trace.lower.dataType = 1;       // uint
         trace.lower.operandSize = 1;    // 16
         ++instStat.lhuCnt;
         break;
     case OPC_RISC_LWU:
         // instCnt = (++instStat.lwuCnt);
         trace.lower.opType = 0;         // load
-        trace.lower.dataType = 3;       // uint
+        trace.lower.dataType = 1;       // uint
         trace.lower.operandSize = 2;    // 32
         ++instStat.lwuCnt;
         break;
@@ -6278,21 +6278,21 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     case OPC_RISC_FLH:
         // instCnt = (++instStat.flhCnt);
         trace.lower.opType = 0;         // load (traceV2)
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp (traceV2)
         trace.lower.operandSize = 1;    // FP16
         ++instStat.flhCnt;
         break;
     case OPC_RISC_FLW:
         // instCnt = (++instStat.flwCnt);
         trace.lower.opType = 0;         // load
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp
         trace.lower.operandSize = 2;    // FP32
         ++instStat.flwCnt;
         break;
     case OPC_RISC_FLD:
         // instCnt = (++instStat.fldCnt);
         trace.lower.opType = 0;         // load
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp
         trace.lower.operandSize = 3;    // FP64
         ++instStat.fldCnt;
         break;
@@ -6300,21 +6300,21 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
     case OPC_RISC_FSH:
         // instCnt = (++instStat.fshCnt);
         trace.lower.opType = 1;         // store (traceV2)
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp
         trace.lower.operandSize = 1;    // FP16
         ++instStat.fshCnt;
         break;
     case OPC_RISC_FSW:
         // instCnt = (++instStat.fswCnt);
         trace.lower.opType = 1;         // store
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp
         trace.lower.operandSize = 2;    // FP32
         ++instStat.fswCnt;
         break;
     case OPC_RISC_FSD:
         // instCnt = (++instStat.fsdCnt);
         trace.lower.opType = 1;         // store
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp
         trace.lower.operandSize = 3;    // FP64
         ++instStat.fsdCnt;
         break;
@@ -6463,7 +6463,7 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         ++instStat.arithCnt;
     }
     else if (opclass == DL_RISC_FMADD) {
-        trace.lower.dataType = 1; // fp
+        trace.lower.dataType = 2; // fp (traceV2)
         switch (opc) {
         case OPC_RISC_FMADD_S:
             //opcStr = "fmadd.s";
@@ -6486,7 +6486,7 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         }
     }
     else if (opclass == DL_RISC_FMSUB) {
-        trace.lower.dataType = 1; // fp
+        trace.lower.dataType = 2; // fp (traceV2)
         switch (opc) {
         case OPC_RISC_FMSUB_S:
             //opcStr = "fmsub.s";
@@ -6509,7 +6509,7 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         }
     }
     else if (opclass == DL_RISC_FNMADD) {
-        trace.lower.dataType = 1; // fp
+        trace.lower.dataType = 2; // fp (traceV2)
         switch (opc) {
         case OPC_RISC_FNMADD_S:
             //opcStr = "fnmadd.s";
@@ -6532,7 +6532,7 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         }
     }
     else if (opclass == DL_RISC_FNMSUB) {
-        trace.lower.dataType = 1; // fp
+        trace.lower.dataType = 2; // fp (traceV2)
         switch (opc) {
         case OPC_RISC_FNMSUB_S:
             //opcStr = "fnmsub.s";
@@ -6557,56 +6557,56 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
     else if (opclass == DL_RISC_FP_ARITH) {
         // opcStr = "fparith";
         // instCnt = (++instStat.fparithCnt);
-        trace.lower.dataType = 1;       // fp
+        trace.lower.dataType = 2;       // fp (traceV2)
         trace.lower.operandSize = 2;    // FP32
         ++instStat.fparithCnt;
     }
     else if (opclass == DL_RISC_V_IVV) {
         // opcStr = "varithi.vv";
         // instCnt = (++instStat.varithiCnt[0]); // vv
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector (traceV2)
         trace.lower.operandSize = 2;    // 32?
         ++instStat.varithiCnt[0];
     }
     else if (opclass == DL_RISC_V_IVX) {
         // opcStr = "varithi.vx";
         // instCnt = (++instStat.varithiCnt[1]); // vx
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithiCnt[1];
     }
     else if (opclass == DL_RISC_V_IVI) {
         // opcStr = "varithi.vi";
         // instCnt = (++instStat.varithiCnt[2]); // vi
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithiCnt[2];
     }
     else if (opclass == DL_RISC_V_MVV) {
         // opcStr = "varithm.vv";
         // instCnt = (++instStat.varithmCnt[0]); // vv
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithmCnt[0];
     }
     else if (opclass == DL_RISC_V_MVX) {
         // opcStr = "varithm.vx";
         // instCnt = (++instStat.varithmCnt[1]); // vx
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithmCnt[1];
     }
     else if (opclass == DL_RISC_V_FVV) {
         // opcStr = "varithf.vv";
         // instCnt = (++instStat.varithfCnt[0]); // vv
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithfCnt[0];
     }
     else if (opclass == DL_RISC_V_FVF) {
         // opcStr = "varithf.vf";
         // instCnt = (++instStat.varithfCnt[1]); // vf
-        trace.lower.dataType = 2;       // vector
+        trace.lower.dataType = 3;       // vector
         trace.lower.operandSize = 2;
         ++instStat.varithfCnt[1];
     }
@@ -6668,7 +6668,7 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     uint8_t opclass = 0;
     DLTraceCompactMem trace = { 0, };
     //trace.lower.opType = 0;     // mem (traceV1, deprecated)
-    trace.lower.dataType = 2;   // vector
+    trace.lower.dataType = 3;   // vector (traceV2)
     trace.lower.operandSize = mw;
     switch (opc) {
     // load
@@ -6877,15 +6877,17 @@ void dl_print_inst_stat(void) {
     fprintf(fpTarget, "Total arith imm.: %u\n", instStat.arithImmCnt);
     fprintf(fpTarget, "Total arith: %u\n", instStat.arithCnt);
 
-    fprintf(fpTarget, "Total FP arith: %u\n", instStat.arithCnt);
+    fprintf(fpTarget, "FP arith: %u\n", instStat.fparithCnt);
     fprintf(fpTarget, "Total fmadd: %u\n", fmaddTotal);
     fprintf(fpTarget, "Total fmsub: %u\n", fmsubTotal);
     fprintf(fpTarget, "Total fnmadd: %u\n", fnmaddTotal);
     fprintf(fpTarget, "Total fnmsub: %u\n", fnmsubTotal);
+    fprintf(fpTarget, "Total FP arith: %u\n", instStat.fparithCnt + fmaddTotal + fmsubTotal + fnmaddTotal + fnmsubTotal);
 
     fprintf(fpTarget, "Total vector arith (i): %u\n", varithiTotal);
     fprintf(fpTarget, "Total vector arith (m): %u\n", varithmTotal);
     fprintf(fpTarget, "Total vector arith (f): %u\n", varithfTotal);
+    fprintf(fpTarget, "Total vector arith: %u\n", varithiTotal + varithmTotal + varithfTotal);
 
     fprintf(fpTarget, "Total instructions: %lu\n", instStat.instCtr);
 }
