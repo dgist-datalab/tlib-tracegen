@@ -66,12 +66,41 @@ enum DLInstClass {
     DL_RISC_CUSTOM1 = 0xf1
 };
 
+// DataLab: installed custom instructions
+enum DLCustomInstructionIndex {
+    DL_CUSTOM3_SPRINGBOK_SIMPRINT = 0,
+    DL_CUSTOM3_SPRINGBOK_XCOUNT,
+    DL_CUSTOM3_SPRINGBOK_HOSTREQ,
+    DL_CUSTOM3_SPRINGBOK_FINISH,
+    DL_CUSTOM0_DRBEGIN,
+    DL_CUSTOM0_DREND
+};
+
+#define DL_CUSTOM_INSTRUCTION_COUNT 6
+const char *DL_CUSTOM_INSTRUCTION_MNEMONIC[DL_CUSTOM_INSTRUCTION_COUNT] = {
+    "simprint",
+    "xcount",
+    "hostreq",
+    "finish",
+    "dr.begin",
+    "dr.end"
+};
+
+enum DLRiscvOpcodes {
+    DL_OPCODE_CUSTOM0 = 0b0001011,
+    DL_OPCODE_CUSTOM1 = 0b0101011,
+    DL_OPCODE_CUSTOM2 = 0b1011011,
+    DL_OPCODE_CUSTOM3 = 0b1111011
+};
+
+
 /* global register indices */
 static TCGv cpu_gpr[32], cpu_pc, cpu_opcode;
 static TCGv_i64 cpu_fpr[32]; /* assume F and D extensions */
 static TCGv cpu_vstart;
 
 /* DataLab: Datastructures for instruction trace */
+// TODO: 64비트 정수로 확장?
 typedef struct DLInstStat {
     uint32_t ldCnt;
     uint32_t lwCnt;
@@ -118,16 +147,18 @@ typedef struct DLInstStat {
     uint32_t varithmCnt[2]; // vv, vx
     uint32_t varithfCnt[2]; // vv, vf
 
-    uint64_t instCtr;
+    uint32_t customCnt[DL_CUSTOM_INSTRUCTION_COUNT];
     uint32_t unknownCnt;
+    uint64_t instCtr;
 } DLInstStat;
 
 /* Datastructure for binary format trace */
 // opType과 dataType이 모두 비트 1로 지정되어 있으면 unknown이나 custom이다
 // 이때 명령어 종류는 operandSize의 4비트 필드를 이용하여 식별한다 (DLTraceCustomCode 참조)
+/* traceV2 */
 typedef struct DLTraceLow {
-	uint8_t opType: 2;			// mem/arith
-	uint8_t dataType: 3;		// int/float/vector/uint
+	uint8_t opType: 2;			// load/store/arith/unknown (or custom)
+	uint8_t dataType: 3;		// sint/uint/float/vector
 	uint8_t operandSize: 3;		// 8/16/32/64/128
 } DLTraceLow;
 
@@ -5921,6 +5952,7 @@ static int disas_insn(CPUState *env, DisasContext *dc)
             tcg_temp_free_i64(opcode);
             tcg_temp_free_i64(pc_modified);
 
+            // custom instruction인 경우 custom instruction 처리하고 return
             return ci->length;
         }
     }
@@ -6320,7 +6352,7 @@ uint8_t dl_put_opc_bin(uint32_t opc) {
         break;
     default:
         // instCnt = (++instStat.unknownCnt);
-        trace.lower.opType = 2;         // unknown/custom (traceV2)
+        trace.lower.opType = 3;         // unknown/custom (traceV2)
         // trace.lower.opType = 1;
         // trace.lower.dataType = 0b111;
         // trace.lower.operandSize = 0b1111;
@@ -6611,7 +6643,7 @@ void dl_put_opc_arith(uint32_t opc, uint32_t opclass) {
         ++instStat.varithfCnt[1];
     }
     else { // unknown or custom
-        trace.lower.opType = 3;
+        trace.lower.opType = 3; // traceV2
         ++instStat.unknownCnt; // TODO: unknown과 custom 세분화
     }
     trace.instCtr = instStat.instCtr;
@@ -6730,6 +6762,106 @@ uint8_t dl_put_opc_vector_bin(uint32_t opc, uint32_t width) {
     fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
     fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
     return opclass;
+}
+
+int dl_get_custom_instcnt_idx(uint64_t opc) {
+    uint32_t opcode = (uint32_t)opc & 0b1111111;
+    uint32_t funct3 = ((uint32_t)opc >> 12) & 0b111;
+    if (opcode == DL_OPCODE_CUSTOM0) {
+        switch (funct3) {
+        case 0:
+            return DL_CUSTOM0_DRBEGIN;
+        case 1:
+            return DL_CUSTOM0_DREND;
+        }
+    }
+    else if (opcode == DL_OPCODE_CUSTOM3) {
+        switch (funct3) {
+        case 0: // simprint
+            return DL_CUSTOM3_SPRINGBOK_SIMPRINT;
+        case 1: // xcount
+            return DL_CUSTOM3_SPRINGBOK_XCOUNT;
+        case 2: // hostreq
+            return DL_CUSTOM3_SPRINGBOK_HOSTREQ;
+        case 3: // finish
+            return DL_CUSTOM3_SPRINGBOK_FINISH;
+        }
+    }
+    return -1; // unknown
+}
+
+void dl_put_opc_custom(uint64_t opc) {
+    int idx = dl_get_custom_instcnt_idx(opc);
+    if (idx != -1) {
+        ++instStat.customCnt[idx];
+        fprintf(logfp, "[%lu] custom(=%04x)/%u: pc=%08x\n", instStat.instCtr, (uint32_t)opc, instStat.customCnt[idx], (uint32_t)env->pc);
+    }
+    else {
+        ++instStat.unknownCnt;
+        fprintf(logfp, "[%lu] unknown(=%04x)/%u: pc=%08x\n", instStat.instCtr, (uint32_t)opc, instStat.unknownCnt, (uint32_t)env->pc);
+    }
+}
+
+void dl_put_opc_custom_bin(uint64_t opc) {
+    /* TraceV2 custom instruction field
+    opclass[1:0]: opcode
+    0b00: custom-0
+    0b01: custom-1
+    0b10: custom-2
+    0b11: custom-3
+
+    opclass[2:4]: funct3
+    opclass[5:7]: reserved
+    --> 0b111: unknown
+
+    uint8_t opclass = 0;
+    opclass |= opcode;
+    opclass |= (funct3 << 2);
+    opclass |= (reserved << 5);
+    */
+    DLTraceCompactArith trace = { 0, };
+    trace.lower.opType = 3; // custom/unknown
+
+    uint8_t opclass = 0;
+    int idx = dl_get_custom_instcnt_idx(opc);
+
+    if (idx != -1) {
+        uint8_t opcode = (uint8_t)opc & 0b1111111;
+        uint8_t funct3 = (uint8_t)(opc >> 12) & 0b111;
+        switch (opcode) {
+        case DL_OPCODE_CUSTOM0:
+            //printf("[%lu] custom-0 %s (funct3=%d) ", instStat.instCtr, DL_CUSTOM_INSTRUCTION_MNEMONIC[idx], funct3);
+            opclass |= 0b00;
+            break;
+        case DL_OPCODE_CUSTOM1:
+            //printf("[%lu] custom-1 %s (funct3=%d) ", instStat.instCtr, DL_CUSTOM_INSTRUCTION_MNEMONIC[idx], funct3);
+            opclass |= 0b01;
+            break;
+        case DL_OPCODE_CUSTOM2:
+            //printf("[%lu] custom-2 %s (funct3=%d) ", instStat.instCtr, DL_CUSTOM_INSTRUCTION_MNEMONIC[idx], funct3);
+            opclass |= 0b10;
+            break;
+        case DL_OPCODE_CUSTOM3:
+            //printf("[%lu] custom-3 %s (funct3=%d) ", instStat.instCtr, DL_CUSTOM_INSTRUCTION_MNEMONIC[idx], funct3);
+            opclass |= 0b11;
+            break;
+        }
+        opclass |= funct3 << 2;
+        // reserved field: 일단 일반 커스텀 명령어는 0으로 채움
+        ++instStat.customCnt[idx];
+    }
+    else { // unknown
+        opclass |= 0b111 << 5;
+        ++instStat.unknownCnt;
+    }
+    //printf("opclass=%02x\n", opclass);
+    trace.instCtr = instStat.instCtr;
+    trace.addr = (uint32_t)env->pc;
+    trace.opclass = opclass;
+    fwrite(&trace.lower, sizeof(DLTraceLow), 1, logfp);
+    fwrite(&trace.instCtr, sizeof(uint64_t), 1, logfp);
+    fwrite(&trace.addr, sizeof(uint32_t), 1, logfp);
+    fwrite(&trace.opclass, sizeof(uint8_t), 1, logfp);
 }
 
 void dl_print_inst_stat(void) {
@@ -6860,8 +6992,11 @@ void dl_print_inst_stat(void) {
     }
     fprintf(fpTarget, "\n");
 
-    printf("## Detected unknown or custom instructions ##\n");
-    printf("unknown: %u\n\n", instStat.unknownCnt);
+    fprintf(fpTarget, "## custom instructions and unknown ##\n");
+    for (i = 0; i < DL_CUSTOM_INSTRUCTION_COUNT; i++) {
+        fprintf(fpTarget, "%s: %u\n", DL_CUSTOM_INSTRUCTION_MNEMONIC[i], instStat.customCnt[i]);
+    }
+    fprintf(fpTarget, "unknown: %u\n\n", instStat.unknownCnt);
 
     fprintf(fpTarget, "## Total instruction count ##\n");
     fprintf(fpTarget, "load: %u\n", intLoadTotal);

@@ -646,9 +646,18 @@ int cpu_init(const char *cpu_model)
     return 0;
 }
 
+// DataLab
+void dl_put_opc_custom(uint64_t opc);
+void dl_put_opc_custom_bin(uint64_t opc);
+
 // returns 1 if the PC has already been modified by the instruction
 uint32_t HELPER(handle_custom_instruction)(uint64_t id, uint64_t opcode)
 {
+#ifdef DL_TRACE_HUMAN_READABLE
+    dl_put_opc_custom(opcode);
+#else
+    dl_put_opc_custom_bin(opcode);
+#endif
     return tlib_handle_custom_instruction(id, opcode);
 }
 
